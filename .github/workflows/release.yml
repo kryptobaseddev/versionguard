@@ -65,5 +65,5 @@ jobs:
             gh release create "$TAG" \
               --title "v${VERSION}" \
               --notes "$BODY" \
-              --verify-tag || echo "Release $TAG already exists, skipping"
+              --target main || echo "Release $TAG already exists, skipping"
           done
