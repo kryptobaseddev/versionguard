@@ -1,6 +1,6 @@
 {
   "name": "@codluv/versionguard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Strict versioning enforcement for SemVer and CalVer with git hooks, changelog validation, and file sync from package.json",
   "type": "module",
   "main": "./dist/index.js",
@@ -73,7 +73,7 @@
     "@biomejs/biome": "^2.2.4",
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
-    "@codluv/versionguard": "^0.1.0",
+    "@codluv/versionguard": "^0.1.1",
     "@eslint/js": "^9.37.0",
     "@forge-ts/cli": "0.19.4",
     "@types/js-yaml": "^4.0.9",
