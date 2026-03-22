@@ -35,7 +35,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: npx changeset publish --access public
+          publish: npm publish --provenance --access public
           version: npx changeset version
           title: "chore: version packages"
           commit: "chore: version packages"
