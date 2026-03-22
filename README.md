@@ -274,6 +274,52 @@ npx versionguard bump --apply
 npx versionguard tag 1.2.3 -m "Release 1.2.3"
 ```
 
+## Using with Changesets
+
+VersionGuard and [Changesets](https://github.com/changesets/changesets) are complementary tools that handle different parts of the release lifecycle.
+
+| Concern | Changesets | VersionGuard |
+| --- | --- | --- |
+| Decide the next version | Yes | No (validates, doesn't choose) |
+| Update `package.json` version | Yes | No (reads it as source of truth) |
+| Validate version format | No | Yes (SemVer/CalVer strictness) |
+| Sync version across files | No | Yes (regex-based sync) |
+| Validate changelog structure | No | Yes (Keep a Changelog) |
+| Git hooks enforcement | No | Yes |
+| Publish to npm | Yes | No |
+
+**Changesets decides what version comes next. VersionGuard validates that the result is correct.**
+
+### Recommended workflow
+
+```bash
+# 1. Add a changeset when making changes
+npx changeset
+
+# 2. When ready to release, version the packages
+npx changeset version
+
+# 3. VersionGuard validates the new state
+npx versionguard validate
+
+# 4. Publish
+npx changeset publish
+```
+
+### CI integration
+
+In GitHub Actions, both tools run in sequence. Changesets creates a "Version Packages" PR when changesets are pending. VersionGuard validates the result before publishing:
+
+```yaml
+- run: npm run build
+- run: npx versionguard validate
+- uses: changesets/action@v1
+  with:
+    publish: npx changeset publish --access public
+```
+
+VersionGuard does not replace Changesets and does not conflict with it. Use Changesets for release automation. Use VersionGuard for release correctness.
+
 ## Development
 
 This repository uses a modern ESM toolchain:

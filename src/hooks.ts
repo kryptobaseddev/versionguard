@@ -158,7 +158,9 @@ export function areHooksInstalled(cwd: string = process.cwd()): boolean {
 export function generateHookScript(hookName: (typeof HOOK_NAMES)[number]): string {
   return `#!/bin/sh
 # VersionGuard ${hookName} hook
-npx versionguard validate --hook=${hookName}
+# --no-install prevents accidentally downloading an unscoped package
+# if @codluv/versionguard is not installed locally
+npx --no-install versionguard validate --hook=${hookName}
 status=$?
 if [ $status -ne 0 ]; then
   echo "VersionGuard validation failed."

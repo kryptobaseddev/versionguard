@@ -1,9 +1,17 @@
 #!/usr/bin/env node
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import chalk from 'chalk';
 import { Command } from 'commander';
+
+const CLI_DIR = path.dirname(fileURLToPath(import.meta.url));
+const CLI_VERSION: string = (
+  JSON.parse(fs.readFileSync(path.join(CLI_DIR, '..', 'package.json'), 'utf-8')) as {
+    version: string;
+  }
+).version;
 
 import * as feedback from './feedback';
 import * as fix from './fix';
@@ -43,7 +51,7 @@ export function createProgram(): Command {
   program
     .name('versionguard')
     .description('Strict versioning enforcement for SemVer and CalVer')
-    .version('0.1.0');
+    .version(CLI_VERSION);
 
   program
     .command('init')
@@ -69,11 +77,32 @@ export function createProgram(): Command {
     .description('Check the current version with actionable feedback')
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('--prev <version>', 'Previous version for comparison')
-    .action((options: { cwd: string; prev?: string }) => {
+    .option('--json', 'Print machine-readable JSON output')
+    .action((options: { cwd: string; prev?: string; json?: boolean }) => {
       try {
         const config = versionguard.getConfig(options.cwd);
         const version = versionguard.getPackageVersion(options.cwd);
         const result = feedback.getVersionFeedback(version, config, options.prev);
+
+        if (options.json) {
+          console.log(
+            JSON.stringify(
+              {
+                version,
+                versioningType: config.versioning.type,
+                valid: result.valid,
+                errors: result.errors,
+                suggestions: result.suggestions,
+              },
+              null,
+              2,
+            ),
+          );
+          if (!result.valid) {
+            process.exit(1);
+          }
+          return;
+        }
 
         console.log(styles.bold(`Current version: ${version}`));
         console.log(styles.dim(`Versioning type: ${config.versioning.type}`));
