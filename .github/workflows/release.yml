@@ -29,7 +29,7 @@ jobs:
       - run: npm run build
 
       - name: Validate with versionguard (dogfood)
-        run: npx versionguard validate
+        run: node dist/cli.js validate
 
       - name: Create Release PR or Publish
         id: changesets
@@ -61,7 +61,7 @@ jobs:
             fi
 
             gh release create "$TAG" \
-              --title "${NAME}@${VERSION}" \
+              --title "v${VERSION}" \
               --notes "$BODY" \
               --verify-tag || echo "Release $TAG already exists, skipping"
           done

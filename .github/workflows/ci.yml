@@ -30,4 +30,4 @@ jobs:
       - run: npm run build
 
       - name: Validate with versionguard (dogfood)
-        run: npx versionguard validate
+        run: node dist/cli.js validate
