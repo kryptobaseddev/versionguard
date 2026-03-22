@@ -2,8 +2,11 @@ versioning:
   type: semver
 
 sync:
-  files: []
-  patterns: []
+  files:
+    - "README.md"
+  patterns:
+    - regex: '(npm install -D @codluv/versionguard@)(\S+)'
+      template: '$1{{version}}'
 
 changelog:
   enabled: true
@@ -13,12 +16,14 @@ changelog:
 
 git:
   hooks:
-    pre-commit: false
-    pre-push: false
-    post-tag: false
-  enforceHooks: false
+    pre-commit: true
+    pre-push: true
+    post-tag: true
+  enforceHooks: true
 
 ignore:
   - "node_modules/**"
   - "dist/**"
   - ".git/**"
+  - "*.lock"
+  - ".changeset/**"
