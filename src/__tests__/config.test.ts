@@ -1,10 +1,13 @@
-import { readFileSync, renameSync } from 'node:fs';
+import { existsSync, readFileSync, renameSync } from 'node:fs';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { findConfig, getConfig, getDefaultConfig, initConfig, loadConfig } from '../config';
 import { createTempProject, writeTextFile } from './test-utils';
+
+const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 describe('config', () => {
   afterEach(() => {
@@ -124,8 +127,20 @@ describe('config', () => {
 
   it('falls back to the generated template when the example file is unavailable', () => {
     const cwd = createTempProject();
-    const examplePath = path.join('/mnt/projects/versionguard', '.versionguard.yml.example');
+    const examplePath = path.resolve(MODULE_DIR, '..', '..', '.versionguard.yml.example');
     const backupPath = `${examplePath}.bak-test`;
+
+    if (!existsSync(examplePath)) {
+      // Example file not present (e.g. running from installed package) — initConfig
+      // should fall back to the generated template without needing to rename anything.
+      const configPath = initConfig(cwd);
+      const content = readFileSync(configPath, 'utf-8');
+
+      expect(content).toContain('# VersionGuard Configuration');
+      expect(content).toContain('versioning:');
+      expect(content).toContain('ignore:');
+      return;
+    }
 
     try {
       renameSync(examplePath, backupPath);
