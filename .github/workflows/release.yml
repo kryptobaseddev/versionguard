@@ -22,7 +22,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          registry-url: https://registry.npmjs.org
 
       - run: npm ci
 
@@ -30,6 +29,11 @@ jobs:
 
       - name: Validate with versionguard (dogfood)
         run: node dist/cli.js validate
+
+      - name: Configure npm for OIDC publishing
+        run: |
+          echo "//registry.npmjs.org/:_authToken=" > ~/.npmrc
+          npm config set registry https://registry.npmjs.org/
 
       - name: Create Release PR or Publish
         id: changesets
@@ -41,7 +45,6 @@ jobs:
           commit: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
 
       - name: Create GitHub Releases
         if: steps.changesets.outputs.published == 'true'
