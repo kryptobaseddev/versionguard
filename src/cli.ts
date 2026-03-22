@@ -15,6 +15,7 @@ const CLI_VERSION: string = (
 
 import * as feedback from './feedback';
 import * as fix from './fix';
+import * as guard from './guard';
 import * as versionguard from './index';
 import * as project from './project';
 import * as tag from './tag';
@@ -141,16 +142,22 @@ export function createProgram(): Command {
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('--hook <name>', 'Running as git hook')
     .option('--json', 'Print machine-readable JSON output')
-    .action((options: { cwd: string; hook?: string; json?: boolean }) => {
+    .option('--strict', 'Run guard checks and fail on any policy gap or bypass')
+    .action((options: { cwd: string; hook?: string; json?: boolean; strict?: boolean }) => {
       try {
         const config = versionguard.getConfig(options.cwd);
         const version = versionguard.getPackageVersion(options.cwd);
         const result = versionguard.validate(config, options.cwd);
 
         let postTagResult: { success: boolean; message: string; actions: string[] } | undefined;
+        let guardReport: guard.GuardReport | undefined;
 
         if (options.hook === 'post-tag') {
           postTagResult = tag.handlePostTag(config, options.cwd);
+        }
+
+        if (options.strict) {
+          guardReport = guard.runGuardChecks(config, options.cwd);
         }
 
         if (options.json) {
@@ -160,13 +167,18 @@ export function createProgram(): Command {
                 ...result,
                 hook: options.hook ?? null,
                 postTag: postTagResult ?? null,
+                guard: guardReport ?? null,
               },
               null,
               2,
             ),
           );
 
-          if (!result.valid || (postTagResult && !postTagResult.success)) {
+          if (
+            !result.valid ||
+            (postTagResult && !postTagResult.success) ||
+            (guardReport && !guardReport.safe)
+          ) {
             process.exit(1);
           }
 
@@ -216,7 +228,19 @@ export function createProgram(): Command {
           }
         }
 
-        if (!result.valid) {
+        if (guardReport && guardReport.warnings.length > 0) {
+          console.log(styles.bold('Guard Checks:'));
+          for (const warning of guardReport.warnings) {
+            const icon = warning.severity === 'error' ? styles.error('✗') : styles.warning('⚠');
+            console.log(`  ${icon} [${warning.code}] ${warning.message}`);
+            if (warning.fix) {
+              console.log(styles.dim(`    Fix: ${warning.fix}`));
+            }
+          }
+          console.log('');
+        }
+
+        if (!result.valid || (guardReport && !guardReport.safe)) {
           console.log(styles.error('✗ Validation failed'));
           process.exit(1);
         }
@@ -233,14 +257,16 @@ export function createProgram(): Command {
     .description('Report repository readiness in one pass')
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('--json', 'Print machine-readable JSON output')
-    .action((options: { cwd: string; json?: boolean }) => {
+    .option('--strict', 'Include guard checks for bypass detection')
+    .action((options: { cwd: string; json?: boolean; strict?: boolean }) => {
       try {
         const config = versionguard.getConfig(options.cwd);
         const report = versionguard.doctor(config, options.cwd);
+        const guardReport = options.strict ? guard.runGuardChecks(config, options.cwd) : undefined;
 
         if (options.json) {
-          console.log(JSON.stringify(report, null, 2));
-          if (!report.ready) {
+          console.log(JSON.stringify({ ...report, guard: guardReport ?? null }, null, 2));
+          if (!report.ready || (guardReport && !guardReport.safe)) {
             process.exit(1);
           }
           return;
@@ -259,11 +285,24 @@ export function createProgram(): Command {
           `  Worktree clean: ${report.gitRepository ? (report.worktreeClean ? 'yes' : 'no') : 'n/a'}`,
         );
 
-        if (!report.ready) {
+        if (guardReport) {
+          console.log(`  Guard safe: ${guardReport.safe ? 'yes' : 'no'}`);
+        }
+
+        if (!report.ready || (guardReport && !guardReport.safe)) {
           console.log('');
           console.log(styles.error('Issues:'));
           for (const error of report.errors) {
             console.log(styles.error(`  ✗ ${error}`));
+          }
+          if (guardReport) {
+            for (const warning of guardReport.warnings) {
+              const icon = warning.severity === 'error' ? '✗' : '⚠';
+              console.log(styles.error(`  ${icon} [${warning.code}] ${warning.message}`));
+              if (warning.fix) {
+                console.log(styles.dim(`    Fix: ${warning.fix}`));
+              }
+            }
           }
           process.exit(1);
         }

@@ -27,6 +27,7 @@ export { validateChangelog } from './changelog';
 export { getConfig, initConfig } from './config';
 export * from './feedback';
 export * from './fix';
+export * from './guard';
 export { areHooksInstalled, installHooks, uninstallHooks } from './hooks';
 export { getPackageVersion } from './project';
 export * as semver from './semver';
