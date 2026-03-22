@@ -42,115 +42,143 @@ The goal is to remove avoidable version mistakes from the workflow entirely.
 
 - **Single source of truth**: the canonical version comes from `package.json`
 - **Protocol-first strictness**: SemVer and CalVer rules are enforced opinionatedly
-- **Actionable feedback**: every failure should explain what is wrong and how to fix it
-- **Low-config adoption**: setup should stay small and readable
-- **Safe automation**: automate deterministic fixes, never hide risky changes
-- **Agent resistance**: workflows should reduce drift, shortcuts, and silent bypasses
-- **Narrow scope**: do one category of work exceptionally well instead of expanding into general CI/CD
+- **Actionable feedback**: every failure explains what is wrong and how to fix it
+- **Low-config adoption**: setup stays small and readable
+- **Safe automation**: deterministic fixes are automated, risky changes are not hidden
+- **Agent resistance**: workflows reduce drift, shortcuts, and silent bypasses
+- **Narrow scope**: the tool stays focused on version governance instead of expanding into general CI/CD
+- **Complementary by design**: VersionGuard validates and enforces; it does not own release automation, version selection, or publishing
 
-## What VersionGuard Must Do
+## Integration Philosophy
 
-### Enforce version protocol correctness
+VersionGuard is an enforcement layer, not a release automation tool.
 
-VersionGuard must support two first-class modes:
+Release automation tools like [Changesets](https://github.com/changesets/changesets) decide what the next version should be, write changelog entries, update `package.json`, and publish to registries. VersionGuard does none of those things. It validates the result.
 
-- SemVer
-- CalVer
+The boundary is:
 
-SemVer expectations:
+| Concern | Release automation (e.g. Changesets) | VersionGuard |
+| --- | --- | --- |
+| Choose the next version | Yes | No |
+| Update `package.json` | Yes | No (reads it as source of truth) |
+| Write changelog entries | Yes | No |
+| Publish to npm | Yes | No |
+| Validate version format | No | Yes |
+| Validate changelog structure | No | Yes |
+| Sync version across files | No | Yes |
+| Scan for hardcoded version drift | No | Yes |
+| Enforce policy via git hooks | No | Yes |
+| Block unsafe tag/release actions | No | Yes |
+| Detect agent bypasses | No | Yes |
 
-- strict `MAJOR.MINOR.PATCH` validation
-- prerelease and build metadata support
-- no leading-zero drift in numeric segments
-- deterministic comparison and increment helpers
+VersionGuard should never duplicate what release automation already does well. It should make the output of release automation trustworthy by catching mistakes that automation tools do not check for.
 
-CalVer expectations:
+This means VersionGuard will never:
 
-- configurable formats such as `YYYY.MM.DD`, `YYYY.MM.PATCH`, `YY.M.PATCH`, and `YYYY.0M.0D`
-- range validation for month and day
-- prevention of future-dated versions when configured
-- deterministic chronological comparison and increment helpers
+- own a "version bump" workflow that replaces changesets or semantic-release
+- generate changelog content from commit history
+- publish packages to registries
+- manage release branches or merge strategies
 
-### Keep repository files in sync
+It will always:
 
-VersionGuard must detect and correct version drift across configured files.
+- validate that versions conform to SemVer or CalVer rules
+- validate that changelog structure follows Keep a Changelog
+- detect version drift across configured and scanned files
+- enforce policy at git boundaries where mistakes are cheapest to catch
+- provide actionable feedback that points to the exact fix
 
-That includes:
+## Achieved Now
 
-- glob-based file selection
-- regex-based version matching
-- deterministic replacement templates
-- validation that flags mismatches before release actions complete
+VersionGuard already delivers the core of the product vision.
 
-### Validate changelog discipline
+### Protocol enforcement
 
-VersionGuard should embed Keep a Changelog expectations directly into the workflow.
+- SemVer is supported with strict parsing, validation, comparison, and increment helpers
+- CalVer is supported with multiple formats, date validation, future-date prevention, comparison, and increment helpers
+- invalid versions are rejected with actionable messages instead of vague failures
 
-Minimum behavior:
+### Source-of-truth and sync behavior
 
-- require `# Changelog`
-- require `## [Unreleased]`
-- require an entry for the current version when configured
-- validate release header date shape
-- help generate missing entries when safe
+- `package.json` is the canonical version source
+- configured files can be kept in sync through regex/template rules
+- configured files are scanned for version mismatches before release actions complete
+- changelog `Unreleased` sections are protected from false mismatch reports
 
-### Integrate with git workflow boundaries
+### Changelog and release hygiene
 
-VersionGuard should enforce policy where it matters most:
+- Keep a Changelog structure is validated
+- current-version changelog entries can be required
+- missing changelog entries can be created through fix helpers
+- release tags are validated against package version and changelog state
 
-- before commits
-- before pushes
-- after tags
+### Git workflow enforcement
 
-These hooks should be easy to install and hard to misread.
-They should fail clearly when policy is violated.
+- managed `pre-commit`, `pre-push`, and `post-tag` hooks can be installed
+- tag creation refuses unsafe states such as dirty worktrees, missing hooks when enforced, duplicate tags, sync drift, and invalid changelog state
+- remote tag/push readiness is covered by integration tests
 
-### Support release automation
+### CLI and automation
 
-VersionGuard should make normal release actions safer, not more manual.
+- the CLI supports `init`, `check`, `validate`, `doctor`, `sync`, `fix`, `bump`, `tag`, and hook management commands
+- `doctor --json` and `validate --json` support CI and agent workflows
+- actionable feedback and deterministic fix flows are available in both the API and CLI
 
-That includes:
+### Repository/tooling quality
 
-- suggested bumps
-- package version updates
-- file sync automation
-- changelog repair when possible
-- tag creation that preserves version consistency
+- the project ships as a full ESM package
+- builds use Vite
+- tests use Vitest
+- formatting and linting use Biome and ESLint
+- Forge is installed, initialized, locked, hooked, and fully passing
 
-## How It Should Feel
+## Partially Achieved
 
-VersionGuard should feel like a strict release copilot.
+Some parts of the vision are present, but not yet complete at the deepest level.
 
-It should:
+### Agent resistance
 
-- stop incorrect actions early
-- explain the exact problem
-- point to the next command to run
-- make the right path easier than the wrong one
+- VersionGuard now blocks many unsafe release paths
+- however, it does not yet make bypasses impossible in every workflow or environment
 
-The tone should be direct, practical, and a little opinionated.
-It should never make people guess what happened.
+### Hardcoded version detection
 
-## Audience
+- configured-file scanning works well
+- broader repo-wide accidental version literal detection beyond configured sync patterns is still limited
 
-The primary audience is teams building TypeScript and Node.js projects where `package.json` is already the natural release anchor.
+### Changelog enforcement
 
-The secondary audience is agent-assisted development workflows where automated contributors need hard boundaries around versioning behavior.
+- changelog validation and repair helpers exist
+- changelog authoring is intentionally left to release automation tools like Changesets
+- VersionGuard validates changelog structure, it does not generate changelog content
 
-## Non-Goals
+### Release workflow strictness
 
-VersionGuard is not trying to be:
+- release guardrails are strong
+- there is still room for more opinionated commit policy (e.g. detecting `--no-verify` bypasses, requiring clean version-bump commits before tagging)
 
-- a full release orchestration platform
-- a replacement for general-purpose CI systems
-- a monorepo package manager
-- a language-agnostic solution at launch
+## Future Direction
 
-Those may inform future integrations, but they are not the product center.
+The long-term opportunity is not to broaden endlessly.
+It is to deepen confidence in the enforcement lane.
+
+That means:
+
+- stronger anti-bypass protections for agent-heavy workflows (detect `--no-verify`, warn about skipped hooks, strict mode)
+- broader repo scanning for accidental version hardcoding beyond configured sync files
+- more precise policy controls while keeping the config small
+- safer release commit policies (require clean version-bump commits, detect amended history)
+- tighter CI integration for teams that need central enforcement
+
+It does not mean:
+
+- building release automation that duplicates Changesets, semantic-release, or similar tools
+- generating changelog content from commit history
+- managing publish pipelines or registry authentication
 
 ## Architecture Direction
 
-The implementation should stay modular and boring in the best possible way.
+The implementation stays modular and boring in the best possible way.
 
 Core layers:
 
@@ -174,6 +202,7 @@ Current engineering direction:
 - Vitest for testing
 - Biome for formatting and baseline linting
 - ESLint for semantic TypeScript linting
+- Forge for TSDoc enforcement and documentation generation
 
 This stack keeps the project modern, fast, and aligned with the intended TypeScript-first audience.
 
@@ -185,19 +214,6 @@ VersionGuard is successful when teams can honestly say:
 - "Agents do not silently bypass version policy anymore."
 - "Release failures tell us exactly what to fix."
 - "Versioning overhead dropped because the rules are encoded in tooling."
-
-## Long-Term Direction
-
-The long-term opportunity is not to broaden endlessly.
-It is to deepen confidence.
-
-That means:
-
-- stronger anti-bypass protections for agent-heavy workflows
-- richer changelog automation without sacrificing determinism
-- better repo scanning for accidental version hardcoding
-- more precise policy controls while keeping the config small
-- tighter CI integration for teams that need central enforcement
 
 ## Vision Summary
 
