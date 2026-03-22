@@ -1,0 +1,108 @@
+---
+title: ''
+---
+
+API reference for the `versionguard` package.
+
+## Functions & Classes
+
+| Symbol                                                                                    | Kind     | Description                                        |
+| ----------------------------------------------------------------------------------------- | -------- | -------------------------------------------------- |
+| [`parseFormat()`](/packages/versionguard/api/functions#parseformat)                       | function |                                                    |
+| [`getRegexForFormat()`](/packages/versionguard/api/functions#getregexforformat)           | function |                                                    |
+| [`parse()`](/packages/versionguard/api/functions#parse)                                   | function |                                                    |
+| [`validate()`](/packages/versionguard/api/functions#validate)                             | function |                                                    |
+| [`format()`](/packages/versionguard/api/functions#format)                                 | function |                                                    |
+| [`getCurrentVersion()`](/packages/versionguard/api/functions#getcurrentversion)           | function |                                                    |
+| [`compare()`](/packages/versionguard/api/functions#compare)                               | function |                                                    |
+| [`increment()`](/packages/versionguard/api/functions#increment)                           | function |                                                    |
+| [`getNextVersions()`](/packages/versionguard/api/functions#getnextversions)               | function |                                                    |
+| [`validateChangelog()`](/packages/versionguard/api/functions#validatechangelog)           | function |                                                    |
+| [`getLatestVersion()`](/packages/versionguard/api/functions#getlatestversion)             | function |                                                    |
+| [`addVersionEntry()`](/packages/versionguard/api/functions#addversionentry)               | function |                                                    |
+| [`parse()`](/packages/versionguard/api/functions#parse)                                   | function |                                                    |
+| [`validate()`](/packages/versionguard/api/functions#validate)                             | function |                                                    |
+| [`compare()`](/packages/versionguard/api/functions#compare)                               | function |                                                    |
+| [`gt()`](/packages/versionguard/api/functions#gt)                                         | function |                                                    |
+| [`lt()`](/packages/versionguard/api/functions#lt)                                         | function |                                                    |
+| [`eq()`](/packages/versionguard/api/functions#eq)                                         | function |                                                    |
+| [`increment()`](/packages/versionguard/api/functions#increment)                           | function |                                                    |
+| [`format()`](/packages/versionguard/api/functions#format)                                 | function |                                                    |
+| [`getVersionFeedback()`](/packages/versionguard/api/functions#getversionfeedback)         | function | Generate actionable feedback for version issues    |
+| [`getSyncFeedback()`](/packages/versionguard/api/functions#getsyncfeedback)               | function | Generate feedback for sync issues                  |
+| [`getChangelogFeedback()`](/packages/versionguard/api/functions#getchangelogfeedback)     | function | Generate feedback for changelog issues             |
+| [`getTagFeedback()`](/packages/versionguard/api/functions#gettagfeedback)                 | function | Generate feedback for tag issues                   |
+| [`getPackageJsonPath()`](/packages/versionguard/api/functions#getpackagejsonpath)         | function |                                                    |
+| [`readPackageJson()`](/packages/versionguard/api/functions#readpackagejson)               | function |                                                    |
+| [`writePackageJson()`](/packages/versionguard/api/functions#writepackagejson)             | function |                                                    |
+| [`getPackageVersion()`](/packages/versionguard/api/functions#getpackageversion)           | function |                                                    |
+| [`setPackageVersion()`](/packages/versionguard/api/functions#setpackageversion)           | function |                                                    |
+| [`syncVersion()`](/packages/versionguard/api/functions#syncversion)                       | function |                                                    |
+| [`syncFile()`](/packages/versionguard/api/functions#syncfile)                             | function |                                                    |
+| [`checkHardcodedVersions()`](/packages/versionguard/api/functions#checkhardcodedversions) | function |                                                    |
+| [`fixPackageVersion()`](/packages/versionguard/api/functions#fixpackageversion)           | function | Auto-fix package.json version issues               |
+| [`fixSyncIssues()`](/packages/versionguard/api/functions#fixsyncissues)                   | function | Auto-fix all sync issues                           |
+| [`fixChangelog()`](/packages/versionguard/api/functions#fixchangelog)                     | function | Auto-fix changelog                                 |
+| [`fixAll()`](/packages/versionguard/api/functions#fixall)                                 | function | Fix all detected issues                            |
+| [`suggestNextVersion()`](/packages/versionguard/api/functions#suggestnextversion)         | function | Suggest next version based on current              |
+| [`installHooks()`](/packages/versionguard/api/functions#installhooks)                     | function |                                                    |
+| [`uninstallHooks()`](/packages/versionguard/api/functions#uninstallhooks)                 | function |                                                    |
+| [`findGitDir()`](/packages/versionguard/api/functions#findgitdir)                         | function |                                                    |
+| [`areHooksInstalled()`](/packages/versionguard/api/functions#arehooksinstalled)           | function |                                                    |
+| [`generateHookScript()`](/packages/versionguard/api/functions#generatehookscript)         | function |                                                    |
+| [`getDefaultConfig()`](/packages/versionguard/api/functions#getdefaultconfig)             | function |                                                    |
+| [`findConfig()`](/packages/versionguard/api/functions#findconfig)                         | function |                                                    |
+| [`loadConfig()`](/packages/versionguard/api/functions#loadconfig)                         | function |                                                    |
+| [`getConfig()`](/packages/versionguard/api/functions#getconfig)                           | function |                                                    |
+| [`initConfig()`](/packages/versionguard/api/functions#initconfig)                         | function |                                                    |
+| [`getLatestTag()`](/packages/versionguard/api/functions#getlatesttag)                     | function | Get the latest git tag                             |
+| [`getAllTags()`](/packages/versionguard/api/functions#getalltags)                         | function | Get all tags                                       |
+| [`createTag()`](/packages/versionguard/api/functions#createtag)                           | function | Create a new tag with automation                   |
+| [`handlePostTag()`](/packages/versionguard/api/functions#handleposttag)                   | function | Handle post-tag workflow (called by post-tag hook) |
+| [`validateTagForPush()`](/packages/versionguard/api/functions#validatetagforpush)         | function | Validate tag before push                           |
+| [`suggestTagMessage()`](/packages/versionguard/api/functions#suggesttagmessage)           | function | Get suggested tag message                          |
+| [`validateVersion()`](/packages/versionguard/api/functions#validateversion)               | function | Validate version according to config               |
+| [`validate()`](/packages/versionguard/api/functions#validate)                             | function |                                                    |
+| [`doctor()`](/packages/versionguard/api/functions#doctor)                                 | function |                                                    |
+| [`sync()`](/packages/versionguard/api/functions#sync)                                     | function | Run sync to update all files                       |
+| [`canBump()`](/packages/versionguard/api/functions#canbump)                               | function |                                                    |
+| [`createProgram()`](/packages/versionguard/api/functions#createprogram)                   | function |                                                    |
+| [`runCli()`](/packages/versionguard/api/functions#runcli)                                 | function |                                                    |
+| [`shouldRunCli()`](/packages/versionguard/api/functions#shouldruncli)                     | function |                                                    |
+| [`createTempProject()`](/packages/versionguard/api/functions#createtempproject)           | function |                                                    |
+| [`initGitRepo()`](/packages/versionguard/api/functions#initgitrepo)                       | function |                                                    |
+| [`writeTextFile()`](/packages/versionguard/api/functions#writetextfile)                   | function |                                                    |
+| [`createBareRemote()`](/packages/versionguard/api/functions#createbareremote)             | function |                                                    |
+| [`addGitRemote()`](/packages/versionguard/api/functions#addgitremote)                     | function |                                                    |
+| [`commitAll()`](/packages/versionguard/api/functions#commitall)                           | function |                                                    |
+
+## Types & Interfaces
+
+| Symbol                                                                                    | Kind      | Description |
+| ----------------------------------------------------------------------------------------- | --------- | ----------- |
+| [`VersioningType`](/packages/versionguard/api/types#versioningtype)                       | type      |             |
+| [`CalVerFormat`](/packages/versionguard/api/types#calverformat)                           | type      |             |
+| [`CalVerConfig`](/packages/versionguard/api/types#calverconfig)                           | interface |             |
+| [`SyncPattern`](/packages/versionguard/api/types#syncpattern)                             | interface |             |
+| [`SyncConfig`](/packages/versionguard/api/types#syncconfig)                               | interface |             |
+| [`ChangelogConfig`](/packages/versionguard/api/types#changelogconfig)                     | interface |             |
+| [`GitHooksConfig`](/packages/versionguard/api/types#githooksconfig)                       | interface |             |
+| [`GitConfig`](/packages/versionguard/api/types#gitconfig)                                 | interface |             |
+| [`VersionGuardConfig`](/packages/versionguard/api/types#versionguardconfig)               | interface |             |
+| [`SemVer`](/packages/versionguard/api/types#semver)                                       | interface |             |
+| [`CalVer`](/packages/versionguard/api/types#calver)                                       | interface |             |
+| [`ParsedVersion`](/packages/versionguard/api/types#parsedversion)                         | type      |             |
+| [`ValidationError`](/packages/versionguard/api/types#validationerror)                     | interface |             |
+| [`ValidationResult`](/packages/versionguard/api/types#validationresult)                   | interface |             |
+| [`SyncChange`](/packages/versionguard/api/types#syncchange)                               | interface |             |
+| [`SyncResult`](/packages/versionguard/api/types#syncresult)                               | interface |             |
+| [`VersionMismatch`](/packages/versionguard/api/types#versionmismatch)                     | interface |             |
+| [`FullValidationResult`](/packages/versionguard/api/types#fullvalidationresult)           | interface |             |
+| [`ParsedCalVerFormat`](/packages/versionguard/api/types#parsedcalverformat)               | interface |             |
+| [`ChangelogValidationResult`](/packages/versionguard/api/types#changelogvalidationresult) | interface |             |
+| [`Suggestion`](/packages/versionguard/api/types#suggestion)                               | interface |             |
+| [`FeedbackResult`](/packages/versionguard/api/types#feedbackresult)                       | interface |             |
+| [`PackageJson`](/packages/versionguard/api/types#packagejson)                             | interface |             |
+| [`FixResult`](/packages/versionguard/api/types#fixresult)                                 | interface |             |
+| [`TagInfo`](/packages/versionguard/api/types#taginfo)                                     | interface |             |
+| [`DoctorReport`](/packages/versionguard/api/types#doctorreport)                           | interface |             |

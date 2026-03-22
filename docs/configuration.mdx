@@ -1,0 +1,28 @@
+---
+title: Configuration
+description: Configuration reference for versionguard
+---
+
+Configuration reference for **versionguard**.
+
+## forge-ts.config.ts
+
+Create a `forge-ts.config.ts` file in your project root:
+
+```typescript
+import { defineConfig } from "@forge-ts/core";
+
+export default defineConfig({
+  rootDir: ".",
+  outDir: "docs/generated",
+});
+```
+
+## `CalVerConfig`
+
+Configures CalVer validation rules.    0.1.0
+
+| Property             | Type           | Required | Description                                                |
+| -------------------- | -------------- | -------- | ---------------------------------------------------------- |
+| `format`             | `CalVerFormat` | Yes      | Calendar format used when parsing and validating versions. |
+| `preventFutureDates` | `boolean`      | Yes      | Rejects versions that point to a future date.              |

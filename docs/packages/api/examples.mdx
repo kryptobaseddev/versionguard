@@ -1,0 +1,813 @@
+---
+title: . — Examples
+description: Usage examples for the . package
+---
+
+All usage examples from the package, aggregated for quick reference.
+
+## `parseFormat()`
+
+*Breaks a CalVer format string into its component tokens.*
+
+[View in API reference](/packages/./api/functions#parseformat)
+
+```ts
+import { parseFormat } from 'versionguard';
+
+parseFormat('YYYY.MM.PATCH');
+// => { year: 'YYYY', month: 'MM', patch: 'PATCH' }
+```
+
+## `getRegexForFormat()`
+
+*Builds a regular expression that matches a supported CalVer format.*
+
+[View in API reference](/packages/./api/functions#getregexforformat)
+
+```ts
+import { getRegexForFormat } from 'versionguard';
+
+getRegexForFormat('YYYY.0M.0D').test('2026.03.21');
+// => true
+```
+
+## `parse()`
+
+*Parses a CalVer string using the supplied format.*
+
+[View in API reference](/packages/./api/functions#parse)
+
+```ts
+import { parse } from 'versionguard';
+
+parse('2026.03.21', 'YYYY.0M.0D')?.month;
+// => 3
+```
+
+## `validate()`
+
+*Validates a CalVer string against formatting and date rules.*
+
+[View in API reference](/packages/./api/functions#validate)
+
+```ts
+import { validate } from 'versionguard';
+
+validate('2026.03.21', 'YYYY.0M.0D', false).valid;
+// => true
+```
+
+## `format()`
+
+*Formats a parsed CalVer object back into a version string.*
+
+[View in API reference](/packages/./api/functions#format)
+
+```ts
+import { format } from 'versionguard';
+
+const version = { year: 2026, month: 3, day: 21, format: 'YYYY.0M.0D', raw: '2026.03.21' };
+
+format(version);
+// => '2026.03.21'
+```
+
+## `getCurrentVersion()`
+
+*Creates the current CalVer string for a format.*
+
+[View in API reference](/packages/./api/functions#getcurrentversion)
+
+```ts
+import { getCurrentVersion } from 'versionguard';
+
+getCurrentVersion('YYYY.MM.PATCH', new Date('2026-03-21T00:00:00Z'));
+// => '2026.3.0'
+```
+
+## `compare()`
+
+*Compares two CalVer strings using a shared format.*
+
+[View in API reference](/packages/./api/functions#compare)
+
+```ts
+import { compare } from 'versionguard';
+
+compare('2026.03.2', '2026.03.1', 'YYYY.MM.PATCH');
+// => 1
+```
+
+## `increment()`
+
+*Increments a CalVer string.*
+
+[View in API reference](/packages/./api/functions#increment)
+
+```ts
+import { increment } from 'versionguard';
+
+increment('2026.03.1', 'YYYY.MM.PATCH');
+// => '2026.3.2'
+```
+
+## `getNextVersions()`
+
+*Returns the most likely next CalVer candidates.*
+
+[View in API reference](/packages/./api/functions#getnextversions)
+
+```ts
+import { getNextVersions } from 'versionguard';
+
+getNextVersions('2026.03.1', 'YYYY.MM.PATCH').length;
+// => 2
+```
+
+## `validateChangelog()`
+
+*Validates a changelog file for release readiness.    0.1.0*
+
+[View in API reference](/packages/./api/functions#validatechangelog)
+
+```ts
+import { validateChangelog } from 'versionguard';
+
+const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true);
+```
+
+## `getLatestVersion()`
+
+*Gets the most recent released version from a changelog.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getlatestversion)
+
+```ts
+import { getLatestVersion } from 'versionguard';
+
+const latest = getLatestVersion('CHANGELOG.md');
+```
+
+## `addVersionEntry()`
+
+*Inserts a new version entry beneath the `[Unreleased]` section.    0.1.0*
+
+[View in API reference](/packages/./api/functions#addversionentry)
+
+```ts
+import { addVersionEntry } from 'versionguard';
+
+addVersionEntry('CHANGELOG.md', '1.2.0', '2026-03-21');
+```
+
+## `parse()`
+
+*Parses a semantic version string.*
+
+[View in API reference](/packages/./api/functions#parse)
+
+```ts
+import { parse } from 'versionguard';
+
+parse('1.2.3-alpha.1+build.5')?.prerelease;
+// => ['alpha', '1']
+```
+
+## `validate()`
+
+*Validates that a string is a supported semantic version.*
+
+[View in API reference](/packages/./api/functions#validate)
+
+```ts
+import { validate } from 'versionguard';
+
+validate('1.2.3').valid;
+// => true
+```
+
+## `compare()`
+
+*Compares two semantic version strings.*
+
+[View in API reference](/packages/./api/functions#compare)
+
+```ts
+import { compare } from 'versionguard';
+
+compare('1.2.3', '1.2.3-alpha.1');
+// => 1
+```
+
+## `gt()`
+
+*Checks whether one semantic version is greater than another.*
+
+[View in API reference](/packages/./api/functions#gt)
+
+```ts
+import { gt } from 'versionguard';
+
+gt('1.2.4', '1.2.3');
+// => true
+```
+
+## `lt()`
+
+*Checks whether one semantic version is less than another.*
+
+[View in API reference](/packages/./api/functions#lt)
+
+```ts
+import { lt } from 'versionguard';
+
+lt('1.2.3-alpha.1', '1.2.3');
+// => true
+```
+
+## `eq()`
+
+*Checks whether two semantic versions are equal in precedence.*
+
+[View in API reference](/packages/./api/functions#eq)
+
+```ts
+import { eq } from 'versionguard';
+
+eq('1.2.3', '1.2.3');
+// => true
+```
+
+## `increment()`
+
+*Increments a semantic version string by release type.*
+
+[View in API reference](/packages/./api/functions#increment)
+
+```ts
+import { increment } from 'versionguard';
+
+increment('1.2.3', 'minor', 'beta.1');
+// => '1.3.0-beta.1'
+```
+
+## `format()`
+
+*Formats a parsed semantic version object.*
+
+[View in API reference](/packages/./api/functions#format)
+
+```ts
+import { format } from 'versionguard';
+
+const version = { major: 1, minor: 2, patch: 3, prerelease: ['rc', '1'], build: ['build', '5'], raw: '1.2.3-rc.1+build.5' };
+
+format(version);
+// => '1.2.3-rc.1+build.5'
+```
+
+## `getVersionFeedback()`
+
+*Generates actionable feedback for a version string.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getversionfeedback)
+
+```typescript
+const feedbackResult = getVersionFeedback('1.2.3', config, '1.2.2');
+console.log(feedbackResult.valid);
+```
+
+## `getSyncFeedback()`
+
+*Generates suggestions for version sync mismatches in a file.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getsyncfeedback)
+
+```typescript
+const suggestions = getSyncFeedback('README.md', '1.0.0', '1.0.1');
+console.log(suggestions[0]?.message);
+```
+
+## `getChangelogFeedback()`
+
+*Generates suggestions for changelog-related validation issues.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getchangelogfeedback)
+
+```typescript
+const suggestions = getChangelogFeedback(false, '1.2.3', '1.2.2');
+console.log(suggestions.length > 0);
+```
+
+## `getTagFeedback()`
+
+*Generates suggestions for git tag mismatches.    0.1.0*
+
+[View in API reference](/packages/./api/functions#gettagfeedback)
+
+```typescript
+const suggestions = getTagFeedback('v1.2.2', '1.2.3', true);
+console.log(suggestions.map((item) => item.message));
+```
+
+## `getPackageJsonPath()`
+
+*Gets the `package.json` path for a project directory.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getpackagejsonpath)
+
+```ts
+import { getPackageJsonPath } from 'versionguard';
+
+const packagePath = getPackageJsonPath(process.cwd());
+```
+
+## `readPackageJson()`
+
+*Reads and parses a project's `package.json` file.    0.1.0*
+
+[View in API reference](/packages/./api/functions#readpackagejson)
+
+```ts
+import { readPackageJson } from 'versionguard';
+
+const pkg = readPackageJson(process.cwd());
+```
+
+## `writePackageJson()`
+
+*Writes a `package.json` document back to disk.    0.1.0*
+
+[View in API reference](/packages/./api/functions#writepackagejson)
+
+```ts
+import { readPackageJson, writePackageJson } from 'versionguard';
+
+const pkg = readPackageJson(process.cwd());
+writePackageJson(pkg, process.cwd());
+```
+
+## `getPackageVersion()`
+
+*Gets the version string from `package.json`.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getpackageversion)
+
+```ts
+import { getPackageVersion } from 'versionguard';
+
+const version = getPackageVersion(process.cwd());
+```
+
+## `setPackageVersion()`
+
+*Sets the version field in `package.json`.    0.1.0*
+
+[View in API reference](/packages/./api/functions#setpackageversion)
+
+```ts
+import { setPackageVersion } from 'versionguard';
+
+setPackageVersion('1.2.3', process.cwd());
+```
+
+## `syncVersion()`
+
+*Synchronizes configured files to a single version string.    0.1.0*
+
+[View in API reference](/packages/./api/functions#syncversion)
+
+```ts
+import { getDefaultConfig, syncVersion } from 'versionguard';
+
+const results = syncVersion('1.2.3', getDefaultConfig().sync, process.cwd());
+```
+
+## `syncFile()`
+
+*Synchronizes a single file to a target version.    0.1.0*
+
+[View in API reference](/packages/./api/functions#syncfile)
+
+```ts
+import { getDefaultConfig, syncFile } from 'versionguard';
+
+const result = syncFile('README.md', '1.2.3', getDefaultConfig().sync.patterns);
+```
+
+## `checkHardcodedVersions()`
+
+*Checks configured files for hardcoded version mismatches.    0.1.0*
+
+[View in API reference](/packages/./api/functions#checkhardcodedversions)
+
+```ts
+import { checkHardcodedVersions, getDefaultConfig } from 'versionguard';
+
+const mismatches = checkHardcodedVersions(
+  '1.2.3',
+  getDefaultConfig().sync,
+  getDefaultConfig().ignore,
+  process.cwd(),
+);
+```
+
+## `fixPackageVersion()`
+
+*Updates the `package.json` version field when needed.    0.1.0*
+
+[View in API reference](/packages/./api/functions#fixpackageversion)
+
+```typescript
+const result = fixPackageVersion('1.2.3', process.cwd());
+console.log(result.fixed);
+```
+
+## `fixSyncIssues()`
+
+*Synchronizes configured files to the package version.    0.1.0*
+
+[View in API reference](/packages/./api/functions#fixsyncissues)
+
+```typescript
+const results = fixSyncIssues(config, process.cwd());
+console.log(results.length);
+```
+
+## `fixChangelog()`
+
+*Ensures the changelog contains an entry for a version.    0.1.0*
+
+[View in API reference](/packages/./api/functions#fixchangelog)
+
+```typescript
+const result = fixChangelog('1.2.3', config, process.cwd());
+console.log(result.message);
+```
+
+## `fixAll()`
+
+*Runs all configured auto-fix operations.    0.1.0*
+
+[View in API reference](/packages/./api/functions#fixall)
+
+```typescript
+const results = fixAll(config, '1.2.3', process.cwd());
+console.log(results.some((result) => result.fixed));
+```
+
+## `suggestNextVersion()`
+
+*Suggests candidate next versions for a release.    0.1.0*
+
+[View in API reference](/packages/./api/functions#suggestnextversion)
+
+```typescript
+const suggestions = suggestNextVersion('1.2.3', config, 'minor');
+console.log(suggestions[0]?.version);
+```
+
+## `installHooks()`
+
+*Installs VersionGuard-managed Git hooks in a repository.    0.1.0*
+
+[View in API reference](/packages/./api/functions#installhooks)
+
+```ts
+import { getDefaultConfig, installHooks } from 'versionguard';
+
+installHooks(getDefaultConfig().git, process.cwd());
+```
+
+## `uninstallHooks()`
+
+*Removes VersionGuard-managed Git hooks from a repository.    0.1.0*
+
+[View in API reference](/packages/./api/functions#uninstallhooks)
+
+```ts
+import { uninstallHooks } from 'versionguard';
+
+uninstallHooks(process.cwd());
+```
+
+## `findGitDir()`
+
+*Finds the nearest `.git` directory by walking up from a starting directory.    0.1.0*
+
+[View in API reference](/packages/./api/functions#findgitdir)
+
+```ts
+import { findGitDir } from 'versionguard';
+
+const gitDir = findGitDir(process.cwd());
+```
+
+## `areHooksInstalled()`
+
+*Checks whether all VersionGuard-managed hooks are installed.    0.1.0*
+
+[View in API reference](/packages/./api/functions#arehooksinstalled)
+
+```ts
+import { areHooksInstalled } from 'versionguard';
+
+const installed = areHooksInstalled(process.cwd());
+```
+
+## `generateHookScript()`
+
+*Generates the shell script content for a Git hook.    0.1.0*
+
+[View in API reference](/packages/./api/functions#generatehookscript)
+
+```ts
+import { generateHookScript } from 'versionguard';
+
+const script = generateHookScript('pre-commit');
+```
+
+## `getDefaultConfig()`
+
+*Returns a deep-cloned copy of the built-in VersionGuard configuration.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getdefaultconfig)
+
+```ts
+import { getDefaultConfig } from 'versionguard';
+
+const config = getDefaultConfig();
+```
+
+## `findConfig()`
+
+*Finds the first supported VersionGuard config file in a directory.    0.1.0*
+
+[View in API reference](/packages/./api/functions#findconfig)
+
+```ts
+import { findConfig } from 'versionguard';
+
+const configPath = findConfig(process.cwd());
+```
+
+## `loadConfig()`
+
+*Loads a VersionGuard config file from disk.    0.1.0*
+
+[View in API reference](/packages/./api/functions#loadconfig)
+
+```ts
+import { loadConfig } from 'versionguard';
+
+const config = loadConfig('.versionguard.yml');
+```
+
+## `getConfig()`
+
+*Resolves the active VersionGuard configuration for a project.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getconfig)
+
+```ts
+import { getConfig } from 'versionguard';
+
+const config = getConfig(process.cwd());
+```
+
+## `initConfig()`
+
+*Initializes a new VersionGuard config file in a project.    0.1.0*
+
+[View in API reference](/packages/./api/functions#initconfig)
+
+```ts
+import { initConfig } from 'versionguard';
+
+const configPath = initConfig(process.cwd());
+```
+
+## `getLatestTag()`
+
+*Returns the most recent reachable git tag for a repository.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getlatesttag)
+
+```typescript
+const latestTag = getLatestTag(process.cwd());
+
+if (latestTag) {
+  console.log(latestTag.version);
+}
+```
+
+## `getAllTags()`
+
+*Lists all tags in a repository.    0.1.0*
+
+[View in API reference](/packages/./api/functions#getalltags)
+
+```typescript
+const tags = getAllTags(process.cwd());
+console.log(tags.map((tag) => tag.name));
+```
+
+## `createTag()`
+
+*Creates a release tag and optionally fixes version state first.    0.1.0*
+
+[View in API reference](/packages/./api/functions#createtag)
+
+```typescript
+const result = createTag('1.2.3', 'Release 1.2.3', true, config, process.cwd());
+
+if (!result.success) {
+  console.error(result.message);
+}
+```
+
+## `handlePostTag()`
+
+*Runs post-tag validation and sync checks.    0.1.0*
+
+[View in API reference](/packages/./api/functions#handleposttag)
+
+```typescript
+const result = handlePostTag(config, process.cwd());
+console.log(result.success);
+```
+
+## `validateTagForPush()`
+
+*Validates that a local tag is safe to push to the default remote.    0.1.0*
+
+[View in API reference](/packages/./api/functions#validatetagforpush)
+
+```typescript
+const result = validateTagForPush('v1.2.3', process.cwd());
+console.log(result.valid);
+```
+
+## `suggestTagMessage()`
+
+*Suggests an annotated tag message from changelog content.    0.1.0*
+
+[View in API reference](/packages/./api/functions#suggesttagmessage)
+
+```typescript
+const message = suggestTagMessage('1.2.3', process.cwd());
+console.log(message);
+```
+
+## `validateVersion()`
+
+*Validates a version string against the active versioning strategy.    0.1.0*
+
+[View in API reference](/packages/./api/functions#validateversion)
+
+```ts
+import { getDefaultConfig, validateVersion } from 'versionguard';
+
+const result = validateVersion('1.2.3', getDefaultConfig());
+```
+
+## `validate()`
+
+*Validates the current project state against the supplied configuration.    0.1.0*
+
+[View in API reference](/packages/./api/functions#validate)
+
+```ts
+import { getDefaultConfig, validate } from 'versionguard';
+
+const result = validate(getDefaultConfig(), process.cwd());
+```
+
+## `doctor()`
+
+*Runs an extended readiness check for a project.    0.1.0*
+
+[View in API reference](/packages/./api/functions#doctor)
+
+```ts
+import { doctor, getDefaultConfig } from 'versionguard';
+
+const report = doctor(getDefaultConfig(), process.cwd());
+```
+
+## `sync()`
+
+*Synchronizes configured files to the current package version.    0.1.0*
+
+[View in API reference](/packages/./api/functions#sync)
+
+```ts
+import { getDefaultConfig, sync } from 'versionguard';
+
+sync(getDefaultConfig(), process.cwd());
+```
+
+## `canBump()`
+
+*Determines whether a project can move from one version to another.    0.1.0*
+
+[View in API reference](/packages/./api/functions#canbump)
+
+```ts
+import { canBump, getDefaultConfig } from 'versionguard';
+
+const result = canBump('1.2.3', '1.3.0', getDefaultConfig());
+```
+
+## `createProgram()`
+
+*Creates the VersionGuard CLI program definition.    0.1.0*
+
+[View in API reference](/packages/./api/functions#createprogram)
+
+```typescript
+const program = createProgram();
+console.log(program.name());
+```
+
+## `runCli()`
+
+*Parses CLI arguments and executes the matching command.    0.1.0*
+
+[View in API reference](/packages/./api/functions#runcli)
+
+```typescript
+const argv = ['node', 'versionguard', 'check'];
+await runCli(argv);
+```
+
+## `shouldRunCli()`
+
+*Determines whether the current module is the invoked CLI entry point.    0.1.0*
+
+[View in API reference](/packages/./api/functions#shouldruncli)
+
+```typescript
+const shouldRun = shouldRunCli(process.argv, import.meta.url);
+console.log(shouldRun);
+```
+
+## `createTempProject()`
+
+*Creates a temporary project directory with a minimal `package.json` fixture.*
+
+[View in API reference](/packages/./api/functions#createtempproject)
+
+```ts
+const cwd = createTempProject();
+```
+
+## `initGitRepo()`
+
+*Initializes a git repository in a fixture directory with a first commit.*
+
+[View in API reference](/packages/./api/functions#initgitrepo)
+
+```ts
+initGitRepo(cwd);
+```
+
+## `writeTextFile()`
+
+*Writes a text fixture file relative to a temporary project directory.*
+
+[View in API reference](/packages/./api/functions#writetextfile)
+
+```ts
+writeTextFile(cwd, 'README.md', '# Fixture');
+```
+
+## `createBareRemote()`
+
+*Creates a bare git repository to use as a remote in integration tests.*
+
+[View in API reference](/packages/./api/functions#createbareremote)
+
+```ts
+const remote = createBareRemote();
+```
+
+## `addGitRemote()`
+
+*Adds a local bare repository as the `origin` remote for a fixture repo.*
+
+[View in API reference](/packages/./api/functions#addgitremote)
+
+```ts
+addGitRemote(cwd, remotePath);
+```
+
+## `commitAll()`
+
+*Stages all changes and creates a commit in a fixture repository.*
+
+[View in API reference](/packages/./api/functions#commitall)
+
+```ts
+commitAll(cwd, 'test: update fixture');
+```

@@ -1,0 +1,48 @@
+# VersionGuard Configuration
+# Docs: https://github.com/yourorg/versionguard
+
+# Pick your versioning style: "semver" or "calver"
+versioning:
+  type: semver
+  
+  # CalVer only: set format and date validation
+  # calver:
+  #   format: "YYYY.MM.PATCH"    # Options: YYYY.MM.DD, YYYY.MM.PATCH, YY.M.PATCH
+  #   preventFutureDates: true   # Can't use 2026.04 in March
+
+# Files to keep version-synced (glob patterns work)
+sync:
+  files:
+    - "README.md"
+    # - "src/version.ts"
+    # - "docs/**/*.md"
+  
+  # How to find and replace versions in files
+  patterns:
+    # For JS/TS: version = "x.x.x"
+    - regex: '(version\s*[=:]\s*["''])(.+?)(["''])'
+      template: '$1{{version}}$3'
+    
+    # For Markdown headers: ## [x.x.x]
+    - regex: '(##\s*\[)(.+?)(\])'
+      template: '$1{{version}}$3'
+
+# Changelog validation (Keep a Changelog format)
+changelog:
+  enabled: true
+  file: "CHANGELOG.md"
+  requireEntry: true   # Must have entry for current version
+
+# Git hooks that enforce versioning
+git:
+  hooks:
+    pre-commit: true   # Block bad commits
+    post-tag: true     # Auto-sync after tagging
+  enforceHooks: true   # Prevent --no-verify bypass
+
+# Files/patterns to ignore when scanning
+ignore:
+  - "node_modules/**"
+  - "dist/**"
+  - ".git/**"
+  - "*.lock"

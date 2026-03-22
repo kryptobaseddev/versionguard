@@ -1,0 +1,87 @@
+{
+  "name": "@codluv/versionguard",
+  "version": "0.1.0",
+  "description": "Strict versioning enforcement for SemVer and CalVer with git hooks, changelog validation, and file sync from package.json",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "versionguard": "./dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kryptobaseddev/versionguard.git"
+  },
+  "homepage": "https://github.com/kryptobaseddev/versionguard#readme",
+  "bugs": {
+    "url": "https://github.com/kryptobaseddev/versionguard/issues"
+  },
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit",
+    "forge:check": "forge-ts check",
+    "forge:test": "forge-ts test",
+    "forge:build": "forge-ts build",
+    "forge:docs:init": "forge-ts init docs",
+    "forge:doctor": "forge-ts doctor",
+    "lint": "npm run lint:biome && npm run lint:eslint",
+    "lint:biome": "biome check .",
+    "lint:eslint": "eslint .",
+    "format": "biome format --write .",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "prepare": "npm run build",
+    "release": "changeset publish"
+  },
+  "keywords": [
+    "semver",
+    "calver",
+    "versioning",
+    "git-hooks",
+    "changelog",
+    "version-sync",
+    "release",
+    "version-guard",
+    "package-version",
+    "keep-a-changelog"
+  ],
+  "author": "kryptobaseddev",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^12.0.0",
+    "glob": "^10.3.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "@eslint/js": "^9.37.0",
+    "@forge-ts/cli": "0.19.4",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^24.6.0",
+    "@vitest/coverage-v8": "^4.0.7",
+    "eslint": "^9.37.0",
+    "husky": "^9.1.7",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.1",
+    "vite": "^7.1.7",
+    "vitest": "^4.0.7"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "files": [
+    "dist/"
+  ]
+}

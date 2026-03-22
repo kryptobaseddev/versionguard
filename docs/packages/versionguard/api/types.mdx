@@ -1,0 +1,224 @@
+---
+title: ''
+---
+
+Type contracts exported by this package: interfaces, type aliases, and enums.
+
+## VersioningType
+
+```typescript
+any
+```
+
+## CalVerFormat
+
+```typescript
+any
+```
+
+## CalVerConfig
+
+| Property             | Type           | Required | Description        |
+| -------------------- | -------------- | -------- | ------------------ |
+| `format`             | `CalVerFormat` | Yes      | format             |
+| `preventFutureDates` | `boolean`      | Yes      | preventFutureDates |
+
+## SyncPattern
+
+| Property   | Type     | Required | Description |
+| ---------- | -------- | -------- | ----------- |
+| `regex`    | `string` | Yes      | regex       |
+| `template` | `string` | Yes      | template    |
+
+## SyncConfig
+
+| Property   | Type            | Required | Description |
+| ---------- | --------------- | -------- | ----------- |
+| `files`    | `string[]`      | Yes      | files       |
+| `patterns` | `SyncPattern[]` | Yes      | patterns    |
+
+## ChangelogConfig
+
+| Property       | Type      | Required | Description  |
+| -------------- | --------- | -------- | ------------ |
+| `enabled`      | `boolean` | Yes      | enabled      |
+| `file`         | `string`  | Yes      | file         |
+| `strict`       | `boolean` | Yes      | strict       |
+| `requireEntry` | `boolean` | Yes      | requireEntry |
+
+## GitHooksConfig
+
+| Property       | Type      | Required | Description  |
+| -------------- | --------- | -------- | ------------ |
+| `'pre-commit'` | `boolean` | Yes      | 'pre-commit' |
+| `'pre-push'`   | `boolean` | Yes      | 'pre-push'   |
+| `'post-tag'`   | `boolean` | Yes      | 'post-tag'   |
+
+## GitConfig
+
+| Property       | Type             | Required | Description  |
+| -------------- | ---------------- | -------- | ------------ |
+| `hooks`        | `GitHooksConfig` | Yes      | hooks        |
+| `enforceHooks` | `boolean`        | Yes      | enforceHooks |
+
+## VersionGuardConfig
+
+| Property     | Type                                                            | Required | Description |
+| ------------ | --------------------------------------------------------------- | -------- | ----------- |
+| `versioning` | `{ type: VersioningType; calver?: CalVerConfig \| undefined; }` | No       | versioning  |
+| `sync`       | `SyncConfig`                                                    | Yes      | sync        |
+| `changelog`  | `ChangelogConfig`                                               | Yes      | changelog   |
+| `git`        | `GitConfig`                                                     | Yes      | git         |
+| `ignore`     | `string[]`                                                      | Yes      | ignore      |
+
+## SemVer
+
+| Property     | Type       | Required | Description |
+| ------------ | ---------- | -------- | ----------- |
+| `major`      | `number`   | Yes      | major       |
+| `minor`      | `number`   | Yes      | minor       |
+| `patch`      | `number`   | Yes      | patch       |
+| `prerelease` | `string[]` | Yes      | prerelease  |
+| `build`      | `string[]` | Yes      | build       |
+| `raw`        | `string`   | Yes      | raw         |
+
+## CalVer
+
+| Property | Type                  | Required | Description |
+| -------- | --------------------- | -------- | ----------- |
+| `year`   | `number`              | Yes      | year        |
+| `month`  | `number`              | Yes      | month       |
+| `day`    | `number \| undefined` | No       | day         |
+| `patch`  | `number \| undefined` | No       | patch       |
+| `format` | `CalVerFormat`        | Yes      | format      |
+| `raw`    | `string`              | Yes      | raw         |
+
+## ParsedVersion
+
+```typescript
+any
+```
+
+## ValidationError
+
+| Property   | Type                   | Required | Description |
+| ---------- | ---------------------- | -------- | ----------- |
+| `file`     | `string \| undefined`  | No       | file        |
+| `line`     | `number \| undefined`  | No       | line        |
+| `message`  | `string`               | Yes      | message     |
+| `severity` | `"error" \| "warning"` | Yes      | severity    |
+
+## ValidationResult
+
+| Property  | Type                         | Required | Description |
+| --------- | ---------------------------- | -------- | ----------- |
+| `valid`   | `boolean`                    | Yes      | valid       |
+| `errors`  | `ValidationError[]`          | Yes      | errors      |
+| `version` | `ParsedVersion \| undefined` | No       | version     |
+
+## SyncChange
+
+| Property   | Type     | Required | Description |
+| ---------- | -------- | -------- | ----------- |
+| `line`     | `number` | Yes      | line        |
+| `oldValue` | `string` | Yes      | oldValue    |
+| `newValue` | `string` | Yes      | newValue    |
+
+## SyncResult
+
+| Property  | Type           | Required | Description |
+| --------- | -------------- | -------- | ----------- |
+| `file`    | `string`       | Yes      | file        |
+| `updated` | `boolean`      | Yes      | updated     |
+| `changes` | `SyncChange[]` | Yes      | changes     |
+
+## VersionMismatch
+
+| Property | Type     | Required | Description |
+| -------- | -------- | -------- | ----------- |
+| `file`   | `string` | Yes      | file        |
+| `line`   | `number` | Yes      | line        |
+| `found`  | `string` | Yes      | found       |
+
+## FullValidationResult
+
+| Property         | Type       | Required | Description    |
+| ---------------- | ---------- | -------- | -------------- |
+| `valid`          | `boolean`  | Yes      | valid          |
+| `version`        | `string`   | Yes      | version        |
+| `versionValid`   | `boolean`  | Yes      | versionValid   |
+| `syncValid`      | `boolean`  | Yes      | syncValid      |
+| `changelogValid` | `boolean`  | Yes      | changelogValid |
+| `errors`         | `string[]` | Yes      | errors         |
+
+## ParsedCalVerFormat
+
+| Property | Type                               | Required | Description |
+| -------- | ---------------------------------- | -------- | ----------- |
+| `year`   | `"YYYY" \| "YY"`                   | Yes      | year        |
+| `month`  | `"MM" \| "M" \| "0M"`              | Yes      | month       |
+| `day`    | `"DD" \| "D" \| "0D" \| undefined` | No       | day         |
+| `patch`  | `"PATCH" \| undefined`             | No       | patch       |
+
+## ChangelogValidationResult
+
+| Property             | Type       | Required | Description        |
+| -------------------- | ---------- | -------- | ------------------ |
+| `valid`              | `boolean`  | Yes      | valid              |
+| `errors`             | `string[]` | Yes      | errors             |
+| `hasEntryForVersion` | `boolean`  | Yes      | hasEntryForVersion |
+
+## Suggestion
+
+| Property      | Type                  | Required | Description |
+| ------------- | --------------------- | -------- | ----------- |
+| `message`     | `string`              | Yes      | message     |
+| `fix`         | `string \| undefined` | No       | fix         |
+| `autoFixable` | `boolean`             | Yes      | autoFixable |
+
+## FeedbackResult
+
+| Property      | Type                | Required | Description |
+| ------------- | ------------------- | -------- | ----------- |
+| `valid`       | `boolean`           | Yes      | valid       |
+| `errors`      | `ValidationError[]` | Yes      | errors      |
+| `suggestions` | `Suggestion[]`      | Yes      | suggestions |
+| `canAutoFix`  | `boolean`           | Yes      | canAutoFix  |
+
+## PackageJson
+
+| Property  | Type                  | Required | Description |
+| --------- | --------------------- | -------- | ----------- |
+| `name`    | `string \| undefined` | No       | name        |
+| `version` | `string \| undefined` | No       | version     |
+
+## FixResult
+
+| Property  | Type                  | Required | Description |
+| --------- | --------------------- | -------- | ----------- |
+| `fixed`   | `boolean`             | Yes      | fixed       |
+| `message` | `string`              | Yes      | message     |
+| `file`    | `string \| undefined` | No       | file        |
+
+## TagInfo
+
+| Property  | Type                  | Required | Description |
+| --------- | --------------------- | -------- | ----------- |
+| `name`    | `string`              | Yes      | name        |
+| `version` | `string`              | Yes      | version     |
+| `message` | `string \| undefined` | No       | message     |
+| `date`    | `Date`                | Yes      | date        |
+
+## DoctorReport
+
+| Property         | Type       | Required | Description    |
+| ---------------- | ---------- | -------- | -------------- |
+| `ready`          | `boolean`  | Yes      | ready          |
+| `version`        | `string`   | Yes      | version        |
+| `versionValid`   | `boolean`  | Yes      | versionValid   |
+| `syncValid`      | `boolean`  | Yes      | syncValid      |
+| `changelogValid` | `boolean`  | Yes      | changelogValid |
+| `gitRepository`  | `boolean`  | Yes      | gitRepository  |
+| `hooksInstalled` | `boolean`  | Yes      | hooksInstalled |
+| `worktreeClean`  | `boolean`  | Yes      | worktreeClean  |
+| `errors`         | `string[]` | Yes      | errors         |

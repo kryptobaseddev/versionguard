@@ -1,0 +1,324 @@
+---
+title: ''
+---
+
+Key entry-point functions to get started with the library.
+
+> TODO: Add your own content to this guide. The sections below are auto-generated from code.
+
+{/* FORGE:AUTO-START guide-getting-started */}
+
+## Key Functions
+
+### getVersionFeedback(version, config, previousVersion)
+
+Generates actionable feedback for a version string.    0.1.0
+
+```typescript
+(version: string, config: VersionGuardConfig, previousVersion?: string | undefined) => FeedbackResult
+```
+
+**Example**
+
+```typescript
+const feedbackResult = getVersionFeedback('1.2.3', config, '1.2.2');
+console.log(feedbackResult.valid);
+```
+
+### getSyncFeedback(file, foundVersion, expectedVersion)
+
+Generates suggestions for version sync mismatches in a file.    0.1.0
+
+```typescript
+(file: string, foundVersion: string, expectedVersion: string) => Suggestion[]
+```
+
+**Example**
+
+```typescript
+const suggestions = getSyncFeedback('README.md', '1.0.0', '1.0.1');
+console.log(suggestions[0]?.message);
+```
+
+### getChangelogFeedback(hasEntry, version, latestChangelogVersion)
+
+Generates suggestions for changelog-related validation issues.    0.1.0
+
+```typescript
+(hasEntry: boolean, version: string, latestChangelogVersion?: string | undefined) => Suggestion[]
+```
+
+**Example**
+
+```typescript
+const suggestions = getChangelogFeedback(false, '1.2.3', '1.2.2');
+console.log(suggestions.length > 0);
+```
+
+### getTagFeedback(tagVersion, packageVersion, hasUnsyncedFiles)
+
+Generates suggestions for git tag mismatches.    0.1.0
+
+```typescript
+(tagVersion: string, packageVersion: string, hasUnsyncedFiles: boolean) => Suggestion[]
+```
+
+**Example**
+
+```typescript
+const suggestions = getTagFeedback('v1.2.2', '1.2.3', true);
+console.log(suggestions.map((item) => item.message));
+```
+
+### fixPackageVersion(targetVersion, cwd)
+
+Updates the `package.json` version field when needed.    0.1.0
+
+```typescript
+(targetVersion: string, cwd?: string) => FixResult
+```
+
+**Example**
+
+```typescript
+const result = fixPackageVersion('1.2.3', process.cwd());
+console.log(result.fixed);
+```
+
+### fixSyncIssues(config, cwd)
+
+Synchronizes configured files to the package version.    0.1.0
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => FixResult[]
+```
+
+**Example**
+
+```typescript
+const results = fixSyncIssues(config, process.cwd());
+console.log(results.length);
+```
+
+### fixChangelog(version, config, cwd)
+
+Ensures the changelog contains an entry for a version.    0.1.0
+
+```typescript
+(version: string, config: VersionGuardConfig, cwd?: string) => FixResult
+```
+
+**Example**
+
+```typescript
+const result = fixChangelog('1.2.3', config, process.cwd());
+console.log(result.message);
+```
+
+### fixAll(config, targetVersion, cwd)
+
+Runs all configured auto-fix operations.    0.1.0
+
+```typescript
+(config: VersionGuardConfig, targetVersion?: string | undefined, cwd?: string) => FixResult[]
+```
+
+**Example**
+
+```typescript
+const results = fixAll(config, '1.2.3', process.cwd());
+console.log(results.some((result) => result.fixed));
+```
+
+### suggestNextVersion(currentVersion, config, changeType)
+
+Suggests candidate next versions for a release.    0.1.0
+
+```typescript
+(currentVersion: string, config: VersionGuardConfig, changeType?: "major" | "minor" | "patch" | "auto" | undefined) => { version: string; reason: string; }[]
+```
+
+**Example**
+
+```typescript
+const suggestions = suggestNextVersion('1.2.3', config, 'minor');
+console.log(suggestions[0]?.version);
+```
+
+### getLatestTag(cwd)
+
+Returns the most recent reachable git tag for a repository.    0.1.0
+
+```typescript
+(cwd?: string) => TagInfo | null
+```
+
+**Example**
+
+```typescript
+const latestTag = getLatestTag(process.cwd());
+
+if (latestTag) {
+  console.log(latestTag.version);
+}
+```
+
+### getAllTags(cwd)
+
+Lists all tags in a repository.    0.1.0
+
+```typescript
+(cwd?: string) => TagInfo[]
+```
+
+**Example**
+
+```typescript
+const tags = getAllTags(process.cwd());
+console.log(tags.map((tag) => tag.name));
+```
+
+### createTag(version, message, autoFix, config, cwd)
+
+Creates a release tag and optionally fixes version state first.    0.1.0
+
+```typescript
+(version: string, message?: string | undefined, autoFix?: boolean, config?: VersionGuardConfig | undefined, cwd?: string) => { success: boolean; message: string; actions: string[]; }
+```
+
+**Example**
+
+```typescript
+const result = createTag('1.2.3', 'Release 1.2.3', true, config, process.cwd());
+
+if (!result.success) {
+  console.error(result.message);
+}
+```
+
+### handlePostTag(config, cwd)
+
+Runs post-tag validation and sync checks.    0.1.0
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => { success: boolean; message: string; actions: string[]; }
+```
+
+**Example**
+
+```typescript
+const result = handlePostTag(config, process.cwd());
+console.log(result.success);
+```
+
+### validateTagForPush(tagName, cwd)
+
+Validates that a local tag is safe to push to the default remote.    0.1.0
+
+```typescript
+(tagName: string, cwd?: string) => { valid: boolean; message: string; fix?: string | undefined; }
+```
+
+**Example**
+
+```typescript
+const result = validateTagForPush('v1.2.3', process.cwd());
+console.log(result.valid);
+```
+
+### suggestTagMessage(version, cwd)
+
+Suggests an annotated tag message from changelog content.    0.1.0
+
+```typescript
+(version: string, cwd?: string) => string
+```
+
+**Example**
+
+```typescript
+const message = suggestTagMessage('1.2.3', process.cwd());
+console.log(message);
+```
+
+### validateVersion(version, config)
+
+Validates a version string against the active versioning strategy.    0.1.0
+
+```typescript
+(version: string, config: VersionGuardConfig) => ValidationResult
+```
+
+**Example**
+
+```ts
+import { getDefaultConfig, validateVersion } from 'versionguard';
+
+const result = validateVersion('1.2.3', getDefaultConfig());
+```
+
+### validate(config, cwd)
+
+Validates the current project state against the supplied configuration.    0.1.0
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => FullValidationResult
+```
+
+**Example**
+
+```ts
+import { getDefaultConfig, validate } from 'versionguard';
+
+const result = validate(getDefaultConfig(), process.cwd());
+```
+
+### doctor(config, cwd)
+
+Runs an extended readiness check for a project.    0.1.0
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => DoctorReport
+```
+
+**Example**
+
+```ts
+import { doctor, getDefaultConfig } from 'versionguard';
+
+const report = doctor(getDefaultConfig(), process.cwd());
+```
+
+### sync(config, cwd)
+
+Synchronizes configured files to the current package version.    0.1.0
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => void
+```
+
+**Example**
+
+```ts
+import { getDefaultConfig, sync } from 'versionguard';
+
+sync(getDefaultConfig(), process.cwd());
+```
+
+### canBump(currentVersion, newVersion, config)
+
+Determines whether a project can move from one version to another.    0.1.0
+
+```typescript
+(currentVersion: string, newVersion: string, config: VersionGuardConfig) => { canBump: boolean; error?: string | undefined; }
+```
+
+**Example**
+
+```ts
+import { canBump, getDefaultConfig } from 'versionguard';
+
+const result = canBump('1.2.3', '1.3.0', getDefaultConfig());
+```
+
+{/* FORGE:AUTO-END guide-getting-started */}

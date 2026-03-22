@@ -1,0 +1,24 @@
+versioning:
+  type: semver
+
+sync:
+  files: []
+  patterns: []
+
+changelog:
+  enabled: true
+  file: "CHANGELOG.md"
+  strict: true
+  requireEntry: true
+
+git:
+  hooks:
+    pre-commit: false
+    pre-push: false
+    post-tag: false
+  enforceHooks: false
+
+ignore:
+  - "node_modules/**"
+  - "dist/**"
+  - ".git/**"

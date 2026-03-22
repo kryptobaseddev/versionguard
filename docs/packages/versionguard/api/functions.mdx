@@ -1,0 +1,575 @@
+---
+title: ''
+---
+
+Functions and classes exported by this package.
+
+## parseFormat()
+
+**Signature**
+
+```typescript
+(calverFormat: CalVerFormat) => ParsedCalVerFormat
+```
+
+## getRegexForFormat()
+
+**Signature**
+
+```typescript
+(calverFormat: CalVerFormat) => RegExp
+```
+
+## parse()
+
+**Signature**
+
+```typescript
+(version: string, calverFormat: CalVerFormat) => CalVer | null
+```
+
+## validate()
+
+**Signature**
+
+```typescript
+(version: string, calverFormat: CalVerFormat, preventFutureDates?: boolean) => ValidationResult
+```
+
+## format()
+
+**Signature**
+
+```typescript
+(version: CalVer) => string
+```
+
+## getCurrentVersion()
+
+**Signature**
+
+```typescript
+(calverFormat: CalVerFormat, now?: Date) => string
+```
+
+## compare()
+
+**Signature**
+
+```typescript
+(a: string, b: string, calverFormat: CalVerFormat) => number
+```
+
+## increment()
+
+**Signature**
+
+```typescript
+(version: string, calverFormat: CalVerFormat) => string
+```
+
+## getNextVersions()
+
+**Signature**
+
+```typescript
+(currentVersion: string, calverFormat: CalVerFormat) => string[]
+```
+
+## validateChangelog()
+
+**Signature**
+
+```typescript
+(changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean) => ChangelogValidationResult
+```
+
+## getLatestVersion()
+
+**Signature**
+
+```typescript
+(changelogPath: string) => string | null
+```
+
+## addVersionEntry()
+
+**Signature**
+
+```typescript
+(changelogPath: string, version: string, date?: string) => void
+```
+
+## parse()
+
+**Signature**
+
+```typescript
+(version: string) => SemVer | null
+```
+
+## validate()
+
+**Signature**
+
+```typescript
+(version: string) => ValidationResult
+```
+
+## compare()
+
+**Signature**
+
+```typescript
+(a: string, b: string) => number
+```
+
+## gt()
+
+**Signature**
+
+```typescript
+(a: string, b: string) => boolean
+```
+
+## lt()
+
+**Signature**
+
+```typescript
+(a: string, b: string) => boolean
+```
+
+## eq()
+
+**Signature**
+
+```typescript
+(a: string, b: string) => boolean
+```
+
+## increment()
+
+**Signature**
+
+```typescript
+(version: string, release: "major" | "minor" | "patch", prerelease?: string | undefined) => string
+```
+
+## format()
+
+**Signature**
+
+```typescript
+(version: SemVer) => string
+```
+
+## getVersionFeedback()
+
+Generate actionable feedback for version issues
+
+**Signature**
+
+```typescript
+(version: string, config: VersionGuardConfig, previousVersion?: string | undefined) => FeedbackResult
+```
+
+## getSyncFeedback()
+
+Generate feedback for sync issues
+
+**Signature**
+
+```typescript
+(file: string, foundVersion: string, expectedVersion: string) => Suggestion[]
+```
+
+## getChangelogFeedback()
+
+Generate feedback for changelog issues
+
+**Signature**
+
+```typescript
+(hasEntry: boolean, version: string, latestChangelogVersion?: string | undefined) => Suggestion[]
+```
+
+## getTagFeedback()
+
+Generate feedback for tag issues
+
+**Signature**
+
+```typescript
+(tagVersion: string, packageVersion: string, hasUnsyncedFiles: boolean) => Suggestion[]
+```
+
+## getPackageJsonPath()
+
+**Signature**
+
+```typescript
+(cwd?: string) => string
+```
+
+## readPackageJson()
+
+**Signature**
+
+```typescript
+(cwd?: string) => PackageJson
+```
+
+## writePackageJson()
+
+**Signature**
+
+```typescript
+(pkg: PackageJson, cwd?: string) => void
+```
+
+## getPackageVersion()
+
+**Signature**
+
+```typescript
+(cwd?: string) => string
+```
+
+## setPackageVersion()
+
+**Signature**
+
+```typescript
+(version: string, cwd?: string) => void
+```
+
+## syncVersion()
+
+**Signature**
+
+```typescript
+(version: string, config: SyncConfig, cwd?: string) => SyncResult[]
+```
+
+## syncFile()
+
+**Signature**
+
+```typescript
+(filePath: string, version: string, patterns: SyncPattern[]) => SyncResult
+```
+
+## checkHardcodedVersions()
+
+**Signature**
+
+```typescript
+(expectedVersion: string, config: SyncConfig, ignorePatterns: string[], cwd?: string) => VersionMismatch[]
+```
+
+## fixPackageVersion()
+
+Auto-fix package.json version issues
+
+**Signature**
+
+```typescript
+(targetVersion: string, cwd?: string) => FixResult
+```
+
+## fixSyncIssues()
+
+Auto-fix all sync issues
+
+**Signature**
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => FixResult[]
+```
+
+## fixChangelog()
+
+Auto-fix changelog
+
+**Signature**
+
+```typescript
+(version: string, config: VersionGuardConfig, cwd?: string) => FixResult
+```
+
+## fixAll()
+
+Fix all detected issues
+
+**Signature**
+
+```typescript
+(config: VersionGuardConfig, targetVersion?: string | undefined, cwd?: string) => FixResult[]
+```
+
+## suggestNextVersion()
+
+Suggest next version based on current
+
+**Signature**
+
+```typescript
+(currentVersion: string, config: VersionGuardConfig, changeType?: "major" | "minor" | "patch" | "auto" | undefined) => { version: string; reason: string; }[]
+```
+
+## installHooks()
+
+**Signature**
+
+```typescript
+(config: GitConfig, cwd?: string) => void
+```
+
+## uninstallHooks()
+
+**Signature**
+
+```typescript
+(cwd?: string) => void
+```
+
+## findGitDir()
+
+**Signature**
+
+```typescript
+(cwd: string) => string | null
+```
+
+## areHooksInstalled()
+
+**Signature**
+
+```typescript
+(cwd?: string) => boolean
+```
+
+## generateHookScript()
+
+**Signature**
+
+```typescript
+(hookName: "pre-commit" | "pre-push" | "post-tag") => string
+```
+
+## getDefaultConfig()
+
+**Signature**
+
+```typescript
+() => VersionGuardConfig
+```
+
+## findConfig()
+
+**Signature**
+
+```typescript
+(cwd?: string) => string | null
+```
+
+## loadConfig()
+
+**Signature**
+
+```typescript
+(configPath: string) => VersionGuardConfig
+```
+
+## getConfig()
+
+**Signature**
+
+```typescript
+(cwd?: string) => VersionGuardConfig
+```
+
+## initConfig()
+
+**Signature**
+
+```typescript
+(cwd?: string) => string
+```
+
+## getLatestTag()
+
+Get the latest git tag
+
+**Signature**
+
+```typescript
+(cwd?: string) => TagInfo | null
+```
+
+## getAllTags()
+
+Get all tags
+
+**Signature**
+
+```typescript
+(cwd?: string) => TagInfo[]
+```
+
+## createTag()
+
+Create a new tag with automation
+
+**Signature**
+
+```typescript
+(version: string, message?: string | undefined, autoFix?: boolean, config?: VersionGuardConfig | undefined, cwd?: string) => { success: boolean; message: string; actions: string[]; }
+```
+
+## handlePostTag()
+
+Handle post-tag workflow (called by post-tag hook)
+
+**Signature**
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => { success: boolean; message: string; actions: string[]; }
+```
+
+## validateTagForPush()
+
+Validate tag before push
+
+**Signature**
+
+```typescript
+(tagName: string, cwd?: string) => { valid: boolean; message: string; fix?: string | undefined; }
+```
+
+## suggestTagMessage()
+
+Get suggested tag message
+
+**Signature**
+
+```typescript
+(version: string, cwd?: string) => string
+```
+
+## validateVersion()
+
+Validate version according to config
+
+**Signature**
+
+```typescript
+(version: string, config: VersionGuardConfig) => ValidationResult
+```
+
+## validate()
+
+**Signature**
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => FullValidationResult
+```
+
+## doctor()
+
+**Signature**
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => DoctorReport
+```
+
+## sync()
+
+Run sync to update all files
+
+**Signature**
+
+```typescript
+(config: VersionGuardConfig, cwd?: string) => void
+```
+
+## canBump()
+
+**Signature**
+
+```typescript
+(currentVersion: string, newVersion: string, config: VersionGuardConfig) => { canBump: boolean; error?: string | undefined; }
+```
+
+## createProgram()
+
+**Signature**
+
+```typescript
+() => Command
+```
+
+## runCli()
+
+**Signature**
+
+```typescript
+(argv?: string[]) => Promise<void>
+```
+
+## shouldRunCli()
+
+**Signature**
+
+```typescript
+(argv?: string[], metaUrl?: string) => boolean
+```
+
+## createTempProject()
+
+**Signature**
+
+```typescript
+() => string
+```
+
+## initGitRepo()
+
+**Signature**
+
+```typescript
+(cwd: string) => void
+```
+
+## writeTextFile()
+
+**Signature**
+
+```typescript
+(cwd: string, relativePath: string, content: string) => string
+```
+
+## createBareRemote()
+
+**Signature**
+
+```typescript
+() => string
+```
+
+## addGitRemote()
+
+**Signature**
+
+```typescript
+(cwd: string, remotePath: string) => void
+```
+
+## commitAll()
+
+**Signature**
+
+```typescript
+(cwd: string, message: string) => void
+```

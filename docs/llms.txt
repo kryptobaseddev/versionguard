@@ -1,0 +1,134 @@
+# .
+> Auto-generated API documentation
+
+## Sections
+
+- [API Reference](./api-reference.mdx): Full API documentation (MDX)
+- [Full Context](./llms-full.txt): Dense context for LLM consumption
+
+## Quick Reference
+
+any - Supported versioning strategies.    0.1.0
+any - Supported calendar version string layouts.    0.1.0
+any - Configures CalVer validation rules.    0.1.0
+any - Describes a search-and-replace pattern used during version synchronization.    0.1.0
+any - Configures files and patterns that should stay in sync with the canonical version.    0.1.0
+any - Controls changelog validation behavior.    0.1.0
+any - Toggles each supported git hook integration.    0.1.0
+any - Configures git-related enforcement.    0.1.0
+any - Configures the active versioning mode.    0.1.0
+any - Top-level configuration consumed by versionguard.    0.1.0
+any - Parsed semantic version components.    0.1.0
+any - Parsed calendar version components.    0.1.0
+any - Parsed semantic version result wrapper.    0.1.0
+any - Parsed calendar version result wrapper.    0.1.0
+any - Union of supported parsed version payloads.    0.1.0
+any - Describes a single validation problem.    0.1.0
+any - Result returned by version parsing and validation helpers.    0.1.0
+any - Describes a single in-file version replacement.    0.1.0
+any - Reports the result of synchronizing a single file.    0.1.0
+any - Reports a discovered version mismatch.    0.1.0
+any - Combined result from a full project validation run.    0.1.0
+any - Reports whether a project is ready to pass VersionGuard checks.     0.1.0
+file types.ts
+any - Parsed token layout for a supported CalVer format string.    0.1.0
+(calverFormat: CalVerFormat) => ParsedCalVerFormat - Breaks a CalVer format string into its component tokens.
+(calverFormat: CalVerFormat) => RegExp - Builds a regular expression that matches a supported CalVer format.
+(version: string, calverFormat: CalVerFormat) => CalVer | null - Parses a CalVer string using the supplied format.
+(version: string, calverFormat: CalVerFormat, preventFutureDates?: boolean) => ValidationResult - Validates a CalVer string against formatting and date rules.
+(version: CalVer) => string - Formats a parsed CalVer object back into a version string.
+(calverFormat: CalVerFormat, now?: Date) => string - Creates the current CalVer string for a format.
+(a: string, b: string, calverFormat: CalVerFormat) => number - Compares two CalVer strings using a shared format.
+(version: string, calverFormat: CalVerFormat) => string - Increments a CalVer string.
+(currentVersion: string, calverFormat: CalVerFormat) => string[] - Returns the most likely next CalVer candidates.
+file calver.ts - Calendar version parsing, formatting, and comparison helpers.
+any - Describes the outcome of validating a changelog file.    0.1.0
+(changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean) => ChangelogValidationResult - Validates a changelog file for release readiness.    0.1.0
+(changelogPath: string) => string | null - Gets the most recent released version from a changelog.    0.1.0
+(changelogPath: string, version: string, date?: string) => void - Inserts a new version entry beneath the `[Unreleased]` section.    0.1.0
+file changelog.ts
+(version: string) => SemVer | null - Parses a semantic version string.
+(version: string) => ValidationResult - Validates that a string is a supported semantic version.
+(a: string, b: string) => number - Compares two semantic version strings.
+(a: string, b: string) => boolean - Checks whether one semantic version is greater than another.
+(a: string, b: string) => boolean - Checks whether one semantic version is less than another.
+(a: string, b: string) => boolean - Checks whether two semantic versions are equal in precedence.
+(version: string, release: "major" | "minor" | "patch", prerelease?: string | undefined) => string - Increments a semantic version string by release type.
+(version: SemVer) => string - Formats a parsed semantic version object.
+file semver.ts - Semantic version parsing, validation, comparison, and increment helpers.
+any - Feedback entry point exports for suggestion and guidance helpers.     0.1.0
+any - Aggregates validation errors with suggested next steps.    0.1.0
+(version: string, config: VersionGuardConfig, previousVersion?: string | undefined) => FeedbackResult - Generates actionable feedback for a version string.    0.1.0
+(file: string, foundVersion: string, expectedVersion: string) => Suggestion[] - Generates suggestions for version sync mismatches in a file.    0.1.0
+(hasEntry: boolean, version: string, latestChangelogVersion?: string | undefined) => Suggestion[] - Generates suggestions for changelog-related validation issues.    0.1.0
+(tagVersion: string, packageVersion: string, hasUnsyncedFiles: boolean) => Suggestion[] - Generates suggestions for git tag mismatches.    0.1.0
+file index.ts
+any - Minimal shape of a `package.json` document used by VersionGuard.    0.1.0
+(cwd?: string) => string - Gets the `package.json` path for a project directory.    0.1.0
+(cwd?: string) => PackageJson - Reads and parses a project's `package.json` file.    0.1.0
+(pkg: PackageJson, cwd?: string) => void - Writes a `package.json` document back to disk.    0.1.0
+(cwd?: string) => string - Gets the version string from `package.json`.    0.1.0
+(version: string, cwd?: string) => void - Sets the version field in `package.json`.    0.1.0
+file project.ts
+(version: string, config: SyncConfig, cwd?: string) => SyncResult[] - Synchronizes configured files to a single version string.    0.1.0
+(filePath: string, version: string, patterns: SyncPattern[]) => SyncResult - Synchronizes a single file to a target version.    0.1.0
+(expectedVersion: string, config: SyncConfig, ignorePatterns: string[], cwd?: string) => VersionMismatch[] - Checks configured files for hardcoded version mismatches.    0.1.0
+file sync.ts
+any - Fix entry point exports for auto-remediation helpers.     0.1.0
+(targetVersion: string, cwd?: string) => FixResult - Updates the `package.json` version field when needed.    0.1.0
+(config: VersionGuardConfig, cwd?: string) => FixResult[] - Synchronizes configured files to the package version.    0.1.0
+(version: string, config: VersionGuardConfig, cwd?: string) => FixResult - Ensures the changelog contains an entry for a version.    0.1.0
+(config: VersionGuardConfig, targetVersion?: string | undefined, cwd?: string) => FixResult[] - Runs all configured auto-fix operations.    0.1.0
+(currentVersion: string, config: VersionGuardConfig, changeType?: "major" | "minor" | "patch" | "auto" | undefined) => { version: string; reason: string; }[] - Suggests candidate next versions for a release.    0.1.0
+file index.ts
+(config: GitConfig, cwd?: string) => void - Installs VersionGuard-managed Git hooks in a repository.    0.1.0
+(cwd?: string) => void - Removes VersionGuard-managed Git hooks from a repository.    0.1.0
+(cwd: string) => string | null - Finds the nearest `.git` directory by walking up from a starting directory.    0.1.0
+(cwd?: string) => boolean - Checks whether all VersionGuard-managed hooks are installed.    0.1.0
+(hookName: "pre-commit" | "pre-push" | "post-tag") => string - Generates the shell script content for a Git hook.    0.1.0
+file hooks.ts
+() => VersionGuardConfig - Returns a deep-cloned copy of the built-in VersionGuard configuration.    0.1.0
+(cwd?: string) => string | null - Finds the first supported VersionGuard config file in a directory.    0.1.0
+(configPath: string) => VersionGuardConfig - Loads a VersionGuard config file from disk.    0.1.0
+(cwd?: string) => VersionGuardConfig - Resolves the active VersionGuard configuration for a project.    0.1.0
+(cwd?: string) => string - Initializes a new VersionGuard config file in a project.    0.1.0
+file config.ts
+any - Tag entry point exports for release-tag management helpers.     0.1.0
+(cwd?: string) => TagInfo | null - Returns the most recent reachable git tag for a repository.    0.1.0
+(cwd?: string) => TagInfo[] - Lists all tags in a repository.    0.1.0
+(version: string, message?: string | undefined, autoFix?: boolean, config?: VersionGuardConfig | undefined, cwd?: string) => { success: boolean; message: string; actions: string[]; } - Creates a release tag and optionally fixes version state first.    0.1.0
+(config: VersionGuardConfig, cwd?: string) => { success: boolean; message: string; actions: string[]; } - Runs post-tag validation and sync checks.    0.1.0
+(tagName: string, cwd?: string) => { valid: boolean; message: string; fix?: string | undefined; } - Validates that a local tag is safe to push to the default remote.    0.1.0
+(version: string, cwd?: string) => string - Suggests an annotated tag message from changelog content.    0.1.0
+file index.ts
+(version: string, config: VersionGuardConfig) => ValidationResult - Validates a version string against the active versioning strategy.    0.1.0
+(config: VersionGuardConfig, cwd?: string) => FullValidationResult - Validates the current project state against the supplied configuration.    0.1.0
+(config: VersionGuardConfig, cwd?: string) => DoctorReport - Runs an extended readiness check for a project.    0.1.0
+(config: VersionGuardConfig, cwd?: string) => void - Synchronizes configured files to the current package version.    0.1.0
+(currentVersion: string, newVersion: string, config: VersionGuardConfig) => { canBump: boolean; error?: string | undefined; } - Determines whether a project can move from one version to another.    0.1.0
+file index.ts
+() => Command - Creates the VersionGuard CLI program definition.    0.1.0
+(argv?: string[]) => Promise<void> - Parses CLI arguments and executes the matching command.    0.1.0
+(argv?: string[], metaUrl?: string) => boolean - Determines whether the current module is the invoked CLI entry point.    0.1.0
+file cli.ts
+file calver.test.ts
+() => string - Creates a temporary project directory with a minimal `package.json` fixture.
+(cwd: string) => void - Initializes a git repository in a fixture directory with a first commit.
+(cwd: string, relativePath: string, content: string) => string - Writes a text fixture file relative to a temporary project directory.
+() => string - Creates a bare git repository to use as a remote in integration tests.
+(cwd: string, remotePath: string) => void - Adds a local bare repository as the `origin` remote for a fixture repo.
+(cwd: string, message: string) => void - Stages all changes and creates a commit in a fixture repository.
+file test-utils.ts - Test helpers for creating temporary VersionGuard fixture projects and git repositories.
+file changelog.test.ts
+file cli.test.ts
+file config.test.ts
+file feedback.test.ts
+file fix.test.ts
+file hooks.test.ts
+file index.test.ts
+file semver.test.ts
+file sync.test.ts
+file tag.test.ts
+file package.json
+file vite.config.ts
+file forge-ts.config.ts

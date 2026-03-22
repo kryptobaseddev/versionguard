@@ -1,0 +1,55 @@
+{
+  "name": "versionguard",
+  "theme": "mint",
+  "colors": {
+    "primary": "#0ea5e9",
+    "light": "#38bdf8",
+    "dark": "#0284c7"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": ["index", "getting-started"]
+          },
+          {
+            "group": "Learn",
+            "pages": ["concepts", "guides/index"]
+          },
+          {
+            "group": "Reference",
+            "pages": ["configuration", "changelog"]
+          },
+          {
+            "group": "Community",
+            "pages": ["faq", "contributing"]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "@forge-ts/.",
+            "pages": [
+              "packages/./index",
+              "packages/./api/index",
+              "packages/./api/functions",
+              "packages/./api/types",
+              "packages/./api/examples"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "socials": {}
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity"]
+  }
+}
