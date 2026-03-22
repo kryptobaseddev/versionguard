@@ -42,3 +42,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+
+      - name: Create GitHub Releases
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISHED: ${{ steps.changesets.outputs.publishedPackages }}
+        run: |
+          for row in $(echo "$PUBLISHED" | jq -c '.[]'); do
+            NAME=$(echo "$row" | jq -r '.name')
+            VERSION=$(echo "$row" | jq -r '.version')
+            TAG="v${VERSION}"
+
+            BODY=$(awk "/^## \[${VERSION}\]/{found=1; next} /^## \[/{if(found) exit} found{print}" CHANGELOG.md)
+
+            if [ -z "$BODY" ]; then
+              BODY="Release ${NAME}@${VERSION}"
+            fi
+
+            gh release create "$TAG" \
+              --title "${NAME}@${VERSION}" \
+              --notes "$BODY" \
+              --verify-tag || echo "Release $TAG already exists, skipping"
+          done
