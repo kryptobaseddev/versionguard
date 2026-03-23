@@ -59,6 +59,19 @@ export function checkHooksPathOverride(cwd: string): GuardWarning | null {
     }).trim();
 
     if (hooksPath) {
+      // Resolve the hooks path relative to the project root and check if
+      // it points to a legitimate .husky directory inside the project.
+      // A bare substring check would let /tmp/.husky-fake bypass the error.
+      const resolved = path.resolve(cwd, hooksPath);
+      const huskyDir = path.resolve(cwd, '.husky');
+      if (resolved === huskyDir || resolved.startsWith(`${huskyDir}${path.sep}`)) {
+        return {
+          code: 'HOOKS_PATH_HUSKY',
+          severity: 'warning',
+          message: `Husky detected — core.hooksPath is set to "${hooksPath}". Hooks in .git/hooks/ are bypassed. Add versionguard validate to your .husky/pre-commit manually or use a tool like forge-ts that manages .husky/ hooks cooperatively.`,
+        };
+      }
+
       return {
         code: 'HOOKS_PATH_OVERRIDE',
         severity: 'error',

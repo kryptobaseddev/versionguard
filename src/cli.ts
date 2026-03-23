@@ -62,11 +62,24 @@ export function createProgram(): Command {
       try {
         const configPath = versionguard.initConfig(options.cwd);
         console.log(styles.success(`✓ Created ${path.relative(options.cwd, configPath)}`));
+
+        // Auto-install hooks using the newly created config
+        try {
+          const config = versionguard.getConfig(options.cwd);
+          versionguard.installHooks(config.git, options.cwd);
+          console.log(styles.success('✓ Git hooks installed'));
+        } catch {
+          // Non-fatal: hooks install may fail in non-git environments
+          console.log(styles.info('ℹ Skipped hooks install (not a git repository or hooks disabled)'));
+        }
+
         console.log('');
         console.log(styles.info('Next steps:'));
         console.log('  1. Edit .versionguard.yml to set your versioning type');
-        console.log('  2. Run: npx versionguard hooks install');
-        console.log('  3. Run: npx versionguard check');
+        console.log('  2. Run: npx versionguard check');
+        console.log('');
+        console.log(styles.info('Tip: Add a prepare script to package.json for clone persistence:'));
+        console.log('  "prepare": "npx versionguard hooks install"');
       } catch (error) {
         console.error(styles.error(`✗ ${(error as Error).message}`));
         process.exit(1);
