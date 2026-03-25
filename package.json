@@ -1,6 +1,6 @@
 {
   "name": "@codluv/versionguard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Strict versioning enforcement for SemVer and CalVer with git hooks, changelog validation, and file sync from package.json",
   "type": "module",
   "main": "./dist/index.js",
