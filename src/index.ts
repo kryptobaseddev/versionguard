@@ -29,8 +29,9 @@ export * from './feedback';
 export * from './fix';
 export * from './guard';
 export { areHooksInstalled, installHooks, uninstallHooks } from './hooks';
-export { getPackageVersion } from './project';
+export { getPackageVersion, getVersionSource } from './project';
 export * as semver from './semver';
+export * from './sources';
 export { checkHardcodedVersions, syncVersion } from './sync';
 export * from './tag';
 export * from './types';
@@ -90,7 +91,7 @@ export function validate(
 
   let version: string;
   try {
-    version = getPackageVersion(cwd);
+    version = getPackageVersion(cwd, config.manifest);
   } catch (err) {
     return {
       valid: false,
@@ -209,7 +210,7 @@ export function doctor(config: VersionGuardConfig, cwd: string = process.cwd()):
  * ```
  */
 export function sync(config: VersionGuardConfig, cwd: string = process.cwd()): void {
-  const version = getPackageVersion(cwd);
+  const version = getPackageVersion(cwd, config.manifest);
   syncVersion(version, config.sync, cwd);
 }
 

@@ -260,7 +260,7 @@ function getCalVerFeedback(
     });
     suggestions.push({
       message: `Expected format: ${format}`,
-      fix: `Update package.json to use current date: "${calver.getCurrentVersion(format)}"`,
+      fix: `Update version to current date: "${calver.getCurrentVersion(format)}"`,
       autoFixable: true,
     });
     return { valid: false, errors, suggestions, canAutoFix: true };
@@ -444,7 +444,7 @@ export function getChangelogFeedback(
 
   if (latestChangelogVersion && latestChangelogVersion !== version) {
     suggestions.push({
-      message: `CHANGELOG.md latest entry is ${latestChangelogVersion}, but package.json is ${version}`,
+      message: `CHANGELOG.md latest entry is ${latestChangelogVersion}, but manifest version is ${version}`,
       fix: `Make sure versions are in sync`,
       autoFixable: false,
     });
@@ -482,7 +482,7 @@ export function getTagFeedback(
 
   if (tagVersion !== packageVersion) {
     suggestions.push({
-      message: `Git tag "${tagVersion}" doesn't match package.json "${packageVersion}"`,
+      message: `Git tag "${tagVersion}" doesn't match manifest version "${packageVersion}"`,
       fix: `Delete tag and recreate: git tag -d ${tagVersion} && git tag ${packageVersion}`,
       autoFixable: false,
     });

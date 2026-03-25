@@ -14,6 +14,62 @@
 export type VersioningType = 'semver' | 'calver';
 
 /**
+ * Supported manifest source types for version extraction.
+ *
+ * @public
+ * @since 0.3.0
+ * @forgeIgnore E020
+ */
+export type ManifestSourceType =
+  | 'auto'
+  | 'package.json'
+  | 'composer.json'
+  | 'Cargo.toml'
+  | 'pyproject.toml'
+  | 'pubspec.yaml'
+  | 'pom.xml'
+  | 'VERSION'
+  | 'git-tag'
+  | 'custom';
+
+/**
+ * Configures the version source manifest.
+ *
+ * @public
+ * @since 0.3.0
+ * @forgeIgnore E020
+ */
+export interface ManifestConfig {
+  /**
+   * Manifest file to read the version from.
+   *
+   * Use `'auto'` for file-existence detection or a specific filename.
+   *
+   * @defaultValue 'auto'
+   */
+  source: ManifestSourceType;
+
+  /**
+   * Dotted key path to the version field within the manifest.
+   *
+   * For example `'version'` for package.json, `'package.version'` for Cargo.toml,
+   * or `'project.version'` for pyproject.toml.
+   *
+   * @defaultValue undefined (uses the provider's built-in default)
+   */
+  path?: string;
+
+  /**
+   * Regex pattern to extract the version from source-code manifests.
+   *
+   * Capture group 1 must contain the version string.
+   *
+   * @defaultValue undefined
+   */
+  regex?: string;
+}
+
+/**
  * Supported calendar version string layouts.
  *
  * @public
@@ -200,6 +256,13 @@ export interface VersionGuardConfig {
    * Active versioning settings.
    */
   versioning: VersioningConfig;
+
+  /**
+   * Version source manifest settings.
+   *
+   * @defaultValue `{ source: 'auto' }`
+   */
+  manifest: ManifestConfig;
 
   /**
    * Synchronization settings for mirrored version strings.
@@ -540,7 +603,7 @@ export interface DoctorReport {
   ready: boolean;
 
   /**
-   * Package version resolved from `package.json`.
+   * Package version resolved from the configured manifest source.
    */
   version: string;
 

@@ -70,7 +70,9 @@ export function createProgram(): Command {
           console.log(styles.success('✓ Git hooks installed'));
         } catch {
           // Non-fatal: hooks install may fail in non-git environments
-          console.log(styles.info('ℹ Skipped hooks install (not a git repository or hooks disabled)'));
+          console.log(
+            styles.info('ℹ Skipped hooks install (not a git repository or hooks disabled)'),
+          );
         }
 
         console.log('');
@@ -78,7 +80,9 @@ export function createProgram(): Command {
         console.log('  1. Edit .versionguard.yml to set your versioning type');
         console.log('  2. Run: npx versionguard check');
         console.log('');
-        console.log(styles.info('Tip: Add a prepare script to package.json for clone persistence:'));
+        console.log(
+          styles.info('Tip: Add a prepare script to package.json for clone persistence:'),
+        );
         console.log('  "prepare": "npx versionguard hooks install"');
       } catch (error) {
         console.error(styles.error(`✗ ${(error as Error).message}`));
@@ -95,7 +99,7 @@ export function createProgram(): Command {
     .action((options: { cwd: string; prev?: string; json?: boolean }) => {
       try {
         const config = versionguard.getConfig(options.cwd);
-        const version = versionguard.getPackageVersion(options.cwd);
+        const version = versionguard.getPackageVersion(options.cwd, config.manifest);
         const result = feedback.getVersionFeedback(version, config, options.prev);
 
         if (options.json) {
@@ -159,7 +163,7 @@ export function createProgram(): Command {
     .action((options: { cwd: string; hook?: string; json?: boolean; strict?: boolean }) => {
       try {
         const config = versionguard.getConfig(options.cwd);
-        const version = versionguard.getPackageVersion(options.cwd);
+        const version = versionguard.getPackageVersion(options.cwd, config.manifest);
         const result = versionguard.validate(config, options.cwd);
 
         let postTagResult: { success: boolean; message: string; actions: string[] } | undefined;
@@ -335,7 +339,7 @@ export function createProgram(): Command {
     .action((options: { cwd: string }) => {
       try {
         const config = versionguard.getConfig(options.cwd);
-        const version = versionguard.getPackageVersion(options.cwd);
+        const version = versionguard.getPackageVersion(options.cwd, config.manifest);
         const results = fix.fixAll(config, version, options.cwd);
 
         console.log(styles.bold(`Fixing issues for version ${version}...`));
@@ -358,7 +362,7 @@ export function createProgram(): Command {
     .action((options: { cwd: string }) => {
       try {
         const config = versionguard.getConfig(options.cwd);
-        const version = versionguard.getPackageVersion(options.cwd);
+        const version = versionguard.getPackageVersion(options.cwd, config.manifest);
         const results = fix.fixSyncIssues(config, options.cwd);
 
         console.log(styles.bold(`Syncing version ${version}...`));
@@ -382,7 +386,7 @@ export function createProgram(): Command {
       (options: { cwd: string; type?: 'major' | 'minor' | 'patch' | 'auto'; apply?: boolean }) => {
         try {
           const config = versionguard.getConfig(options.cwd);
-          const currentVersion = versionguard.getPackageVersion(options.cwd);
+          const currentVersion = versionguard.getPackageVersion(options.cwd, config.manifest);
           const suggestions = fix.suggestNextVersion(currentVersion, config, options.type);
 
           console.log(styles.bold(`Current version: ${currentVersion}`));
@@ -397,7 +401,7 @@ export function createProgram(): Command {
             if (!nextVersion) {
               throw new Error('No version suggestion available');
             }
-            project.setPackageVersion(nextVersion, options.cwd);
+            project.setPackageVersion(nextVersion, options.cwd, config.manifest);
             fix.fixAll(config, nextVersion, options.cwd);
             console.log(styles.success(`✓ Updated to ${nextVersion}`));
           }
@@ -411,7 +415,7 @@ export function createProgram(): Command {
   program
     .command('tag')
     .description('Create a git tag with automation')
-    .argument('[version]', 'Version to tag (defaults to package.json version)')
+    .argument('[version]', 'Version to tag (defaults to manifest version)')
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('-m, --message <msg>', 'Tag message')
     .option('--no-fix', 'Skip auto-fixing files before tagging')
@@ -419,7 +423,8 @@ export function createProgram(): Command {
       (version: string | undefined, options: { cwd: string; message?: string; fix?: boolean }) => {
         try {
           const config = versionguard.getConfig(options.cwd);
-          const tagVersion = version || versionguard.getPackageVersion(options.cwd);
+          const tagVersion =
+            version || versionguard.getPackageVersion(options.cwd, config.manifest);
           const result = tag.createTag(
             tagVersion,
             options.message,

@@ -1,5 +1,8 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import type { VersionSourceProvider } from './sources/provider';
+import { resolveVersionSource } from './sources/resolve';
+import type { ManifestConfig } from './types';
 
 /**
  * JSON-compatible scalar, array, or object value used by package metadata.
@@ -132,16 +135,21 @@ export function writePackageJson(pkg: PackageJson, cwd: string = process.cwd()):
 }
 
 /**
- * Gets the version string from `package.json`.
+ * Gets the version string from the project manifest.
+ *
+ * When a `manifest` config is provided, uses the configured version source
+ * provider (auto-detection or explicit). Falls back to `package.json` for
+ * backwards compatibility when no config is provided.
  *
  * @public
  * @since 0.1.0
  * @remarks
- * This throws when the file exists but does not contain a non-empty `version`
- * field.
+ * This throws when the manifest file does not exist or does not contain
+ * a version field.
  *
- * @param cwd - Project directory containing `package.json`.
- * @returns The package version string.
+ * @param cwd - Project directory containing the manifest.
+ * @param manifest - Optional manifest configuration for language-agnostic support.
+ * @returns The project version string.
  * @example
  * ```ts
  * import { getPackageVersion } from 'versionguard';
@@ -149,7 +157,13 @@ export function writePackageJson(pkg: PackageJson, cwd: string = process.cwd()):
  * const version = getPackageVersion(process.cwd());
  * ```
  */
-export function getPackageVersion(cwd: string = process.cwd()): string {
+export function getPackageVersion(cwd: string = process.cwd(), manifest?: ManifestConfig): string {
+  if (manifest) {
+    const provider = resolveVersionSource(manifest, cwd);
+    return provider.getVersion(cwd);
+  }
+
+  // Legacy fallback: read directly from package.json
   const pkg = readPackageJson(cwd);
 
   if (typeof pkg.version !== 'string' || pkg.version.length === 0) {
@@ -160,16 +174,21 @@ export function getPackageVersion(cwd: string = process.cwd()): string {
 }
 
 /**
- * Sets the version field in `package.json`.
+ * Sets the version field in the project manifest.
+ *
+ * When a `manifest` config is provided, uses the configured version source
+ * provider. Falls back to `package.json` for backwards compatibility when
+ * no config is provided.
  *
  * @public
  * @since 0.1.0
  * @remarks
- * The existing document is read, the `version` field is replaced, and the full
+ * The existing document is read, the version field is replaced, and the
  * file is written back to disk.
  *
  * @param version - Version string to persist.
- * @param cwd - Project directory containing `package.json`.
+ * @param cwd - Project directory containing the manifest.
+ * @param manifest - Optional manifest configuration for language-agnostic support.
  * @example
  * ```ts
  * import { setPackageVersion } from 'versionguard';
@@ -177,8 +196,36 @@ export function getPackageVersion(cwd: string = process.cwd()): string {
  * setPackageVersion('1.2.3', process.cwd());
  * ```
  */
-export function setPackageVersion(version: string, cwd: string = process.cwd()): void {
+export function setPackageVersion(
+  version: string,
+  cwd: string = process.cwd(),
+  manifest?: ManifestConfig,
+): void {
+  if (manifest) {
+    const provider = resolveVersionSource(manifest, cwd);
+    provider.setVersion(version, cwd);
+    return;
+  }
+
+  // Legacy fallback: write directly to package.json
   const pkg = readPackageJson(cwd);
   pkg.version = version;
   writePackageJson(pkg, cwd);
+}
+
+/**
+ * Resolves the version source provider for a project.
+ *
+ * @public
+ * @since 0.3.0
+ *
+ * @param manifest - Manifest configuration.
+ * @param cwd - Project directory.
+ * @returns The resolved provider instance.
+ */
+export function getVersionSource(
+  manifest: ManifestConfig,
+  cwd: string = process.cwd(),
+): VersionSourceProvider {
+  return resolveVersionSource(manifest, cwd);
 }

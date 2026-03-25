@@ -3,10 +3,10 @@ import * as path from 'node:path';
 
 import * as calver from '../calver';
 import { addVersionEntry } from '../changelog';
-import { getPackageVersion, setPackageVersion } from '../project';
+import { getPackageVersion, getVersionSource, setPackageVersion } from '../project';
 import * as semver from '../semver';
 import { syncVersion } from '../sync';
-import type { CalVerConfig, VersionGuardConfig } from '../types';
+import type { CalVerConfig, ManifestConfig, VersionGuardConfig } from '../types';
 
 /**
  * Auto-fix helpers for package versions, synced files, and changelog entries.
@@ -61,26 +61,55 @@ export interface FixResult {
  * console.log(result.fixed);
  * ```
  */
-export function fixPackageVersion(targetVersion: string, cwd: string = process.cwd()): FixResult {
-  const packagePath = path.join(cwd, 'package.json');
+export function fixPackageVersion(
+  targetVersion: string,
+  cwd: string = process.cwd(),
+  manifest?: ManifestConfig,
+): FixResult {
+  // When no manifest config, use legacy package.json path for full compat
+  if (!manifest) {
+    const packagePath = path.join(cwd, 'package.json');
 
-  if (!fs.existsSync(packagePath)) {
-    return { fixed: false, message: 'package.json not found' };
+    if (!fs.existsSync(packagePath)) {
+      return { fixed: false, message: 'package.json not found' };
+    }
+
+    const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf-8')) as { version?: string };
+    const oldVersion = typeof pkg.version === 'string' ? pkg.version : undefined;
+
+    if (oldVersion === targetVersion) {
+      return { fixed: false, message: `Already at version ${targetVersion}` };
+    }
+
+    setPackageVersion(targetVersion, cwd);
+
+    return {
+      fixed: true,
+      message: `Updated package.json from ${oldVersion} to ${targetVersion}`,
+      file: packagePath,
+    };
   }
 
-  const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf-8')) as { version?: string };
-  const oldVersion = typeof pkg.version === 'string' ? pkg.version : undefined;
+  // Language-agnostic path
+  const provider = getVersionSource(manifest, cwd);
+  let oldVersion: string | undefined;
+
+  try {
+    oldVersion = provider.getVersion(cwd);
+  } catch {
+    return { fixed: false, message: 'Version source not found' };
+  }
 
   if (oldVersion === targetVersion) {
     return { fixed: false, message: `Already at version ${targetVersion}` };
   }
 
-  setPackageVersion(targetVersion, cwd);
+  provider.setVersion(targetVersion, cwd);
 
   return {
     fixed: true,
-    message: `Updated package.json from ${oldVersion} to ${targetVersion}`,
-    file: packagePath,
+    message: `Updated version from ${oldVersion} to ${targetVersion}`,
+    file: provider.manifestFile ? path.join(cwd, provider.manifestFile) : undefined,
   };
 }
 
@@ -107,7 +136,7 @@ export function fixSyncIssues(
   config: VersionGuardConfig,
   cwd: string = process.cwd(),
 ): FixResult[] {
-  const version = getPackageVersion(cwd);
+  const version = getPackageVersion(cwd, config.manifest);
   const results: FixResult[] = syncVersion(version, config.sync, cwd)
     .filter((result) => result.updated)
     .map((result) => ({
@@ -229,10 +258,10 @@ export function fixAll(
   cwd: string = process.cwd(),
 ): FixResult[] {
   const results: FixResult[] = [];
-  const version = targetVersion || getPackageVersion(cwd);
+  const version = targetVersion || getPackageVersion(cwd, config.manifest);
 
-  if (targetVersion && targetVersion !== getPackageVersion(cwd)) {
-    results.push(fixPackageVersion(targetVersion, cwd));
+  if (targetVersion && targetVersion !== getPackageVersion(cwd, config.manifest)) {
+    results.push(fixPackageVersion(targetVersion, cwd, config.manifest));
   }
 
   const syncResults = fixSyncIssues(config, cwd);

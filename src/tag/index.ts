@@ -187,7 +187,7 @@ export function createTag(
       };
     }
 
-    const packageVersion = getPackageVersion(cwd);
+    const packageVersion = getPackageVersion(cwd, config.manifest);
     const shouldAutoFix = autoFix;
     const preflightError = getTagPreflightError(config, cwd, version, shouldAutoFix);
     if (preflightError) {
@@ -201,7 +201,7 @@ export function createTag(
     if (version !== packageVersion && !autoFix) {
       return {
         success: false,
-        message: `Version mismatch: package.json is ${packageVersion}, tag is ${version}`,
+        message: `Version mismatch: manifest version is ${packageVersion}, tag is ${version}`,
         actions: [],
       };
     }
@@ -295,16 +295,16 @@ export function handlePostTag(
         actions,
       };
     }
-    const packageVersion = getPackageVersion(cwd);
+    const packageVersion = getPackageVersion(cwd, config.manifest);
 
     if (tag.version !== packageVersion) {
       return {
         success: false,
-        message: `Tag version ${tag.version} doesn't match package.json ${packageVersion}`,
+        message: `Tag version ${tag.version} doesn't match manifest version ${packageVersion}`,
         actions: [
           'To fix: delete tag and recreate with correct version',
           `  git tag -d ${tag.name}`,
-          `  npm version ${tag.version}`,
+          `  Update manifest to ${tag.version}`,
           `  git tag ${tag.name}`,
         ],
       };
@@ -346,7 +346,7 @@ function getTagPreflightError(
     return 'Working tree must be clean before creating or validating release tags';
   }
 
-  const version = expectedVersion ?? getPackageVersion(cwd);
+  const version = expectedVersion ?? getPackageVersion(cwd, config.manifest);
   const versionResult =
     config.versioning.type === 'semver'
       ? validateSemVer(version)

@@ -21,6 +21,9 @@ const DEFAULT_CONFIG: VersionGuardConfig = {
       preventFutureDates: true,
     },
   },
+  manifest: {
+    source: 'auto',
+  },
   sync: {
     files: ['README.md', 'CHANGELOG.md'],
     patterns: [

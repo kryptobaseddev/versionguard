@@ -61,7 +61,7 @@ describe('fix helpers', () => {
     expect(syncResults.some((result) => result.fixed)).toBe(true);
 
     const allResults = fixAll(config, '1.2.4', cwd);
-    expect(allResults.some((result) => result.message.includes('Updated package.json'))).toBe(true);
+    expect(allResults.some((result) => result.message.includes('Updated version from'))).toBe(true);
     expect(fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')).toContain('1.2.4');
   });
 

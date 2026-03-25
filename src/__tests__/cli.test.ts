@@ -329,7 +329,7 @@ describe('cli', () => {
       hook: 'post-tag',
       postTag: {
         success: false,
-        message: "Tag version 1.2.2 doesn't match package.json 1.2.3",
+        message: "Tag version 1.2.2 doesn't match manifest version 1.2.3",
       },
     });
   });
@@ -359,7 +359,7 @@ describe('cli', () => {
     ).rejects.toThrow('process.exit:1');
 
     expect(logSpy.mock.calls.flat().join('\n')).toContain(
-      "Tag version 1.2.2 doesn't match package.json 1.2.3",
+      "Tag version 1.2.2 doesn't match manifest version 1.2.3",
     );
   });
 
@@ -702,7 +702,7 @@ describe('cli', () => {
     ).rejects.toThrow('process.exit:1');
 
     expect(logSpy.mock.calls.flat().join('\n')).toContain(
-      'Version mismatch: package.json is 1.2.3, tag is 1.2.4',
+      'Version mismatch: manifest version is 1.2.3, tag is 1.2.4',
     );
   });
 
