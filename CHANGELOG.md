@@ -1,50 +1,24 @@
 # Changelog
 
-## 0.3.0
-
-### Minor Changes
-
-- 913c5b0: feat: language-agnostic version source providers
-
-  VersionGuard can now read and write version strings from any project type, not just package.json.
-
-  **New providers:**
-
-  - `JsonVersionSource` — package.json, composer.json
-  - `TomlVersionSource` — Cargo.toml, pyproject.toml (via smol-toml)
-  - `YamlVersionSource` — pubspec.yaml
-  - `VersionFileSource` — plain text VERSION files
-  - `GitTagSource` — Go, Swift (read-only from git tags)
-  - `RegexVersionSource` — gemspec, mix.exs, build.gradle, setup.py
-
-  **Configuration:**
-
-  ```yaml
-  # .versionguard.yml
-  manifest:
-    source: auto # or "Cargo.toml", "pyproject.toml", "git-tag", etc.
-    path: package.version # dotted key path (provider-specific)
-  ```
-
-  **Auto-detection:** When `source: auto` (the default), VersionGuard scans for known manifest files in priority order: package.json → Cargo.toml → pyproject.toml → pubspec.yaml → composer.json → pom.xml → VERSION.
-
-  **Security hardening:**
-
-  - Path traversal protection for custom manifest paths
-  - Regex capture group validation
-  - Config source type validation
-  - Position-based regex replacement to prevent file corruption
-
-  **Backwards compatible:** Existing package.json workflows work without any config changes.
-
-  **New dependency:** `smol-toml` (zero-dep, ESM, TOML v1.1 parser)
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.3.0] - 2026-03-25
+
+### Added
+
+- **Language-agnostic version source providers** — VersionGuard can now read and write version strings from any project type, not just package.json
+- New providers: `JsonVersionSource` (package.json, composer.json), `TomlVersionSource` (Cargo.toml, pyproject.toml), `YamlVersionSource` (pubspec.yaml), `VersionFileSource` (VERSION files), `GitTagSource` (Go/Swift), `RegexVersionSource` (gemspec, mix.exs, build.gradle)
+- Auto-detection scans for known manifests in priority order when `manifest.source` is `auto` (the default)
+- New `manifest` config section in `.versionguard.yml` for explicit source configuration
+- Path traversal protection for custom manifest paths
+- Regex capture group validation for custom version patterns
+- Config source type validation with clear error messages
+- New dependency: `smol-toml` (zero-dep, ESM, TOML v1.1 parser)
 
 ## [0.2.0] - 2026-03-22
 
@@ -88,7 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI with init, check, validate, sync, bump commands
 - Configurable via .versionguard.yml
 
-[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/kryptobaseddev/versionguard/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/kryptobaseddev/versionguard/releases/tag/v0.1.0
