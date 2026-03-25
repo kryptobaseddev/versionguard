@@ -1,10 +1,93 @@
 /**
  * Calendar version parsing, formatting, and comparison helpers.
  *
+ * @remarks
+ * Supports the full calver.org specification with all standard tokens:
+ * Year (`YYYY`, `YY`, `0Y`), Month (`MM`, `M`, `0M`), Week (`WW`, `0W`),
+ * Day (`DD`, `D`, `0D`), and Counter (`MICRO`/`PATCH`).
+ *
+ * `MICRO` is the CalVer-standard name for the counter segment.
+ * `PATCH` is accepted as a SemVer-familiar alias and behaves identically.
+ *
  * @packageDocumentation
  */
 
-import type { CalVer, CalVerFormat, ValidationError, ValidationResult } from './types';
+import type { CalVer, CalVerFormat, CalVerToken, ValidationError, ValidationResult } from './types';
+
+/** All recognized CalVer tokens. */
+const VALID_TOKENS = new Set<string>([
+  'YYYY',
+  'YY',
+  '0Y',
+  'MM',
+  'M',
+  '0M',
+  'WW',
+  '0W',
+  'DD',
+  'D',
+  '0D',
+  'MICRO',
+  'PATCH',
+]);
+
+/** Year tokens. */
+const YEAR_TOKENS = new Set<string>(['YYYY', 'YY', '0Y']);
+/** Month tokens. */
+const MONTH_TOKENS = new Set<string>(['MM', 'M', '0M']);
+/** Week tokens. */
+const WEEK_TOKENS = new Set<string>(['WW', '0W']);
+/** Day tokens. */
+const DAY_TOKENS = new Set<string>(['DD', 'D', '0D']);
+/** Counter tokens (MICRO is canonical, PATCH is alias). */
+const COUNTER_TOKENS = new Set<string>(['MICRO', 'PATCH']);
+
+/**
+ * Validates that a CalVer format string is composed of valid tokens
+ * and follows structural rules.
+ *
+ * @remarks
+ * Structural rules enforced:
+ * - Must have at least 2 segments
+ * - First segment must be a year token
+ * - Week tokens and Month/Day tokens are mutually exclusive
+ * - Counter (MICRO/PATCH) can only appear as the last segment
+ *
+ * @param formatStr - Format string to validate.
+ * @returns `true` when the format is valid.
+ *
+ * @example
+ * ```ts
+ * import { isValidCalVerFormat } from 'versionguard';
+ *
+ * isValidCalVerFormat('YYYY.MM.MICRO'); // true
+ * isValidCalVerFormat('INVALID');        // false
+ * ```
+ *
+ * @public
+ * @since 0.3.0
+ */
+export function isValidCalVerFormat(formatStr: string): formatStr is CalVerFormat {
+  const tokens = formatStr.split('.');
+  if (tokens.length < 2) return false;
+
+  // All tokens must be recognized
+  if (!tokens.every((t) => VALID_TOKENS.has(t))) return false;
+
+  // First token must be a year
+  if (!YEAR_TOKENS.has(tokens[0])) return false;
+
+  // Mutual exclusion: week vs month/day
+  const hasWeek = tokens.some((t) => WEEK_TOKENS.has(t));
+  const hasMonthOrDay = tokens.some((t) => MONTH_TOKENS.has(t) || DAY_TOKENS.has(t));
+  if (hasWeek && hasMonthOrDay) return false;
+
+  // Counter must be last if present
+  const counterIndex = tokens.findIndex((t) => COUNTER_TOKENS.has(t));
+  if (counterIndex !== -1 && counterIndex !== tokens.length - 1) return false;
+
+  return true;
+}
 
 /**
  * Parsed token layout for a supported CalVer format string.
@@ -17,12 +100,21 @@ export interface ParsedCalVerFormat {
   /**
    * Year token captured from the format string.
    */
-  year: 'YYYY' | 'YY';
+  year: 'YYYY' | 'YY' | '0Y';
 
   /**
-   * Month token captured from the format string.
+   * Month token captured from the format string when present.
+   *
+   * @defaultValue undefined
    */
-  month: 'MM' | 'M' | '0M';
+  month?: 'MM' | 'M' | '0M';
+
+  /**
+   * Week token captured from the format string when present.
+   *
+   * @defaultValue undefined
+   */
+  week?: 'WW' | '0W';
 
   /**
    * Day token captured from the format string when present.
@@ -32,11 +124,12 @@ export interface ParsedCalVerFormat {
   day?: 'DD' | 'D' | '0D';
 
   /**
-   * Patch token captured from the format string when present.
+   * Counter token captured from the format string when present.
+   * Both `MICRO` and `PATCH` map to the same numeric counter.
    *
    * @defaultValue undefined
    */
-  patch?: 'PATCH';
+  counter?: 'MICRO' | 'PATCH';
 }
 
 /**
@@ -44,7 +137,7 @@ export interface ParsedCalVerFormat {
  *
  * @remarks
  * This helper is used internally by parsing, formatting, and version generation helpers
- * to decide which date parts or patch counters are present in a given CalVer layout.
+ * to decide which date parts or counters are present in a given CalVer layout.
  *
  * @param calverFormat - Format string to inspect.
  * @returns The parsed token definition for the requested format.
@@ -53,28 +146,30 @@ export interface ParsedCalVerFormat {
  * ```ts
  * import { parseFormat } from 'versionguard';
  *
- * parseFormat('YYYY.MM.PATCH');
- * // => { year: 'YYYY', month: 'MM', patch: 'PATCH' }
+ * parseFormat('YYYY.MM.MICRO');
+ * // => { year: 'YYYY', month: 'MM', counter: 'MICRO' }
  * ```
  *
  * @public
  * @since 0.1.0
  */
 export function parseFormat(calverFormat: CalVerFormat): ParsedCalVerFormat {
-  const parts = calverFormat.split('.');
+  const tokens = calverFormat.split('.');
   const result: ParsedCalVerFormat = {
-    year: parts[0] as ParsedCalVerFormat['year'],
-    month: parts[1] as ParsedCalVerFormat['month'],
+    year: tokens[0] as ParsedCalVerFormat['year'],
   };
 
-  if (parts[2] === 'PATCH') {
-    result.patch = 'PATCH';
-  } else if (parts[2]) {
-    result.day = parts[2] as ParsedCalVerFormat['day'];
-  }
-
-  if (parts[3] === 'PATCH') {
-    result.patch = 'PATCH';
+  for (let i = 1; i < tokens.length; i++) {
+    const token = tokens[i] as CalVerToken;
+    if (MONTH_TOKENS.has(token)) {
+      result.month = token as ParsedCalVerFormat['month'];
+    } else if (WEEK_TOKENS.has(token)) {
+      result.week = token as ParsedCalVerFormat['week'];
+    } else if (DAY_TOKENS.has(token)) {
+      result.day = token as ParsedCalVerFormat['day'];
+    } else if (COUNTER_TOKENS.has(token)) {
+      result.counter = token as ParsedCalVerFormat['counter'];
+    }
   }
 
   return result;
@@ -85,15 +180,18 @@ function tokenPattern(token: string): string {
     case 'YYYY':
       return '(\\d{4})';
     case 'YY':
-      return '(\\d{2})';
+    case '0Y':
     case '0M':
     case '0D':
+    case '0W':
       return '(\\d{2})';
     case 'MM':
     case 'DD':
     case 'M':
     case 'D':
+    case 'WW':
       return '(\\d{1,2})';
+    case 'MICRO':
     case 'PATCH':
       return '(\\d+)';
     default:
@@ -143,7 +241,7 @@ export function getRegexForFormat(calverFormat: CalVerFormat): RegExp {
  * ```ts
  * import { parse } from 'versionguard';
  *
- * parse('2026.03.21', 'YYYY.0M.0D')?.month;
+ * parse('2026.3.0', 'YYYY.M.MICRO')?.month;
  * // => 3
  * ```
  *
@@ -159,28 +257,40 @@ export function parse(version: string, calverFormat: CalVerFormat): CalVer | nul
   }
 
   const definition = parseFormat(calverFormat);
-  const year =
-    definition.year === 'YYYY'
-      ? Number.parseInt(match[1], 10)
-      : 2000 + Number.parseInt(match[1], 10);
-  const month = Number.parseInt(match[2], 10);
+  const yearToken = definition.year;
+  let year = Number.parseInt(match[1], 10);
+  if (yearToken === 'YY' || yearToken === '0Y') {
+    year = 2000 + year;
+  }
 
-  let cursor = 3;
+  let cursor = 2;
+  let month: number | undefined;
   let day: number | undefined;
   let patch: number | undefined;
+
+  if (definition.month) {
+    month = Number.parseInt(match[cursor], 10);
+    cursor += 1;
+  }
+
+  if (definition.week) {
+    // Week stored in month field for simplicity in comparison
+    month = Number.parseInt(match[cursor], 10);
+    cursor += 1;
+  }
 
   if (definition.day) {
     day = Number.parseInt(match[cursor], 10);
     cursor += 1;
   }
 
-  if (definition.patch) {
+  if (definition.counter) {
     patch = Number.parseInt(match[cursor], 10);
   }
 
   return {
     year,
-    month,
+    month: month ?? 1,
     day,
     patch,
     format: calverFormat,
@@ -204,7 +314,7 @@ export function parse(version: string, calverFormat: CalVerFormat): CalVer | nul
  * ```ts
  * import { validate } from 'versionguard';
  *
- * validate('2026.03.21', 'YYYY.0M.0D', false).valid;
+ * validate('2026.3.0', 'YYYY.M.MICRO', false).valid;
  * // => true
  * ```
  *
@@ -231,9 +341,20 @@ export function validate(
     };
   }
 
-  if (parsed.month < 1 || parsed.month > 12) {
+  const definition = parseFormat(calverFormat);
+
+  // Month validation (only when format uses month tokens)
+  if (definition.month && (parsed.month < 1 || parsed.month > 12)) {
     errors.push({
       message: `Invalid month: ${parsed.month}. Must be between 1 and 12.`,
+      severity: 'error',
+    });
+  }
+
+  // Week validation
+  if (definition.week && (parsed.month < 1 || parsed.month > 53)) {
+    errors.push({
+      message: `Invalid week: ${parsed.month}. Must be between 1 and 53.`,
       severity: 'error',
     });
   }
@@ -244,7 +365,7 @@ export function validate(
         message: `Invalid day: ${parsed.day}. Must be between 1 and 31.`,
         severity: 'error',
       });
-    } else {
+    } else if (definition.month) {
       const daysInMonth = new Date(parsed.year, parsed.month, 0).getDate();
       if (parsed.day > daysInMonth) {
         errors.push({
@@ -266,12 +387,13 @@ export function validate(
         message: `Future year not allowed: ${parsed.year}. Current year is ${currentYear}.`,
         severity: 'error',
       });
-    } else if (parsed.year === currentYear && parsed.month > currentMonth) {
+    } else if (definition.month && parsed.year === currentYear && parsed.month > currentMonth) {
       errors.push({
         message: `Future month not allowed: ${parsed.year}.${parsed.month}. Current month is ${currentMonth}.`,
         severity: 'error',
       });
     } else if (
+      definition.month &&
       parsed.year === currentYear &&
       parsed.month === currentMonth &&
       parsed.day !== undefined &&
@@ -292,15 +414,17 @@ export function validate(
 }
 
 function formatToken(token: string, value: number): string {
-  if (token === '0M' || token === '0D') {
-    return String(value).padStart(2, '0');
+  switch (token) {
+    case '0M':
+    case '0D':
+    case '0W':
+    case '0Y':
+      return String(token === '0Y' ? value % 100 : value).padStart(2, '0');
+    case 'YY':
+      return String(value % 100).padStart(2, '0');
+    default:
+      return String(value);
   }
-
-  if (token === 'YY') {
-    return String(value % 100).padStart(2, '0');
-  }
-
-  return String(value);
 }
 
 /**
@@ -327,26 +451,34 @@ function formatToken(token: string, value: number): string {
  * @since 0.1.0
  */
 export function format(version: CalVer): string {
-  const tokens = version.format.split('.');
-  const values: number[] = [version.year, version.month];
+  const definition = parseFormat(version.format);
+  const parts: string[] = [formatToken(definition.year, version.year)];
 
-  if (tokens.includes('DD') || tokens.includes('D') || tokens.includes('0D')) {
-    values.push(version.day ?? 1);
+  if (definition.month) {
+    parts.push(formatToken(definition.month, version.month));
   }
 
-  if (tokens.includes('PATCH')) {
-    values.push(version.patch ?? 0);
+  if (definition.week) {
+    parts.push(formatToken(definition.week, version.month));
   }
 
-  return tokens.map((token, index) => formatToken(token, values[index])).join('.');
+  if (definition.day) {
+    parts.push(formatToken(definition.day, version.day ?? 1));
+  }
+
+  if (definition.counter) {
+    parts.push(formatToken(definition.counter, version.patch ?? 0));
+  }
+
+  return parts.join('.');
 }
 
 /**
  * Creates the current CalVer string for a format.
  *
  * @remarks
- * This helper derives its values from the provided date and initializes any patch token to `0`.
- * It is useful for generating a same-day baseline before incrementing patch-based formats.
+ * This helper derives its values from the provided date and initializes any counter to `0`.
+ * It is useful for generating a same-day baseline before incrementing counter-based formats.
  *
  * @param calverFormat - Format to generate.
  * @param now - Date used as the source for year, month, and day values.
@@ -356,7 +488,7 @@ export function format(version: CalVer): string {
  * ```ts
  * import { getCurrentVersion } from 'versionguard';
  *
- * getCurrentVersion('YYYY.MM.PATCH', new Date('2026-03-21T00:00:00Z'));
+ * getCurrentVersion('YYYY.M.MICRO', new Date('2026-03-21T00:00:00Z'));
  * // => '2026.3.0'
  * ```
  *
@@ -365,30 +497,24 @@ export function format(version: CalVer): string {
  */
 export function getCurrentVersion(calverFormat: CalVerFormat, now: Date = new Date()): string {
   const definition = parseFormat(calverFormat);
-  const currentDay = now.getDate();
   const base: CalVer = {
     year: now.getFullYear(),
     month: now.getMonth() + 1,
-    day: definition.day ? currentDay : undefined,
-    patch: definition.patch ? 0 : undefined,
+    day: definition.day ? now.getDate() : undefined,
+    patch: definition.counter ? 0 : undefined,
     format: calverFormat,
     raw: '',
   };
-  const day = base.day ?? currentDay;
-  const patch = base.patch ?? 0;
 
-  return formatToken(definition.year, base.year)
-    .concat(`.${formatToken(definition.month, base.month)}`)
-    .concat(definition.day ? `.${formatToken(definition.day, day)}` : '')
-    .concat(definition.patch ? `.${patch}` : '');
+  return format(base);
 }
 
 /**
  * Compares two CalVer strings using a shared format.
  *
  * @remarks
- * Comparison is performed component-by-component in year, month, day, then patch order.
- * Missing day and patch values are treated as `0` during comparison.
+ * Comparison is performed component-by-component in year, month, day, then counter order.
+ * Missing day and counter values are treated as `0` during comparison.
  *
  * @param a - Left-hand version string.
  * @param b - Right-hand version string.
@@ -399,7 +525,7 @@ export function getCurrentVersion(calverFormat: CalVerFormat, now: Date = new Da
  * ```ts
  * import { compare } from 'versionguard';
  *
- * compare('2026.03.2', '2026.03.1', 'YYYY.MM.PATCH');
+ * compare('2026.3.2', '2026.3.1', 'YYYY.M.MICRO');
  * // => 1
  * ```
  *
@@ -429,8 +555,8 @@ export function compare(a: string, b: string, calverFormat: CalVerFormat): numbe
  * Increments a CalVer string.
  *
  * @remarks
- * Patch-based formats increment the existing patch number. Formats without a patch token are
- * promoted to a patch-based output by appending `.PATCH` semantics with an initial value of `0`.
+ * Counter-based formats increment the existing counter. Formats without a counter are
+ * promoted to a counter-based output by appending `.MICRO` with an initial value of `0`.
  *
  * @param version - Current version string.
  * @param calverFormat - Format used to parse the current version.
@@ -440,7 +566,7 @@ export function compare(a: string, b: string, calverFormat: CalVerFormat): numbe
  * ```ts
  * import { increment } from 'versionguard';
  *
- * increment('2026.03.1', 'YYYY.MM.PATCH');
+ * increment('2026.3.1', 'YYYY.M.MICRO');
  * // => '2026.3.2'
  * ```
  *
@@ -460,12 +586,11 @@ export function increment(version: string, calverFormat: CalVerFormat): string {
     raw: version,
   };
 
-  if (definition.patch) {
-    const patch = parsed.patch ?? 0;
-    next.patch = patch + 1;
+  if (definition.counter) {
+    next.patch = (parsed.patch ?? 0) + 1;
   } else {
     next.patch = 0;
-    next.format = `${calverFormat}.PATCH` as CalVerFormat;
+    next.format = `${calverFormat}.MICRO` as CalVerFormat;
   }
 
   return format(next);
@@ -486,7 +611,7 @@ export function increment(version: string, calverFormat: CalVerFormat): string {
  * ```ts
  * import { getNextVersions } from 'versionguard';
  *
- * getNextVersions('2026.03.1', 'YYYY.MM.PATCH').length;
+ * getNextVersions('2026.3.1', 'YYYY.M.MICRO').length;
  * // => 2
  * ```
  *

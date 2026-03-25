@@ -70,13 +70,42 @@ export interface ManifestConfig {
 }
 
 /**
- * Supported calendar version string layouts.
+ * Valid CalVer token names for building format strings.
+ *
+ * @public
+ * @since 0.3.0
+ * @forgeIgnore E020
+ */
+export type CalVerToken =
+  | 'YYYY'
+  | 'YY'
+  | '0Y' // Year
+  | 'MM'
+  | 'M'
+  | '0M' // Month
+  | 'WW'
+  | '0W' // Week
+  | 'DD'
+  | 'D'
+  | '0D' // Day
+  | 'MICRO'
+  | 'PATCH'; // Counter (MICRO is the CalVer-standard name; PATCH is the SemVer alias)
+
+/**
+ * A CalVer format string composed of dot-separated tokens.
+ *
+ * @remarks
+ * Any dot-separated combination of valid {@link CalVerToken} values is accepted.
+ * Common examples: `'YYYY.MM.MICRO'`, `'YY.0M.MICRO'`, `'YYYY.0M.0D'`, `'YYYY.MM.DD.MICRO'`.
+ *
+ * `MICRO` and `PATCH` are interchangeable — both represent a 0-based incrementing counter.
+ * The CalVer specification (calver.org) uses `MICRO`; `PATCH` is accepted as a SemVer-familiar alias.
  *
  * @public
  * @since 0.1.0
  * @forgeIgnore E020
  */
-export type CalVerFormat = 'YYYY.MM.DD' | 'YYYY.MM.PATCH' | 'YY.M.PATCH' | 'YYYY.0M.0D';
+export type CalVerFormat = string & { readonly __calverFormat?: never };
 
 /**
  * Configures CalVer validation rules.
