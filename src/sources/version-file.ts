@@ -37,7 +37,15 @@ export class VersionFileSource implements VersionSourceProvider {
       throw new Error(`${this.manifestFile} not found in ${cwd}`);
     }
 
-    const version = fs.readFileSync(filePath, 'utf-8').trim();
+    const raw = fs.readFileSync(filePath, 'utf-8');
+
+    // L-003: Guard against binary files
+    if (raw.includes('\0')) {
+      throw new Error(`${this.manifestFile} appears to be a binary file`);
+    }
+
+    // L-004: Only use the first line as the version
+    const version = raw.split('\n')[0].trim();
     if (version.length === 0) {
       throw new Error(`${this.manifestFile} is empty`);
     }

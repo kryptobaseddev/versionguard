@@ -1,7 +1,13 @@
 import * as calver from '../calver';
 import * as semver from '../semver';
 
-import type { CalVer, CalVerConfig, ValidationError, VersionGuardConfig } from '../types';
+import {
+  type CalVer,
+  type CalVerConfig,
+  getCalVerConfig,
+  type ValidationError,
+  type VersionGuardConfig,
+} from '../types';
 
 /**
  * Feedback helpers that turn validation failures into actionable suggestions.
@@ -98,14 +104,6 @@ export function getVersionFeedback(
   return getCalVerFeedback(version, getCalVerConfig(config), previousVersion);
 }
 
-function getCalVerConfig(config: VersionGuardConfig): CalVerConfig {
-  if (!config.versioning.calver) {
-    throw new Error('CalVer configuration is required when versioning.type is "calver"');
-  }
-
-  return config.versioning.calver;
-}
-
 function getSemVerFeedback(version: string, previousVersion?: string): FeedbackResult {
   const errors: ValidationError[] = [];
   const suggestions: Suggestion[] = [];
@@ -125,7 +123,7 @@ function getSemVerFeedback(version: string, previousVersion?: string): FeedbackR
       });
       suggestions.push({
         message: `Remove the 'v' prefix`,
-        fix: `npm version ${cleanVersion}`,
+        fix: `npx versionguard fix --version ${cleanVersion}`,
         autoFixable: true,
       });
     } else if (version.split('.').length === 2) {
@@ -135,7 +133,7 @@ function getSemVerFeedback(version: string, previousVersion?: string): FeedbackR
       });
       suggestions.push({
         message: `Add patch number (e.g., ${version}.0)`,
-        fix: `npm version ${version}.0`,
+        fix: `npx versionguard fix --version ${version}.0`,
         autoFixable: true,
       });
     } else if (/^\d+\.\d+\.\d+\.\d+$/.test(version)) {
@@ -191,7 +189,7 @@ function getSemVerFeedback(version: string, previousVersion?: string): FeedbackR
         });
         suggestions.push({
           message: `Version must be greater than ${previousVersion}`,
-          fix: `npm version ${semver.increment(previousVersion, 'patch')}`,
+          fix: `npx versionguard fix --version ${semver.increment(previousVersion, 'patch')}`,
           autoFixable: true,
         });
       } else if (comparison === 0) {
@@ -201,7 +199,7 @@ function getSemVerFeedback(version: string, previousVersion?: string): FeedbackR
         });
         suggestions.push({
           message: `Bump the version`,
-          fix: `npm version ${semver.increment(previousVersion, 'patch')}`,
+          fix: `npx versionguard fix --version ${semver.increment(previousVersion, 'patch')}`,
           autoFixable: true,
         });
       } else {
@@ -287,7 +285,7 @@ function getCalVerFeedback(
   if (preventFutureDates && parsed.year > now.getFullYear()) {
     suggestions.push({
       message: `Use current year (${now.getFullYear()}) or a past year`,
-      fix: `npm version ${formatCalVerVersion({ ...parsed, year: now.getFullYear() })}`,
+      fix: `npx versionguard fix --version ${formatCalVerVersion({ ...parsed, year: now.getFullYear() })}`,
       autoFixable: true,
     });
   }
@@ -299,7 +297,7 @@ function getCalVerFeedback(
   ) {
     suggestions.push({
       message: `Current month is ${now.getMonth() + 1}`,
-      fix: `npm version ${formatCalVerVersion({ ...parsed, month: now.getMonth() + 1 })}`,
+      fix: `npx versionguard fix --version ${formatCalVerVersion({ ...parsed, month: now.getMonth() + 1 })}`,
       autoFixable: true,
     });
   }
@@ -313,7 +311,7 @@ function getCalVerFeedback(
   ) {
     suggestions.push({
       message: `Current day is ${now.getDate()}`,
-      fix: `npm version ${formatCalVerVersion({ ...parsed, day: now.getDate() })}`,
+      fix: `npx versionguard fix --version ${formatCalVerVersion({ ...parsed, day: now.getDate() })}`,
       autoFixable: true,
     });
   }
@@ -329,7 +327,7 @@ function getCalVerFeedback(
         });
         suggestions.push({
           message: `CalVer must increase over time`,
-          fix: `npm version ${calver.increment(previousVersion, format)}`,
+          fix: `npx versionguard fix --version ${calver.increment(previousVersion, format)}`,
           autoFixable: true,
         });
       }

@@ -8,6 +8,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import type { VersionSourceProvider } from './provider';
+import { getNestedValue, setNestedValue } from './utils';
 
 /**
  * Reads and writes version strings from JSON manifest files.
@@ -52,32 +53,13 @@ export class JsonVersionSource implements VersionSourceProvider {
       throw new Error(`${this.manifestFile} not found in ${cwd}`);
     }
 
-    const content = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as Record<string, unknown>;
+    // M-008: Detect original indentation to preserve formatting
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    const indentMatch = raw.match(/^(\s+)"/m);
+    const indent = indentMatch?.[1]?.length ?? 2;
+
+    const content = JSON.parse(raw) as Record<string, unknown>;
     setNestedValue(content, this.versionPath, version);
-    fs.writeFileSync(filePath, `${JSON.stringify(content, null, 2)}\n`, 'utf-8');
+    fs.writeFileSync(filePath, `${JSON.stringify(content, null, indent)}\n`, 'utf-8');
   }
-}
-
-function getNestedValue(obj: Record<string, unknown>, dotPath: string): unknown {
-  let current: unknown = obj;
-  for (const key of dotPath.split('.')) {
-    if (current === null || typeof current !== 'object') {
-      return undefined;
-    }
-    current = (current as Record<string, unknown>)[key];
-  }
-  return current;
-}
-
-function setNestedValue(obj: Record<string, unknown>, dotPath: string, value: unknown): void {
-  const keys = dotPath.split('.');
-  let current: Record<string, unknown> = obj;
-  for (let i = 0; i < keys.length - 1; i++) {
-    const key = keys[i];
-    if (typeof current[key] !== 'object' || current[key] === null) {
-      current[key] = {};
-    }
-    current = current[key] as Record<string, unknown>;
-  }
-  current[keys[keys.length - 1]] = value;
 }

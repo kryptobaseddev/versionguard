@@ -6,7 +6,7 @@ import { addVersionEntry } from '../changelog';
 import { getPackageVersion, getVersionSource, setPackageVersion } from '../project';
 import * as semver from '../semver';
 import { syncVersion } from '../sync';
-import type { CalVerConfig, ManifestConfig, VersionGuardConfig } from '../types';
+import { getCalVerConfig, type ManifestConfig, type VersionGuardConfig } from '../types';
 
 /**
  * Auto-fix helpers for package versions, synced files, and changelog entries.
@@ -345,12 +345,4 @@ export function suggestNextVersion(
   }
 
   return suggestions;
-}
-
-function getCalVerConfig(config: VersionGuardConfig): CalVerConfig {
-  if (!config.versioning.calver) {
-    throw new Error('CalVer configuration is required when versioning.type is "calver"');
-  }
-
-  return config.versioning.calver;
 }

@@ -168,8 +168,13 @@ export function resolveVersionSource(
     }
   }
 
-  // Default fallback — will throw a clear error when getVersion is called
-  return new JsonVersionSource('package.json', 'version');
+  // M-009: Throw immediately with helpful guidance instead of silent fallback
+  const supported = DETECTION_TABLE.map((e) => e.file).join(', ');
+  throw new Error(
+    `No supported manifest file found in ${cwd}. ` +
+      `Looked for: ${supported}. ` +
+      `Set manifest.source explicitly in .versionguard.yml or create a supported manifest file.`,
+  );
 }
 
 /**

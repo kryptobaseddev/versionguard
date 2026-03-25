@@ -286,6 +286,19 @@ export interface VersionGuardConfig {
 }
 
 /**
+ * Extracts the CalVer config from a VersionGuard config, throwing if missing.
+ *
+ * @public
+ * @since 0.3.0
+ */
+export function getCalVerConfig(config: VersionGuardConfig): CalVerConfig {
+  if (!config.versioning.calver) {
+    throw new Error('CalVer configuration is required when versioning.type is "calver"');
+  }
+  return config.versioning.calver;
+}
+
+/**
  * Parsed semantic version components.
  *
  * @public

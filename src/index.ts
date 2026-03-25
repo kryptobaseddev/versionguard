@@ -14,12 +14,12 @@ import { areHooksInstalled, findGitDir } from './hooks';
 import { getPackageVersion } from './project';
 import * as semver from './semver';
 import { checkHardcodedVersions, syncVersion } from './sync';
-import type {
-  CalVerConfig,
-  DoctorReport,
-  FullValidationResult,
-  ValidationResult,
-  VersionGuardConfig,
+import {
+  type DoctorReport,
+  type FullValidationResult,
+  getCalVerConfig,
+  type ValidationResult,
+  type VersionGuardConfig,
 } from './types';
 
 export * as calver from './calver';
@@ -276,14 +276,6 @@ export function canBump(
   }
 
   return { canBump: true };
-}
-
-function getCalVerConfig(config: VersionGuardConfig): CalVerConfig {
-  if (!config.versioning.calver) {
-    throw new Error('CalVer configuration is required when versioning.type is "calver"');
-  }
-
-  return config.versioning.calver;
 }
 
 function isWorktreeClean(cwd: string): boolean {

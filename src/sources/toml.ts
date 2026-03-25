@@ -10,6 +10,7 @@ import * as path from 'node:path';
 import { parse } from 'smol-toml';
 
 import type { VersionSourceProvider } from './provider';
+import { escapeRegExp, getNestedValue } from './utils';
 
 /**
  * Reads and writes version strings from TOML manifest files.
@@ -57,7 +58,6 @@ export class TomlVersionSource implements VersionSourceProvider {
       throw new Error(`${this.manifestFile} not found in ${cwd}`);
     }
 
-    // Use regex replacement to preserve formatting instead of parse-modify-serialize
     const content = fs.readFileSync(filePath, 'utf-8');
     const sectionKey = this.getSectionKey();
     const updated = replaceTomlVersion(content, sectionKey, version);
@@ -81,23 +81,48 @@ export class TomlVersionSource implements VersionSourceProvider {
   }
 }
 
-function getNestedValue(obj: Record<string, unknown>, dotPath: string): unknown {
-  let current: unknown = obj;
-  for (const key of dotPath.split('.')) {
-    if (current === null || typeof current !== 'object') {
-      return undefined;
-    }
-    current = (current as Record<string, unknown>)[key];
-  }
-  return current;
-}
-
 /**
  * Replace a version value within a TOML file, preserving formatting.
  *
- * Finds the `[section]` header, then replaces the `key = "..."` line within it.
+ * Tries three patterns in order:
+ * 1. [section] header + key = "value" line (standard)
+ * 2. Dotted key syntax: section.key = "value" (M-004)
+ * 3. Inline table: section = { ..., key = "value", ... } (M-010)
  */
 function replaceTomlVersion(
+  content: string,
+  target: { section: string; key: string },
+  newVersion: string,
+): string {
+  // Pattern 1: Standard [section] header + key line
+  const result = replaceInSection(content, target, newVersion);
+  if (result !== content) return result;
+
+  // Pattern 2: Dotted key syntax (M-004)
+  if (target.section) {
+    const dottedRegex = new RegExp(
+      `^(\\s*${escapeRegExp(target.section)}\\.${escapeRegExp(target.key)}\\s*=\\s*)(["'])([^"']*)(\\2)`,
+      'm',
+    );
+    const dottedResult = content.replace(dottedRegex, `$1$2${newVersion}$4`);
+    if (dottedResult !== content) return dottedResult;
+  }
+
+  // Pattern 3: Inline table (M-010)
+  if (target.section) {
+    const inlineRegex = new RegExp(
+      `^(\\s*${escapeRegExp(target.section)}\\s*=\\s*\\{[^}]*${escapeRegExp(target.key)}\\s*=\\s*)(["'])([^"']*)(\\2)`,
+      'm',
+    );
+    const inlineResult = content.replace(inlineRegex, `$1$2${newVersion}$4`);
+    if (inlineResult !== content) return inlineResult;
+  }
+
+  return content;
+}
+
+/** Standard section-header-based replacement. */
+function replaceInSection(
   content: string,
   target: { section: string; key: string },
   newVersion: string,
@@ -105,7 +130,6 @@ function replaceTomlVersion(
   const lines = content.split('\n');
   const sectionHeader = target.section ? `[${target.section}]` : null;
   let inSection = sectionHeader === null;
-  // Match both double-quoted and single-quoted TOML strings
   const versionRegex = new RegExp(`^(\\s*${escapeRegExp(target.key)}\\s*=\\s*)(["'])([^"']*)(\\2)`);
 
   for (let i = 0; i < lines.length; i++) {
@@ -125,7 +149,6 @@ function replaceTomlVersion(
     if (inSection) {
       const match = lines[i].match(versionRegex);
       if (match) {
-        // Preserve the original quote style (match[2] is the quote char)
         lines[i] = lines[i].replace(versionRegex, `$1$2${newVersion}$4`);
         return lines.join('\n');
       }
@@ -133,8 +156,4 @@ function replaceTomlVersion(
   }
 
   return content;
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

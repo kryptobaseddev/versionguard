@@ -264,7 +264,7 @@ describe('version source providers', () => {
       initGitRepo(cwd);
 
       const source = new GitTagSource();
-      expect(() => source.getVersion(cwd)).toThrow('No git tags found');
+      expect(() => source.getVersion(cwd)).toThrow('No version tags found');
     });
 
     it('returns false for non-git directories', () => {
@@ -325,13 +325,13 @@ describe('version source providers', () => {
       expect(provider.getVersion(cwd)).toBe('3.0.0');
     });
 
-    it('falls back to package.json when nothing detected', () => {
+    it('throws when no manifest detected (M-009)', () => {
       const cwd = createTempProject();
       fs.unlinkSync(path.join(cwd, 'package.json'));
 
-      const provider = resolveVersionSource({ source: 'auto' }, cwd);
-      expect(provider.name).toBe('package.json');
-      expect(() => provider.getVersion(cwd)).toThrow();
+      expect(() => resolveVersionSource({ source: 'auto' }, cwd)).toThrow(
+        'No supported manifest file found',
+      );
     });
   });
 
@@ -372,6 +372,113 @@ describe('version source providers', () => {
     });
   });
 
+  describe('custom source type (L-007)', () => {
+    it('resolves custom source with regex and path', () => {
+      const cwd = createTempProject();
+      writeTextFile(cwd, 'version.txt', 'app_version = "2.0.0"\n');
+
+      const provider = resolveVersionSource(
+        { source: 'custom', path: 'version.txt', regex: 'app_version\\s*=\\s*"([^"]+)"' },
+        cwd,
+      );
+      expect(provider.getVersion(cwd)).toBe('2.0.0');
+    });
+
+    it('throws when custom source missing regex', () => {
+      const cwd = createTempProject();
+      expect(() => resolveVersionSource({ source: 'custom', path: 'file.txt' }, cwd)).toThrow(
+        "requires a 'regex' field",
+      );
+    });
+
+    it('throws when custom source missing path', () => {
+      const cwd = createTempProject();
+      expect(() => resolveVersionSource({ source: 'custom', regex: '(.+)' }, cwd)).toThrow(
+        "requires a 'path' field",
+      );
+    });
+  });
+
+  describe('TOML edge cases', () => {
+    it('handles dotted key syntax (M-004)', () => {
+      const cwd = createTempProject();
+      writeTextFile(cwd, 'Cargo.toml', `package.name = "my-crate"\npackage.version = "0.1.0"\n`);
+
+      const source = new TomlVersionSource('Cargo.toml', 'package.version');
+      expect(source.getVersion(cwd)).toBe('0.1.0');
+
+      source.setVersion('0.2.0', cwd);
+      expect(source.getVersion(cwd)).toBe('0.2.0');
+    });
+
+    it('handles inline tables (M-010)', () => {
+      const cwd = createTempProject();
+      writeTextFile(cwd, 'Cargo.toml', `package = { name = "my-crate", version = "0.1.0" }\n`);
+
+      const source = new TomlVersionSource('Cargo.toml', 'package.version');
+      expect(source.getVersion(cwd)).toBe('0.1.0');
+
+      source.setVersion('0.2.0', cwd);
+      expect(source.getVersion(cwd)).toBe('0.2.0');
+    });
+  });
+
+  describe('git-tag prefix detection (H-005)', () => {
+    it('creates tags without v prefix when existing tags lack it', () => {
+      const cwd = createTempProject();
+      initGitRepo(cwd);
+      execFileSync('git', ['tag', '-a', '1.0.0', '-m', 'Release 1.0.0'], {
+        cwd,
+        stdio: 'ignore',
+      });
+
+      const source = new GitTagSource();
+      expect(source.getVersion(cwd)).toBe('1.0.0');
+
+      writeTextFile(cwd, 'dummy.txt', 'bump');
+      execFileSync('git', ['add', '-A'], { cwd, stdio: 'ignore' });
+      execFileSync('git', ['commit', '-m', 'bump'], {
+        cwd,
+        stdio: 'ignore',
+        env: {
+          ...process.env,
+          GIT_AUTHOR_NAME: 'Test',
+          GIT_AUTHOR_EMAIL: 'test@test.com',
+          GIT_COMMITTER_NAME: 'Test',
+          GIT_COMMITTER_EMAIL: 'test@test.com',
+        },
+      });
+
+      source.setVersion('1.1.0', cwd);
+
+      // Should create tag without v prefix since existing tags don't use it
+      const tags = execFileSync('git', ['tag', '--list'], {
+        cwd,
+        encoding: 'utf-8',
+      }).trim();
+      expect(tags).toContain('1.1.0');
+      expect(tags).not.toContain('v1.1.0');
+    });
+  });
+
+  describe('VERSION file validation (L-004)', () => {
+    it('uses only the first line as version', () => {
+      const cwd = createTempProject();
+      writeTextFile(cwd, 'VERSION', '1.0.0\nsome notes\n');
+
+      const source = new VersionFileSource('VERSION');
+      expect(source.getVersion(cwd)).toBe('1.0.0');
+    });
+
+    it('rejects binary files (L-003)', () => {
+      const cwd = createTempProject();
+      fs.writeFileSync(path.join(cwd, 'VERSION'), Buffer.from([0x00, 0x01, 0x02]));
+
+      const source = new VersionFileSource('VERSION');
+      expect(() => source.getVersion(cwd)).toThrow('binary file');
+    });
+  });
+
   describe('detectManifests', () => {
     it('detects multiple manifests in a polyglot project', () => {
       const cwd = createTempProject();
@@ -389,6 +496,15 @@ describe('version source providers', () => {
       fs.unlinkSync(path.join(cwd, 'package.json'));
 
       expect(detectManifests(cwd)).toEqual([]);
+    });
+
+    it('does not include git-tag in auto-detection (L-008)', () => {
+      const cwd = createTempProject();
+      initGitRepo(cwd);
+
+      const detected = detectManifests(cwd);
+      expect(detected).toContain('package.json');
+      expect(detected).not.toContain('git-tag');
     });
   });
 });
