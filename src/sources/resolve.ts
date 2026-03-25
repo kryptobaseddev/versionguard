@@ -141,16 +141,25 @@ function createProvider(
 /**
  * Resolves the version source provider for a project.
  *
+ * @remarks
  * When `source` is `'auto'`, scans the project directory for known manifest
- * files and returns the first match. Falls back to `package.json` if nothing
- * is detected.
- *
- * @public
- * @since 0.3.0
+ * files and returns the first match. Throws with helpful guidance if no
+ * supported manifest is found.
  *
  * @param config - Manifest configuration from `.versionguard.yml`.
  * @param cwd - Project directory to scan.
  * @returns The resolved version source provider.
+ *
+ * @example
+ * ```ts
+ * import { resolveVersionSource } from './resolve';
+ *
+ * const provider = resolveVersionSource({ source: 'auto' }, process.cwd());
+ * const version = provider.getVersion(process.cwd());
+ * ```
+ *
+ * @public
+ * @since 0.3.0
  */
 export function resolveVersionSource(
   config: ManifestConfig,
@@ -180,13 +189,23 @@ export function resolveVersionSource(
 /**
  * Detects all manifest files present in a project directory.
  *
+ * @remarks
  * Useful for polyglot projects that may have multiple version sources.
- *
- * @public
- * @since 0.3.0
+ * Scans the detection table in priority order and returns all matches.
  *
  * @param cwd - Project directory to scan.
  * @returns Array of detected manifest source types.
+ *
+ * @example
+ * ```ts
+ * import { detectManifests } from './resolve';
+ *
+ * const manifests = detectManifests(process.cwd());
+ * // ['package.json', 'Cargo.toml']
+ * ```
+ *
+ * @public
+ * @since 0.3.0
  */
 export function detectManifests(cwd: string = process.cwd()): ManifestSourceType[] {
   const detected: ManifestSourceType[] = [];

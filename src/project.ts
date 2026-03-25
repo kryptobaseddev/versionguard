@@ -154,7 +154,11 @@ export function writePackageJson(pkg: PackageJson, cwd: string = process.cwd()):
  * ```ts
  * import { getPackageVersion } from 'versionguard';
  *
+ * // Read from package.json (legacy fallback)
  * const version = getPackageVersion(process.cwd());
+ *
+ * // Read from a configured manifest source
+ * const versionAlt = getPackageVersion(process.cwd(), { source: 'Cargo.toml' });
  * ```
  */
 export function getPackageVersion(cwd: string = process.cwd(), manifest?: ManifestConfig): string {
@@ -193,7 +197,11 @@ export function getPackageVersion(cwd: string = process.cwd(), manifest?: Manife
  * ```ts
  * import { setPackageVersion } from 'versionguard';
  *
+ * // Write to package.json (legacy fallback)
  * setPackageVersion('1.2.3', process.cwd());
+ *
+ * // Write to a configured manifest source
+ * setPackageVersion('1.2.3', process.cwd(), { source: 'Cargo.toml' });
  * ```
  */
 export function setPackageVersion(
@@ -216,12 +224,25 @@ export function setPackageVersion(
 /**
  * Resolves the version source provider for a project.
  *
- * @public
- * @since 0.3.0
+ * @remarks
+ * Delegates to `resolveVersionSource` to create the appropriate provider
+ * for the configured manifest type. Use this when you need direct access
+ * to the provider's `exists`, `getVersion`, and `setVersion` methods.
  *
  * @param manifest - Manifest configuration.
  * @param cwd - Project directory.
  * @returns The resolved provider instance.
+ *
+ * @example
+ * ```ts
+ * import { getVersionSource } from 'versionguard';
+ *
+ * const source = getVersionSource({ source: 'package.json' }, process.cwd());
+ * const version = source.getVersion(process.cwd());
+ * ```
+ *
+ * @public
+ * @since 0.3.0
  */
 export function getVersionSource(
   manifest: ManifestConfig,

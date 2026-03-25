@@ -20,7 +20,11 @@ export interface GuardWarning {
   severity: 'error' | 'warning';
   /** Human-readable description of the issue. */
   message: string;
-  /** Suggested remediation command when available. */
+  /**
+   * Suggested remediation command when available.
+   *
+   * @defaultValue `undefined`
+   */
   fix?: string;
 }
 
@@ -46,6 +50,14 @@ export interface GuardReport {
  *
  * @param cwd - Repository directory to inspect.
  * @returns A guard warning when a hooksPath override is detected.
+ *
+ * @example
+ * ```ts
+ * import { checkHooksPathOverride } from './guard';
+ *
+ * const warning = checkHooksPathOverride(process.cwd());
+ * if (warning) console.warn(warning.message);
+ * ```
  *
  * @public
  * @since 0.2.0
@@ -96,6 +108,14 @@ export function checkHooksPathOverride(cwd: string): GuardWarning | null {
  *
  * @returns A guard warning when the HUSKY bypass is detected.
  *
+ * @example
+ * ```ts
+ * import { checkHuskyBypass } from './guard';
+ *
+ * const warning = checkHuskyBypass();
+ * if (warning) console.warn(warning.message);
+ * ```
+ *
  * @public
  * @since 0.2.0
  */
@@ -123,6 +143,14 @@ export function checkHuskyBypass(): GuardWarning | null {
  * @param config - VersionGuard configuration that defines which hooks should exist.
  * @param cwd - Repository directory to inspect.
  * @returns Guard warnings for each hook that has been tampered with.
+ *
+ * @example
+ * ```ts
+ * import { checkHookIntegrity } from './guard';
+ *
+ * const warnings = checkHookIntegrity(config, process.cwd());
+ * for (const w of warnings) console.warn(w.code, w.message);
+ * ```
  *
  * @public
  * @since 0.2.0
@@ -189,6 +217,14 @@ export function checkHookIntegrity(config: VersionGuardConfig, cwd: string): Gua
  * @param config - VersionGuard configuration to inspect.
  * @returns A guard warning when hooks are enabled but not enforced.
  *
+ * @example
+ * ```ts
+ * import { checkEnforceHooksPolicy } from './guard';
+ *
+ * const warning = checkEnforceHooksPolicy(config);
+ * if (warning) console.warn(warning.message);
+ * ```
+ *
  * @public
  * @since 0.2.0
  */
@@ -219,6 +255,14 @@ export function checkEnforceHooksPolicy(config: VersionGuardConfig): GuardWarnin
  * @param config - VersionGuard configuration.
  * @param cwd - Repository directory to inspect.
  * @returns A guard report with all findings.
+ *
+ * @example
+ * ```ts
+ * import { runGuardChecks } from './guard';
+ *
+ * const report = runGuardChecks(config, process.cwd());
+ * if (!report.safe) console.error('Guard check failed:', report.warnings);
+ * ```
  *
  * @public
  * @since 0.2.0

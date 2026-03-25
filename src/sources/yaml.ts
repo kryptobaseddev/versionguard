@@ -15,6 +15,7 @@ import { escapeRegExp, getNestedValue } from './utils';
 /**
  * Reads and writes version strings from YAML manifest files.
  *
+ * @remarks
  * Supports dotted key paths (e.g. `'flutter.version'`) for nested values.
  * Uses targeted regex replacement for writes to preserve comments and formatting.
  *
@@ -22,20 +23,43 @@ import { escapeRegExp, getNestedValue } from './utils';
  * @since 0.3.0
  */
 export class YamlVersionSource implements VersionSourceProvider {
+  /** Human-readable provider name. */
   readonly name: string;
+
+  /** Filename of the YAML manifest (e.g. `'pubspec.yaml'`). */
   readonly manifestFile: string;
+
+  /** Dotted key path to the version field within the YAML document. */
   private readonly versionKey: string;
 
+  /**
+   * Creates a new YAML version source.
+   *
+   * @param manifestFile - YAML manifest filename.
+   * @param versionKey - Dotted key path to the version field.
+   */
   constructor(manifestFile: string = 'pubspec.yaml', versionKey: string = 'version') {
     this.name = manifestFile;
     this.manifestFile = manifestFile;
     this.versionKey = versionKey;
   }
 
+  /**
+   * Returns `true` when the manifest file exists in `cwd`.
+   *
+   * @param cwd - Project directory to check.
+   * @returns Whether the manifest file exists.
+   */
   exists(cwd: string): boolean {
     return fs.existsSync(path.join(cwd, this.manifestFile));
   }
 
+  /**
+   * Reads the version string from the YAML manifest.
+   *
+   * @param cwd - Project directory containing the manifest.
+   * @returns The version string extracted from the manifest.
+   */
   getVersion(cwd: string): string {
     const filePath = path.join(cwd, this.manifestFile);
     if (!fs.existsSync(filePath)) {
@@ -61,6 +85,12 @@ export class YamlVersionSource implements VersionSourceProvider {
     return version;
   }
 
+  /**
+   * Writes a version string to the YAML manifest, preserving formatting.
+   *
+   * @param version - Version string to write.
+   * @param cwd - Project directory containing the manifest.
+   */
   setVersion(version: string, cwd: string): void {
     const filePath = path.join(cwd, this.manifestFile);
     if (!fs.existsSync(filePath)) {

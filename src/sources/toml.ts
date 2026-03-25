@@ -15,26 +15,52 @@ import { escapeRegExp, getNestedValue } from './utils';
 /**
  * Reads and writes version strings from TOML manifest files.
  *
- * Uses targeted regex replacement for writes to preserve file formatting.
+ * @remarks
+ * Uses targeted regex replacement for writes to preserve file formatting,
+ * comments, and whitespace. Supports standard section headers, dotted keys,
+ * and inline table syntax.
  *
  * @public
  * @since 0.3.0
  */
 export class TomlVersionSource implements VersionSourceProvider {
+  /** Human-readable provider name. */
   readonly name: string;
+
+  /** Filename of the TOML manifest (e.g. `'Cargo.toml'`). */
   readonly manifestFile: string;
+
+  /** Dotted key path to the version field within the TOML document. */
   private readonly versionPath: string;
 
+  /**
+   * Creates a new TOML version source.
+   *
+   * @param manifestFile - TOML manifest filename.
+   * @param versionPath - Dotted key path to the version field.
+   */
   constructor(manifestFile: string = 'Cargo.toml', versionPath: string = 'package.version') {
     this.name = manifestFile;
     this.manifestFile = manifestFile;
     this.versionPath = versionPath;
   }
 
+  /**
+   * Returns `true` when the manifest file exists in `cwd`.
+   *
+   * @param cwd - Project directory to check.
+   * @returns Whether the manifest file exists.
+   */
   exists(cwd: string): boolean {
     return fs.existsSync(path.join(cwd, this.manifestFile));
   }
 
+  /**
+   * Reads the version string from the TOML manifest.
+   *
+   * @param cwd - Project directory containing the manifest.
+   * @returns The version string extracted from the manifest.
+   */
   getVersion(cwd: string): string {
     const filePath = path.join(cwd, this.manifestFile);
     if (!fs.existsSync(filePath)) {
@@ -52,6 +78,12 @@ export class TomlVersionSource implements VersionSourceProvider {
     return version;
   }
 
+  /**
+   * Writes a version string to the TOML manifest, preserving formatting.
+   *
+   * @param version - Version string to write.
+   * @param cwd - Project directory containing the manifest.
+   */
   setVersion(version: string, cwd: string): void {
     const filePath = path.join(cwd, this.manifestFile);
     if (!fs.existsSync(filePath)) {
@@ -69,6 +101,11 @@ export class TomlVersionSource implements VersionSourceProvider {
     fs.writeFileSync(filePath, updated, 'utf-8');
   }
 
+  /**
+   * Splits the dotted version path into a TOML section name and key name.
+   *
+   * @returns An object with `section` and `key` components.
+   */
   private getSectionKey(): { section: string; key: string } {
     const parts = this.versionPath.split('.');
     if (parts.length === 1) {

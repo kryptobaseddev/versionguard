@@ -14,16 +14,30 @@ import type { VersionSourceProvider } from './provider';
 /**
  * Reads and writes version strings using regex extraction from source files.
  *
+ * @remarks
  * Capture group 1 of the provided regex must match the version string.
+ * Uses position-based replacement to avoid wrong-match corruption when
+ * writing back to disk.
  *
  * @public
  * @since 0.3.0
  */
 export class RegexVersionSource implements VersionSourceProvider {
+  /** Human-readable provider name. */
   readonly name: string;
+
+  /** Filename of the source manifest (e.g. `'setup.py'`). */
   readonly manifestFile: string;
+
+  /** Compiled regex used to locate the version string. */
   private readonly versionRegex: RegExp;
 
+  /**
+   * Creates a new regex version source.
+   *
+   * @param manifestFile - Source manifest filename.
+   * @param versionRegex - Regex string with at least one capture group for the version.
+   */
   constructor(manifestFile: string, versionRegex: string) {
     this.name = manifestFile;
     this.manifestFile = manifestFile;
@@ -41,10 +55,22 @@ export class RegexVersionSource implements VersionSourceProvider {
     }
   }
 
+  /**
+   * Returns `true` when the manifest file exists in `cwd`.
+   *
+   * @param cwd - Project directory to check.
+   * @returns Whether the manifest file exists.
+   */
   exists(cwd: string): boolean {
     return fs.existsSync(path.join(cwd, this.manifestFile));
   }
 
+  /**
+   * Reads the version string from the source manifest using regex extraction.
+   *
+   * @param cwd - Project directory containing the manifest.
+   * @returns The version string captured by group 1 of the regex.
+   */
   getVersion(cwd: string): string {
     const filePath = path.join(cwd, this.manifestFile);
     if (!fs.existsSync(filePath)) {
@@ -61,6 +87,12 @@ export class RegexVersionSource implements VersionSourceProvider {
     return match[1];
   }
 
+  /**
+   * Writes a version string to the source manifest using position-based replacement.
+   *
+   * @param version - Version string to write.
+   * @param cwd - Project directory containing the manifest.
+   */
   setVersion(version: string, cwd: string): void {
     const filePath = path.join(cwd, this.manifestFile);
     if (!fs.existsSync(filePath)) {

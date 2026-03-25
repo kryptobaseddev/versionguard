@@ -11,6 +11,7 @@ import type { VersionSourceProvider } from './provider';
 /**
  * Reads version from the latest Git tag. Writing creates a new annotated tag.
  *
+ * @remarks
  * This provider is used for languages where the version is determined
  * entirely by Git tags (Go, Swift, PHP/Packagist).
  *
@@ -22,9 +23,18 @@ import type { VersionSourceProvider } from './provider';
  * @since 0.3.0
  */
 export class GitTagSource implements VersionSourceProvider {
+  /** Human-readable provider name. */
   readonly name = 'git-tag';
+
+  /** Empty string since git-tag has no manifest file. */
   readonly manifestFile = '';
 
+  /**
+   * Returns `true` when `cwd` is inside a Git repository.
+   *
+   * @param cwd - Project directory to check.
+   * @returns Whether a Git repository is found.
+   */
   exists(cwd: string): boolean {
     try {
       execFileSync('git', ['rev-parse', '--git-dir'], {
@@ -37,6 +47,12 @@ export class GitTagSource implements VersionSourceProvider {
     }
   }
 
+  /**
+   * Reads the version string from the latest Git tag.
+   *
+   * @param cwd - Project directory containing the Git repository.
+   * @returns The version string extracted from the latest version tag.
+   */
   getVersion(cwd: string): string {
     try {
       // L-006: Use --match to prefer version-like tags over arbitrary ones
@@ -47,6 +63,12 @@ export class GitTagSource implements VersionSourceProvider {
     }
   }
 
+  /**
+   * Creates a new annotated Git tag for the given version.
+   *
+   * @param version - Version string to tag.
+   * @param cwd - Project directory containing the Git repository.
+   */
   setVersion(version: string, cwd: string): void {
     // H-005: Detect prefix convention from existing tags
     const prefix = this.detectPrefix(cwd);

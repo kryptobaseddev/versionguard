@@ -288,6 +288,22 @@ export interface VersionGuardConfig {
 /**
  * Extracts the CalVer config from a VersionGuard config, throwing if missing.
  *
+ * @remarks
+ * This is a convenience helper that validates the `calver` block exists
+ * before returning it. Use this instead of accessing `config.versioning.calver`
+ * directly to get a clear error when the config is misconfigured.
+ *
+ * @param config - The full VersionGuard configuration object.
+ * @returns The validated CalVer configuration.
+ *
+ * @example
+ * ```ts
+ * import { getCalVerConfig } from './types';
+ *
+ * const calver = getCalVerConfig(config);
+ * console.log(calver.format); // 'YYYY.MM.DD'
+ * ```
+ *
  * @public
  * @since 0.3.0
  */

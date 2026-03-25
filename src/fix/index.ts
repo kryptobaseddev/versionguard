@@ -53,12 +53,17 @@ export interface FixResult {
  *
  * @param targetVersion - Version that should be written to `package.json`.
  * @param cwd - Repository directory containing `package.json`.
+ * @param manifest - Optional manifest configuration for language-agnostic support.
  * @returns The result of the package version fix attempt.
  *
  * @example
  * ```typescript
+ * // Fix using legacy package.json fallback
  * const result = fixPackageVersion('1.2.3', process.cwd());
  * console.log(result.fixed);
+ *
+ * // Fix using a configured manifest source
+ * const result2 = fixPackageVersion('1.2.3', process.cwd(), { source: 'Cargo.toml' });
  * ```
  */
 export function fixPackageVersion(

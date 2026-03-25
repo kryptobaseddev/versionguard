@@ -13,24 +13,51 @@ import { getNestedValue, setNestedValue } from './utils';
 /**
  * Reads and writes version strings from JSON manifest files.
  *
+ * @remarks
+ * Supports dotted key paths for nested version fields and preserves the
+ * original indentation style when writing back to disk.
+ *
  * @public
  * @since 0.3.0
  */
 export class JsonVersionSource implements VersionSourceProvider {
+  /** Human-readable provider name. */
   readonly name: string;
+
+  /** Filename of the JSON manifest (e.g. `'package.json'`). */
   readonly manifestFile: string;
+
+  /** Dotted key path to the version field within the JSON document. */
   private readonly versionPath: string;
 
+  /**
+   * Creates a new JSON version source.
+   *
+   * @param manifestFile - JSON manifest filename.
+   * @param versionPath - Dotted key path to the version field.
+   */
   constructor(manifestFile: string = 'package.json', versionPath: string = 'version') {
     this.name = manifestFile;
     this.manifestFile = manifestFile;
     this.versionPath = versionPath;
   }
 
+  /**
+   * Returns `true` when the manifest file exists in `cwd`.
+   *
+   * @param cwd - Project directory to check.
+   * @returns Whether the manifest file exists.
+   */
   exists(cwd: string): boolean {
     return fs.existsSync(path.join(cwd, this.manifestFile));
   }
 
+  /**
+   * Reads the version string from the JSON manifest.
+   *
+   * @param cwd - Project directory containing the manifest.
+   * @returns The version string extracted from the manifest.
+   */
   getVersion(cwd: string): string {
     const filePath = path.join(cwd, this.manifestFile);
     if (!fs.existsSync(filePath)) {
@@ -47,6 +74,12 @@ export class JsonVersionSource implements VersionSourceProvider {
     return version;
   }
 
+  /**
+   * Writes a version string to the JSON manifest, preserving indentation.
+   *
+   * @param version - Version string to write.
+   * @param cwd - Project directory containing the manifest.
+   */
   setVersion(version: string, cwd: string): void {
     const filePath = path.join(cwd, this.manifestFile);
     if (!fs.existsSync(filePath)) {
