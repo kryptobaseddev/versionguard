@@ -51,3 +51,4 @@ yarn-error.log*
 
 # CLEO
 .cleo/
+clawmsgr-agent.json
