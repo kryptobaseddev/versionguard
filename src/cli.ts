@@ -81,6 +81,7 @@ export function createProgram(): Command {
     .option('--changelog', 'Enable changelog validation (default: true)')
     .option('--no-changelog', 'Disable changelog validation')
     .option('-y, --yes', 'Accept all defaults, no prompts')
+    .option('--force', 'Overwrite existing config file')
     .action(
       async (options: {
         cwd: string;
@@ -90,6 +91,7 @@ export function createProgram(): Command {
         hooks?: boolean;
         changelog?: boolean;
         yes?: boolean;
+        force?: boolean;
       }) => {
         try {
           const isHeadless = options.yes || options.type || options.format || options.manifest;
@@ -106,6 +108,7 @@ export function createProgram(): Command {
               hooks: options.hooks,
               changelog: options.changelog,
               yes: options.yes,
+              force: options.force,
             });
             console.log(styles.success(`✓ Created ${path.relative(options.cwd, configPath)}`));
           } else {

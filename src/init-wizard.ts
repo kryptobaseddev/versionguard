@@ -27,6 +27,7 @@ export interface InitOptions {
   hooks?: boolean;
   changelog?: boolean;
   yes?: boolean;
+  force?: boolean;
 }
 
 /**
@@ -138,8 +139,10 @@ export async function runWizard(cwd: string): Promise<string | null> {
  */
 export function runHeadless(options: InitOptions): string {
   const existingConfig = findExistingConfig(options.cwd);
-  if (existingConfig && !options.yes) {
-    throw new Error(`Config already exists: ${existingConfig}. Use --yes to overwrite.`);
+  if (existingConfig && !options.force && !options.yes) {
+    throw new Error(
+      `Config already exists: ${existingConfig}. Use --force to overwrite or --yes to accept defaults.`,
+    );
   }
 
   const config = buildConfig({
