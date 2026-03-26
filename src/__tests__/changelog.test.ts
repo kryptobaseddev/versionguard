@@ -3,7 +3,13 @@ import * as path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { addVersionEntry, getLatestVersion, validateChangelog } from '../changelog';
+import {
+  addVersionEntry,
+  fixChangesetMangling,
+  getLatestVersion,
+  isChangesetMangled,
+  validateChangelog,
+} from '../changelog';
 import { createTempProject, writeTextFile } from './test-utils';
 
 describe('changelog', () => {
@@ -204,5 +210,107 @@ describe('changelog', () => {
     expect(() => addVersionEntry(changelogPath, '1.2.3', '2026-03-21')).toThrow(
       'Changelog must have an [Unreleased] section',
     );
+  });
+
+  it('detects Changesets-mangled changelog', () => {
+    const cwd = createTempProject();
+    const mangled = writeTextFile(
+      cwd,
+      'CHANGELOG.md',
+      '# Changelog\n\n## 0.4.0\n\n### Minor Changes\n\n- ec39479: feat: something\n\nAll notable changes...\n\n## [Unreleased]\n\n## [0.3.0] - 2026-03-25\n',
+    );
+
+    expect(isChangesetMangled(mangled)).toBe(true);
+  });
+
+  it('does not flag properly formatted changelog as mangled', () => {
+    const cwd = createTempProject();
+    const proper = writeTextFile(
+      cwd,
+      'CHANGELOG.md',
+      '# Changelog\n\n## [Unreleased]\n\n## [0.4.0] - 2026-03-25\n\n### Added\n\n- Something\n',
+    );
+
+    expect(isChangesetMangled(proper)).toBe(false);
+  });
+
+  it('fixes Changesets-mangled changelog into Keep a Changelog format', () => {
+    const cwd = createTempProject();
+    const changelogPath = writeTextFile(
+      cwd,
+      'CHANGELOG.md',
+      [
+        '# Changelog',
+        '',
+        '## 0.4.0',
+        '',
+        '### Minor Changes',
+        '',
+        '- ec39479: feat: add new feature',
+        '',
+        '### Patch Changes',
+        '',
+        '- 8febca6: fix: fix a bug',
+        '',
+        'All notable changes to this project will be documented in this file.',
+        '',
+        '## [Unreleased]',
+        '',
+        '## [0.3.0] - 2026-03-25',
+        '',
+        '### Added',
+        '',
+        '- Previous entry',
+        '',
+        '[Unreleased]: https://github.com/org/repo/compare/v0.3.0...HEAD',
+        '[0.3.0]: https://github.com/org/repo/releases/tag/v0.3.0',
+        '',
+      ].join('\n'),
+    );
+
+    const fixed = fixChangesetMangling(changelogPath, '2026-03-25');
+    expect(fixed).toBe(true);
+
+    const result = fs.readFileSync(changelogPath, 'utf-8');
+
+    // Should have proper bracketed header with date
+    expect(result).toContain('## [0.4.0] - 2026-03-25');
+
+    // Should have Keep a Changelog section names
+    expect(result).toContain('### Added');
+    expect(result).toContain('### Fixed');
+    expect(result).not.toContain('### Minor Changes');
+    expect(result).not.toContain('### Patch Changes');
+
+    // Should strip commit hashes
+    expect(result).not.toContain('ec39479');
+    expect(result).not.toContain('8febca6');
+    expect(result).toContain('- add new feature');
+    expect(result).toContain('- fix a bug');
+
+    // Should keep [Unreleased] section
+    expect(result).toContain('## [Unreleased]');
+
+    // Should keep previous entries
+    expect(result).toContain('## [0.3.0] - 2026-03-25');
+    expect(result).toContain('- Previous entry');
+
+    // Should update compare links
+    expect(result).toContain('[Unreleased]: https://github.com/org/repo/compare/v0.4.0...HEAD');
+    expect(result).toContain('[0.4.0]: https://github.com/org/repo/compare/v0.3.0...v0.4.0');
+
+    // Should now validate
+    expect(isChangesetMangled(changelogPath)).toBe(false);
+  });
+
+  it('returns false when changelog is not mangled', () => {
+    const cwd = createTempProject();
+    const changelogPath = writeTextFile(
+      cwd,
+      'CHANGELOG.md',
+      '# Changelog\n\n## [Unreleased]\n\n## [0.4.0] - 2026-03-25\n',
+    );
+
+    expect(fixChangesetMangling(changelogPath)).toBe(false);
   });
 });

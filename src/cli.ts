@@ -19,6 +19,7 @@ import * as guard from './guard';
 import * as versionguard from './index';
 import { runHeadless, runWizard } from './init-wizard';
 import * as project from './project';
+import { findProjectRoot, formatNotProjectError } from './project-root';
 import * as tag from './tag';
 
 const styles = {
@@ -29,6 +30,19 @@ const styles = {
   dim: chalk.gray,
   bold: chalk.bold,
 };
+
+/**
+ * Resolves the effective project root, checking for project markers.
+ * Exits with helpful guidance if not in a project directory.
+ */
+function requireProject(cwd: string, command: string): string {
+  const result = findProjectRoot(cwd);
+  if (!result.found) {
+    console.error(styles.error(formatNotProjectError(cwd, command)));
+    process.exit(1);
+  }
+  return result.root;
+}
 
 /**
  * Creates the VersionGuard CLI program definition.
@@ -128,6 +142,7 @@ export function createProgram(): Command {
     .option('--json', 'Print machine-readable JSON output')
     .action((options: { cwd: string; prev?: string; json?: boolean }) => {
       try {
+        options.cwd = requireProject(options.cwd, 'check');
         const config = versionguard.getConfig(options.cwd);
         const version = versionguard.getPackageVersion(options.cwd, config.manifest);
         const result = feedback.getVersionFeedback(version, config, options.prev);
@@ -192,6 +207,7 @@ export function createProgram(): Command {
     .option('--strict', 'Run guard checks and fail on any policy gap or bypass')
     .action((options: { cwd: string; hook?: string; json?: boolean; strict?: boolean }) => {
       try {
+        options.cwd = requireProject(options.cwd, 'validate');
         const config = versionguard.getConfig(options.cwd);
         const version = versionguard.getPackageVersion(options.cwd, config.manifest);
         const result = versionguard.validate(config, options.cwd);
@@ -307,6 +323,7 @@ export function createProgram(): Command {
     .option('--strict', 'Include guard checks for bypass detection')
     .action((options: { cwd: string; json?: boolean; strict?: boolean }) => {
       try {
+        options.cwd = requireProject(options.cwd, 'doctor');
         const config = versionguard.getConfig(options.cwd);
         const report = versionguard.doctor(config, options.cwd);
         const guardReport = options.strict ? guard.runGuardChecks(config, options.cwd) : undefined;
@@ -368,6 +385,7 @@ export function createProgram(): Command {
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .action((options: { cwd: string }) => {
       try {
+        options.cwd = requireProject(options.cwd, 'fix');
         const config = versionguard.getConfig(options.cwd);
         const version = versionguard.getPackageVersion(options.cwd, config.manifest);
         const results = fix.fixAll(config, version, options.cwd);
@@ -386,11 +404,41 @@ export function createProgram(): Command {
     });
 
   program
+    .command('fix-changelog')
+    .description('Fix Changesets-mangled changelog into Keep a Changelog format')
+    .option('-c, --cwd <path>', 'Working directory', process.cwd())
+    .action((options: { cwd: string }) => {
+      try {
+        options.cwd = requireProject(options.cwd, 'fix-changelog');
+        const config = versionguard.getConfig(options.cwd);
+        const changelogPath = path.join(options.cwd, config.changelog.file);
+
+        if (!versionguard.isChangesetMangled(changelogPath)) {
+          console.log(styles.dim('• Changelog is not mangled — no fix needed'));
+          return;
+        }
+
+        const fixed = versionguard.fixChangesetMangling(changelogPath);
+        if (fixed) {
+          console.log(
+            styles.success(`✓ Restructured ${config.changelog.file} to Keep a Changelog format`),
+          );
+        } else {
+          console.log(styles.dim('• Could not auto-fix changelog structure'));
+        }
+      } catch (error) {
+        console.error(styles.error(`✗ ${(error as Error).message}`));
+        process.exit(1);
+      }
+    });
+
+  program
     .command('sync')
     .description('Sync version to all configured files')
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .action((options: { cwd: string }) => {
       try {
+        options.cwd = requireProject(options.cwd, 'sync');
         const config = versionguard.getConfig(options.cwd);
         const version = versionguard.getPackageVersion(options.cwd, config.manifest);
         const results = fix.fixSyncIssues(config, options.cwd);
@@ -415,6 +463,7 @@ export function createProgram(): Command {
     .action(
       (options: { cwd: string; type?: 'major' | 'minor' | 'patch' | 'auto'; apply?: boolean }) => {
         try {
+          options.cwd = requireProject(options.cwd, 'bump');
           const config = versionguard.getConfig(options.cwd);
           const currentVersion = versionguard.getPackageVersion(options.cwd, config.manifest);
           const suggestions = fix.suggestNextVersion(currentVersion, config, options.type);
@@ -452,6 +501,7 @@ export function createProgram(): Command {
     .action(
       (version: string | undefined, options: { cwd: string; message?: string; fix?: boolean }) => {
         try {
+          options.cwd = requireProject(options.cwd, 'tag');
           const config = versionguard.getConfig(options.cwd);
           const tagVersion =
             version || versionguard.getPackageVersion(options.cwd, config.manifest);
@@ -487,6 +537,7 @@ export function createProgram(): Command {
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .action((options: { cwd: string }) => {
       try {
+        options.cwd = requireProject(options.cwd, 'hooks install');
         const config = versionguard.getConfig(options.cwd);
         versionguard.installHooks(config.git, options.cwd);
         console.log(styles.success('✓ Git hooks installed'));
@@ -502,6 +553,7 @@ export function createProgram(): Command {
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .action((options: { cwd: string }) => {
       try {
+        options.cwd = requireProject(options.cwd, 'hooks uninstall');
         versionguard.uninstallHooks(options.cwd);
         console.log(styles.success('✓ Git hooks uninstalled'));
       } catch (error) {
@@ -516,6 +568,7 @@ export function createProgram(): Command {
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .action((options: { cwd: string }) => {
       try {
+        options.cwd = requireProject(options.cwd, 'hooks status');
         if (versionguard.areHooksInstalled(options.cwd)) {
           console.log(styles.success('✓ VersionGuard hooks are installed'));
           return;

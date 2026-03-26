@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import * as calver from '../calver';
-import { addVersionEntry } from '../changelog';
+import { addVersionEntry, fixChangesetMangling, isChangesetMangled } from '../changelog';
 import { getPackageVersion, getVersionSource, setPackageVersion } from '../project';
 import * as semver from '../semver';
 import { syncVersion } from '../sync';
@@ -273,6 +273,19 @@ export function fixAll(
   results.push(...syncResults);
 
   if (config.changelog.enabled) {
+    // Fix Changesets mangling before other changelog fixes
+    const changelogPath = path.join(cwd, config.changelog.file);
+    if (isChangesetMangled(changelogPath)) {
+      const fixed = fixChangesetMangling(changelogPath);
+      if (fixed) {
+        results.push({
+          fixed: true,
+          message: `Restructured ${config.changelog.file} from Changesets format to Keep a Changelog`,
+          file: changelogPath,
+        });
+      }
+    }
+
     const changelogResult = fixChangelog(version, config, cwd);
     if (changelogResult.fixed) {
       results.push(changelogResult);

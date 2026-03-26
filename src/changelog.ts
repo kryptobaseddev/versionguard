@@ -172,6 +172,208 @@ export function addVersionEntry(
   fs.writeFileSync(changelogPath, updated, 'utf-8');
 }
 
+/**
+ * Detects whether a changelog has been mangled by Changesets.
+ *
+ * @remarks
+ * Changesets prepends version content above the Keep a Changelog preamble,
+ * producing `## 0.4.0` (no brackets, no date) before the "All notable changes"
+ * paragraph. This function detects that pattern.
+ *
+ * @param changelogPath - Path to the changelog file.
+ * @returns `true` when the changelog appears to be mangled by Changesets.
+ *
+ * @example
+ * ```ts
+ * import { isChangesetMangled } from 'versionguard';
+ *
+ * if (isChangesetMangled('CHANGELOG.md')) {
+ *   fixChangesetMangling('CHANGELOG.md');
+ * }
+ * ```
+ *
+ * @public
+ * @since 0.4.0
+ */
+export function isChangesetMangled(changelogPath: string): boolean {
+  if (!fs.existsSync(changelogPath)) return false;
+  const content = fs.readFileSync(changelogPath, 'utf-8');
+  // Mangled pattern: has an unbracketed version header (## X.Y.Z without [])
+  // appearing before ## [Unreleased]
+  return /^## \d+\.\d+/m.test(content) && content.includes('## [Unreleased]');
+}
+
+/** Maps Changesets section names to Keep a Changelog section names. */
+const SECTION_MAP: Record<string, string> = {
+  'Major Changes': 'Changed',
+  'Minor Changes': 'Added',
+  'Patch Changes': 'Fixed',
+};
+
+/**
+ * Fixes a Changesets-mangled changelog into proper Keep a Changelog format.
+ *
+ * @remarks
+ * This function:
+ * 1. Extracts the version number and content prepended by Changesets
+ * 2. Converts Changesets section names (Minor Changes, Patch Changes) to
+ *    Keep a Changelog names (Added, Fixed)
+ * 3. Strips commit hashes from entry lines
+ * 4. Adds the date and brackets to the version header
+ * 5. Inserts the entry after `## [Unreleased]` in the correct position
+ * 6. Restores the preamble to its proper location
+ *
+ * @param changelogPath - Path to the changelog file to fix.
+ * @param date - Release date in `YYYY-MM-DD` format.
+ * @returns `true` when the file was modified, `false` when no fix was needed.
+ *
+ * @example
+ * ```ts
+ * import { fixChangesetMangling } from 'versionguard';
+ *
+ * const fixed = fixChangesetMangling('CHANGELOG.md');
+ * ```
+ *
+ * @public
+ * @since 0.4.0
+ */
+export function fixChangesetMangling(
+  changelogPath: string,
+  date: string = new Date().toISOString().slice(0, 10),
+): boolean {
+  if (!fs.existsSync(changelogPath)) return false;
+
+  const content = fs.readFileSync(changelogPath, 'utf-8');
+
+  // Find the unbracketed version header that Changesets creates
+  const versionMatch = content.match(/^## (\d+\.\d+\.\d+[^\n]*)\n/m);
+  if (!versionMatch || versionMatch.index === undefined) return false;
+
+  // If the version already has brackets, it's not mangled
+  const fullHeader = versionMatch[0];
+  if (fullHeader.includes('[')) return false;
+
+  const version = versionMatch[1].trim();
+
+  // Already has a proper bracketed entry for this version — skip
+  if (content.includes(`## [${version}]`)) return false;
+
+  // Extract the Changesets content block (from ## X.Y.Z to the preamble or ## [Unreleased])
+  const startIndex = versionMatch.index;
+  const preambleMatch = content.indexOf('All notable changes', startIndex);
+  const unreleasedMatch = content.indexOf('## [Unreleased]', startIndex);
+
+  // Determine where the Changesets block ends
+  let endIndex: number;
+  if (preambleMatch !== -1 && preambleMatch < unreleasedMatch) {
+    endIndex = preambleMatch;
+  } else if (unreleasedMatch !== -1) {
+    endIndex = unreleasedMatch;
+  } else {
+    return false; // Can't determine structure
+  }
+
+  // Extract and transform the Changesets content
+  const changesetsBlock = content.slice(startIndex + fullHeader.length, endIndex).trim();
+  const transformedSections = transformChangesetsContent(changesetsBlock);
+
+  // Build the new entry
+  const newEntry = `## [${version}] - ${date}\n\n${transformedSections}\n\n`;
+
+  // Reconstruct the file:
+  // 1. Everything before the Changesets insertion (# Changelog\n\n)
+  const beforeChangesets = content.slice(0, startIndex);
+  // 2. Everything from the preamble or [Unreleased] onward
+  const afterChangesets = content.slice(endIndex);
+
+  // Find ## [Unreleased] in the after section and insert our entry right after it
+  const unreleasedInAfter = afterChangesets.indexOf('## [Unreleased]');
+  if (unreleasedInAfter === -1) {
+    // No [Unreleased] section — just put the entry at the start of the remaining content
+    const rebuilt = `${beforeChangesets}${newEntry}${afterChangesets}`;
+    fs.writeFileSync(changelogPath, rebuilt, 'utf-8');
+    return true;
+  }
+
+  // Find the end of the [Unreleased] line
+  const unreleasedLineEnd = afterChangesets.indexOf('\n', unreleasedInAfter);
+  const afterUnreleased =
+    unreleasedLineEnd !== -1 ? afterChangesets.slice(0, unreleasedLineEnd + 1) : afterChangesets;
+  const rest = unreleasedLineEnd !== -1 ? afterChangesets.slice(unreleasedLineEnd + 1) : '';
+
+  const rebuilt = `${beforeChangesets}${afterUnreleased}\n${newEntry}${rest}`;
+
+  // Update compare links
+  const withLinks = updateCompareLinks(rebuilt, version);
+
+  fs.writeFileSync(changelogPath, withLinks, 'utf-8');
+  return true;
+}
+
+/**
+ * Transforms Changesets-style content into Keep a Changelog sections.
+ *
+ * Converts "### Minor Changes" → "### Added", strips commit hashes, etc.
+ */
+function transformChangesetsContent(block: string): string {
+  const lines = block.split('\n');
+  const result: string[] = [];
+
+  for (const line of lines) {
+    // Transform section headers
+    const sectionMatch = line.match(/^### (.+)/);
+    if (sectionMatch) {
+      const mapped = SECTION_MAP[sectionMatch[1]] ?? sectionMatch[1];
+      result.push(`### ${mapped}`);
+      continue;
+    }
+
+    // Strip commit hashes from entries: "- abc1234: feat: description" → "- description"
+    const entryMatch = line.match(
+      /^(\s*-\s+)[a-f0-9]{7,}: (?:feat|fix|chore|docs|refactor|perf|test|ci|build|style)(?:\([^)]*\))?: (.+)/,
+    );
+    if (entryMatch) {
+      result.push(`${entryMatch[1]}${entryMatch[2]}`);
+      continue;
+    }
+
+    // Strip commit hashes without conventional commit prefix: "- abc1234: description"
+    const simpleHashMatch = line.match(/^(\s*-\s+)[a-f0-9]{7,}: (.+)/);
+    if (simpleHashMatch) {
+      result.push(`${simpleHashMatch[1]}${simpleHashMatch[2]}`);
+      continue;
+    }
+
+    result.push(line);
+  }
+
+  return result.join('\n');
+}
+
+/**
+ * Updates the compare links section at the bottom of the changelog.
+ */
+function updateCompareLinks(content: string, version: string): string {
+  // Update [Unreleased] compare link to point to new version
+  const unreleasedLinkRegex = /\[Unreleased\]: (https:\/\/[^\s]+\/compare\/v)([\d.]+)(\.\.\.HEAD)/;
+  const match = content.match(unreleasedLinkRegex);
+  if (match) {
+    const baseUrl = match[1].replace(/v$/, '');
+    const previousVersion = match[2];
+    const newUnreleasedLink = `[Unreleased]: ${baseUrl}v${version}...HEAD`;
+    const newVersionLink = `[${version}]: ${baseUrl}v${previousVersion}...v${version}`;
+
+    let updated = content.replace(unreleasedLinkRegex, newUnreleasedLink);
+    // Add the new version link if it doesn't exist
+    if (!updated.includes(`[${version}]:`)) {
+      updated = updated.replace(newUnreleasedLink, `${newUnreleasedLink}\n${newVersionLink}`);
+    }
+    return updated;
+  }
+
+  return content;
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

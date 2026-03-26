@@ -23,13 +23,14 @@ import {
 } from './types';
 
 export * as calver from './calver';
-export { validateChangelog } from './changelog';
+export { fixChangesetMangling, isChangesetMangled, validateChangelog } from './changelog';
 export { getConfig, initConfig } from './config';
 export * from './feedback';
 export * from './fix';
 export * from './guard';
 export { areHooksInstalled, installHooks, uninstallHooks } from './hooks';
 export { getPackageVersion, getVersionSource } from './project';
+export { findProjectRoot, formatNotProjectError } from './project-root';
 export * as semver from './semver';
 export * from './sources';
 export { checkHardcodedVersions, syncVersion } from './sync';
