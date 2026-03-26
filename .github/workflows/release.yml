@@ -80,6 +80,23 @@ jobs:
               --target main || echo "Release $TAG already exists, skipping"
           done
 
+      - name: Publish to npm if not already published
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          PACKAGE=$(node -p "require('./package.json').name")
+
+          # Check if this version is already on npm
+          PUBLISHED=$(npm view "${PACKAGE}@${VERSION}" version 2>/dev/null || echo "")
+          if [ "$PUBLISHED" = "$VERSION" ]; then
+            echo "${PACKAGE}@${VERSION} already published to npm, skipping"
+          else
+            echo "Publishing ${PACKAGE}@${VERSION} to npm..."
+            npm publish --provenance --access public
+            echo "Published ${PACKAGE}@${VERSION}"
+          fi
+
       - name: Ensure GitHub Release exists for current version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,7 +104,7 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           TAG="v${VERSION}"
 
-          # Skip if tag/release already exists
+          # Skip if release already exists
           if gh release view "$TAG" > /dev/null 2>&1; then
             echo "Release $TAG already exists, nothing to do"
             exit 0
