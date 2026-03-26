@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-03-26
+
+### Added
+
+- Add SemVerConfig for symmetric versioning configuration
+
+  - Added `SemVerConfig` interface with `allowVPrefix`, `allowBuildMetadata`, and `requirePrerelease` knobs
+  - `schemeRules.allowedModifiers` now validates SemVer prerelease tags (was CalVer-only)
+  - Config always ships both `semver:` and `calver:` blocks — `type` is the switch, no commenting/uncommenting needed
+  - Extracted shared modifier validation into `scheme-rules.ts` (DRY across both versioning strategies)
+  - Interactive wizard shows SemVer options when semver is selected
+  - Headless init supports `--allow-v-prefix`, `--no-build-metadata`, `--require-prerelease` flags
+  - CKM automatically generates a `semver` topic from the new `SemVerConfig` interface
+  - 20 new tests covering all SemVer config knobs and schemeRules integration
+
+
 ## [0.5.0] - 2026-03-26
 
 ### Added
@@ -49,7 +65,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   **Dependencies:**
 
   - `@forge-ts/cli` updated to 0.21.1 (CKM generation support)
-
 
 ## [0.4.0] - 2026-03-25
 
@@ -130,7 +145,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI with init, check, validate, sync, bump commands
 - Configurable via .versionguard.yml
 
-[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.2.0...v0.3.0
