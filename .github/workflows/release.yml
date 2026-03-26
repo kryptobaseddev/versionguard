@@ -57,7 +57,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create GitHub Releases
+      - name: Create GitHub Releases (from Changesets)
         if: steps.changesets.outputs.published == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -79,3 +79,28 @@ jobs:
               --notes "$BODY" \
               --target main || echo "Release $TAG already exists, skipping"
           done
+
+      - name: Ensure GitHub Release exists for current version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}"
+
+          # Skip if tag/release already exists
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG already exists, nothing to do"
+            exit 0
+          fi
+
+          BODY=$(awk "/^## \[${VERSION}\]/{found=1; next} /^## \[/{if(found) exit} found{print}" CHANGELOG.md)
+
+          if [ -z "$BODY" ]; then
+            BODY="Release @codluv/versionguard@${VERSION}"
+          fi
+
+          gh release create "$TAG" \
+            --title "v${VERSION}" \
+            --notes "$BODY" \
+            --target main
+          echo "Created release $TAG"
