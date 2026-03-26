@@ -32,7 +32,19 @@ jobs:
       - name: Validate with versionguard (dogfood)
         run: node dist/cli.js validate
 
+      - name: Check for pending changesets
+        id: has_changesets
+        run: |
+          # Count .md files in .changeset/ excluding README.md and config.json
+          COUNT=$(find .changeset -name '*.md' ! -name 'README.md' 2>/dev/null | wc -l)
+          if [ "$COUNT" -gt 0 ]; then
+            echo "pending=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pending=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create Release PR or Publish
+        if: steps.has_changesets.outputs.pending == 'true'
         id: changesets
         uses: changesets/action@v1
         with:
