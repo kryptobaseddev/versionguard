@@ -38,6 +38,24 @@ Developers should be able to:
 The goal is not to give people more release steps.
 The goal is to remove avoidable version mistakes from the workflow entirely.
 
+## Where VersionGuard Runs
+
+VersionGuard enforces at three points in the development lifecycle:
+
+1. **Local dev (git hooks):** `pre-commit` and `pre-push` hooks run `vg validate` automatically. This catches version drift, changelog issues, and sync mismatches before code leaves the developer's machine. This is the primary enforcement point.
+
+2. **CI (GitHub Actions):** `vg validate` runs as a build gate in CI. This catches anything the hooks missed (hooks can be skipped with `--no-verify`), validates on every PR, and ensures automated dependency PRs (e.g. Dependabot) don't break version consistency.
+
+3. **CLI (developer workflow):** `vg check`, `vg fix`, `vg sync`, `vg tag`, `vg doctor` — manual commands that developers and agents use during the release flow.
+
+The layered enforcement means mistakes are caught at the cheapest point (locally), backstopped by CI, and repairable through the CLI.
+
+## Who Needs VersionGuard
+
+- **Any project that ships versioned software** and wants to stop version-related drift: stale install commands in docs, missing changelog entries, hardcoded version strings in CI configs or Dockerfiles, tag/manifest mismatches
+- **Teams using AI agents** that modify code — VG is the guardrail that catches when agents skip versioning steps or leave the repo in an inconsistent release state
+- **Polyglot projects** that need consistent version governance across npm, Rust, Python, Dart, PHP, Java, and more
+
 ## Design Principles
 
 - **Single source of truth**: the canonical version comes from `package.json`
