@@ -212,6 +212,19 @@ import { fixChangesetMangling } from 'versionguard';
 const fixed = fixChangesetMangling('CHANGELOG.md');
 ```
 
+## `createCkmEngine()`
+
+*Creates a CKM engine from a parsed manifest.*
+
+[View in API reference](/packages/./api/functions#createckmengine)
+
+```ts
+import { createCkmEngine } from './ckm/engine';
+
+const engine = createCkmEngine(manifest);
+console.log(engine.getTopicIndex('mytool'));
+```
+
 ## `parse()`
 
 *Parses a semantic version string.*

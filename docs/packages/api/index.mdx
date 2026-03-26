@@ -25,6 +25,7 @@ API reference for the `.` package.
 | [`addVersionEntry()`](/packages/./api/functions#addversionentry)                 | function | Inserts a new version entry beneath the `[Unreleased]` section.                  |
 | [`isChangesetMangled()`](/packages/./api/functions#ischangesetmangled)           | function | Detects whether a changelog has been mangled by Changesets.                      |
 | [`fixChangesetMangling()`](/packages/./api/functions#fixchangesetmangling)       | function | Fixes a Changesets-mangled changelog into proper Keep a Changelog format.        |
+| [`createCkmEngine()`](/packages/./api/functions#createckmengine)                 | function | Creates a CKM engine from a parsed manifest.                                     |
 | [`parse()`](/packages/./api/functions#parse)                                     | function | Parses a semantic version string.                                                |
 | [`validate()`](/packages/./api/functions#validate)                               | function | Validates that a string is a supported semantic version.                         |
 | [`compare()`](/packages/./api/functions#compare)                                 | function | Compares two semantic version strings.                                           |
@@ -72,10 +73,6 @@ API reference for the `.` package.
 | [`checkHookIntegrity()`](/packages/./api/functions#checkhookintegrity)           | function | Verifies that installed hook scripts match the expected content.                 |
 | [`checkEnforceHooksPolicy()`](/packages/./api/functions#checkenforcehookspolicy) | function | Checks whether hooks are configured as required but not enforced.                |
 | [`runGuardChecks()`](/packages/./api/functions#runguardchecks)                   | function | Runs all guard checks and returns a consolidated report.                         |
-| [`getTopicIndex()`](/packages/./api/functions#gettopicindex)                     | function | Returns the topic index listing.                                                 |
-| [`getTopicContent()`](/packages/./api/functions#gettopiccontent)                 | function | Returns help content for a specific topic.                                       |
-| [`getLlmContext()`](/packages/./api/functions#getllmcontext)                     | function | Returns the full API context for LLM consumption.                                |
-| [`getHelpJson()`](/packages/./api/functions#gethelpjson)                         | function | Returns the topic index as a JSON structure for machine parsing.                 |
 | [`getDefaultConfig()`](/packages/./api/functions#getdefaultconfig)               | function | Returns a deep-cloned copy of the built-in VersionGuard configuration.           |
 | [`findConfig()`](/packages/./api/functions#findconfig)                           | function | Finds the first supported VersionGuard config file in a directory.               |
 | [`loadConfig()`](/packages/./api/functions#loadconfig)                           | function | Loads a VersionGuard config file from disk.                                      |
@@ -138,6 +135,16 @@ API reference for the `.` package.
 | [`DoctorReport`](/packages/./api/types#doctorreport)                           | interface | Reports whether a project is ready to pass VersionGuard checks.                  |
 | [`ParsedCalVerFormat`](/packages/./api/types#parsedcalverformat)               | interface | Parsed token layout for a supported CalVer format string.                        |
 | [`ChangelogValidationResult`](/packages/./api/types#changelogvalidationresult) | interface | Describes the outcome of validating a changelog file.                            |
+| [`CkmConcept`](/packages/./api/types#ckmconcept)                               | interface | A domain concept extracted from an exported interface or type.                   |
+| [`CkmProperty`](/packages/./api/types#ckmproperty)                             | interface | A property within a concept.                                                     |
+| [`CkmOperation`](/packages/./api/types#ckmoperation)                           | interface | A user-facing operation extracted from an exported function.                     |
+| [`CkmInput`](/packages/./api/types#ckminput)                                   | interface | A function parameter within an operation.                                        |
+| [`CkmConstraint`](/packages/./api/types#ckmconstraint)                         | interface | A constraint enforced by the tool.                                               |
+| [`CkmWorkflow`](/packages/./api/types#ckmworkflow)                             | interface | A multi-step workflow for a common goal.                                         |
+| [`CkmConfigEntry`](/packages/./api/types#ckmconfigentry)                       | interface | A config schema entry with type, description, and default.                       |
+| [`CkmManifest`](/packages/./api/types#ckmmanifest)                             | interface | The complete Codebase Knowledge Manifest.                                        |
+| [`CkmTopic`](/packages/./api/types#ckmtopic)                                   | interface | An auto-generated topic derived from CKM data.                                   |
+| [`CkmEngine`](/packages/./api/types#ckmengine)                                 | interface | The CKM engine — provides topic derivation, filtering, and output formatting.    |
 | [`Suggestion`](/packages/./api/types#suggestion)                               | interface | Feedback entry point exports for suggestion and guidance helpers.                |
 | [`FeedbackResult`](/packages/./api/types#feedbackresult)                       | interface | Aggregates validation errors with suggested next steps.                          |
 | [`VersionSourceProvider`](/packages/./api/types#versionsourceprovider)         | interface | Abstraction for reading and writing a version string from any manifest format.   |
@@ -148,55 +155,54 @@ API reference for the `.` package.
 | [`FixResult`](/packages/./api/types#fixresult)                                 | interface | Fix entry point exports for auto-remediation helpers.                            |
 | [`GuardWarning`](/packages/./api/types#guardwarning)                           | interface | Describes a single guard finding.                                                |
 | [`GuardReport`](/packages/./api/types#guardreport)                             | interface | Result of a full guard check pass.                                               |
-| [`HelpTopic`](/packages/./api/types#helptopic)                                 | interface | Embedded help topics for the CLI help system.                                    |
 | [`ProjectRootResult`](/packages/./api/types#projectrootresult)                 | interface | Result of project root detection.                                                |
 | [`TagInfo`](/packages/./api/types#taginfo)                                     | interface | Tag entry point exports for release-tag management helpers.                      |
 | [`InitOptions`](/packages/./api/types#initoptions)                             | interface | Options for headless (non-interactive) initialization.                           |
 
 ## Other Exports
 
-| Symbol                                                           | Kind     | Description                                                                      |
-| ---------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
-| [`types.ts`](/packages/./api/functions#typests)                  | file     |                                                                                  |
-| [`calver.ts`](/packages/./api/functions#calverts)                | file     | Calendar version parsing, formatting, and comparison helpers.                    |
-| [`changelog.ts`](/packages/./api/functions#changelogts)          | file     |                                                                                  |
-| [`semver.ts`](/packages/./api/functions#semverts)                | file     | Semantic version parsing, validation, comparison, and increment helpers.         |
-| [`index.ts`](/packages/./api/functions#indexts)                  | file     |                                                                                  |
-| [`provider.ts`](/packages/./api/functions#providerts)            | file     |                                                                                  |
-| [`git-tag.ts`](/packages/./api/functions#git-tagts)              | file     | Git tag-based version source for Go, Swift, and similar ecosystems.              |
-| [`utils.ts`](/packages/./api/functions#utilsts)                  | file     |                                                                                  |
-| [`json.ts`](/packages/./api/functions#jsonts)                    | file     | JSON-based version source provider for package.json and composer.json.           |
-| [`regex.ts`](/packages/./api/functions#regexts)                  | file     | Regex-based version source for source-code manifests.  Handles gemspec, mix.e... |
-| [`toml.ts`](/packages/./api/functions#tomlts)                    | file     | TOML-based version source provider for Cargo.toml and pyproject.toml.            |
-| [`version-file.ts`](/packages/./api/functions#version-filets)    | file     | Plain text VERSION file provider.                                                |
-| [`yaml.ts`](/packages/./api/functions#yamlts)                    | file     | YAML-based version source provider for pubspec.yaml and similar manifests.       |
-| [`resolve.ts`](/packages/./api/functions#resolvets)              | file     | Version source auto-detection and resolution.                                    |
-| [`project.ts`](/packages/./api/functions#projectts)              | file     |                                                                                  |
-| [`sync.ts`](/packages/./api/functions#syncts)                    | file     |                                                                                  |
-| [`index.ts`](/packages/./api/functions#indexts)                  | file     |                                                                                  |
-| [`hooks.ts`](/packages/./api/functions#hooksts)                  | file     |                                                                                  |
-| [`guard.ts`](/packages/./api/functions#guardts)                  | file     |                                                                                  |
-| [`TOPICS`](/packages/./api/functions#topics)                     | variable |                                                                                  |
-| [`topics.ts`](/packages/./api/functions#topicsts)                | file     | Embedded help topics for the CLI help system.                                    |
-| [`index.ts`](/packages/./api/functions#indexts)                  | file     |                                                                                  |
-| [`config.ts`](/packages/./api/functions#configts)                | file     |                                                                                  |
-| [`project-root.ts`](/packages/./api/functions#project-rootts)    | file     | Project root detection and boundary validation.                                  |
-| [`index.ts`](/packages/./api/functions#indexts)                  | file     | Version source providers for language-agnostic manifest support.                 |
-| [`index.ts`](/packages/./api/functions#indexts)                  | file     |                                                                                  |
-| [`index.ts`](/packages/./api/functions#indexts)                  | file     | Public API for VersionGuard.                                                     |
-| [`init-wizard.ts`](/packages/./api/functions#init-wizardts)      | file     | Interactive setup wizard and headless init for VersionGuard.                     |
-| [`cli.ts`](/packages/./api/functions#clits)                      | file     |                                                                                  |
-| [`calver.test.ts`](/packages/./api/functions#calvertestts)       | file     |                                                                                  |
-| [`test-utils.ts`](/packages/./api/functions#test-utilsts)        | file     | Test helpers for creating temporary VersionGuard fixture projects and git rep... |
-| [`changelog.test.ts`](/packages/./api/functions#changelogtestts) | file     |                                                                                  |
-| [`cli.test.ts`](/packages/./api/functions#clitestts)             | file     |                                                                                  |
-| [`config.test.ts`](/packages/./api/functions#configtestts)       | file     |                                                                                  |
-| [`feedback.test.ts`](/packages/./api/functions#feedbacktestts)   | file     |                                                                                  |
-| [`fix.test.ts`](/packages/./api/functions#fixtestts)             | file     |                                                                                  |
-| [`guard.test.ts`](/packages/./api/functions#guardtestts)         | file     |                                                                                  |
-| [`hooks.test.ts`](/packages/./api/functions#hookstestts)         | file     |                                                                                  |
-| [`index.test.ts`](/packages/./api/functions#indextestts)         | file     |                                                                                  |
-| [`semver.test.ts`](/packages/./api/functions#semvertestts)       | file     |                                                                                  |
-| [`sources.test.ts`](/packages/./api/functions#sourcestestts)     | file     |                                                                                  |
-| [`sync.test.ts`](/packages/./api/functions#synctestts)           | file     |                                                                                  |
-| [`tag.test.ts`](/packages/./api/functions#tagtestts)             | file     |                                                                                  |
+| Symbol                                                           | Kind | Description                                                                      |
+| ---------------------------------------------------------------- | ---- | -------------------------------------------------------------------------------- |
+| [`types.ts`](/packages/./api/functions#typests)                  | file |                                                                                  |
+| [`calver.ts`](/packages/./api/functions#calverts)                | file | Calendar version parsing, formatting, and comparison helpers.                    |
+| [`changelog.ts`](/packages/./api/functions#changelogts)          | file |                                                                                  |
+| [`types.ts`](/packages/./api/functions#typests)                  | file |                                                                                  |
+| [`engine.ts`](/packages/./api/functions#enginets)                | file | CKM engine — auto-generates topic index from a ckm.json manifest.                |
+| [`index.ts`](/packages/./api/functions#indexts)                  | file | CKM (Codebase Knowledge Manifest) module.                                        |
+| [`semver.ts`](/packages/./api/functions#semverts)                | file | Semantic version parsing, validation, comparison, and increment helpers.         |
+| [`index.ts`](/packages/./api/functions#indexts)                  | file |                                                                                  |
+| [`provider.ts`](/packages/./api/functions#providerts)            | file |                                                                                  |
+| [`git-tag.ts`](/packages/./api/functions#git-tagts)              | file | Git tag-based version source for Go, Swift, and similar ecosystems.              |
+| [`utils.ts`](/packages/./api/functions#utilsts)                  | file |                                                                                  |
+| [`json.ts`](/packages/./api/functions#jsonts)                    | file | JSON-based version source provider for package.json and composer.json.           |
+| [`regex.ts`](/packages/./api/functions#regexts)                  | file | Regex-based version source for source-code manifests.  Handles gemspec, mix.e... |
+| [`toml.ts`](/packages/./api/functions#tomlts)                    | file | TOML-based version source provider for Cargo.toml and pyproject.toml.            |
+| [`version-file.ts`](/packages/./api/functions#version-filets)    | file | Plain text VERSION file provider.                                                |
+| [`yaml.ts`](/packages/./api/functions#yamlts)                    | file | YAML-based version source provider for pubspec.yaml and similar manifests.       |
+| [`resolve.ts`](/packages/./api/functions#resolvets)              | file | Version source auto-detection and resolution.                                    |
+| [`project.ts`](/packages/./api/functions#projectts)              | file |                                                                                  |
+| [`sync.ts`](/packages/./api/functions#syncts)                    | file |                                                                                  |
+| [`index.ts`](/packages/./api/functions#indexts)                  | file |                                                                                  |
+| [`hooks.ts`](/packages/./api/functions#hooksts)                  | file |                                                                                  |
+| [`guard.ts`](/packages/./api/functions#guardts)                  | file |                                                                                  |
+| [`config.ts`](/packages/./api/functions#configts)                | file |                                                                                  |
+| [`project-root.ts`](/packages/./api/functions#project-rootts)    | file | Project root detection and boundary validation.                                  |
+| [`index.ts`](/packages/./api/functions#indexts)                  | file | Version source providers for language-agnostic manifest support.                 |
+| [`index.ts`](/packages/./api/functions#indexts)                  | file |                                                                                  |
+| [`index.ts`](/packages/./api/functions#indexts)                  | file | Public API for VersionGuard.                                                     |
+| [`init-wizard.ts`](/packages/./api/functions#init-wizardts)      | file | Interactive setup wizard and headless init for VersionGuard.                     |
+| [`cli.ts`](/packages/./api/functions#clits)                      | file |                                                                                  |
+| [`calver.test.ts`](/packages/./api/functions#calvertestts)       | file |                                                                                  |
+| [`test-utils.ts`](/packages/./api/functions#test-utilsts)        | file | Test helpers for creating temporary VersionGuard fixture projects and git rep... |
+| [`changelog.test.ts`](/packages/./api/functions#changelogtestts) | file |                                                                                  |
+| [`cli.test.ts`](/packages/./api/functions#clitestts)             | file |                                                                                  |
+| [`config.test.ts`](/packages/./api/functions#configtestts)       | file |                                                                                  |
+| [`feedback.test.ts`](/packages/./api/functions#feedbacktestts)   | file |                                                                                  |
+| [`fix.test.ts`](/packages/./api/functions#fixtestts)             | file |                                                                                  |
+| [`guard.test.ts`](/packages/./api/functions#guardtestts)         | file |                                                                                  |
+| [`hooks.test.ts`](/packages/./api/functions#hookstestts)         | file |                                                                                  |
+| [`index.test.ts`](/packages/./api/functions#indextestts)         | file |                                                                                  |
+| [`semver.test.ts`](/packages/./api/functions#semvertestts)       | file |                                                                                  |
+| [`sources.test.ts`](/packages/./api/functions#sourcestestts)     | file |                                                                                  |
+| [`sync.test.ts`](/packages/./api/functions#synctestts)           | file |                                                                                  |
+| [`tag.test.ts`](/packages/./api/functions#tagtestts)             | file |                                                                                  |

@@ -2,7 +2,7 @@
   "$schema": "https://forge-ts.dev/schemas/ckm/v1.json",
   "version": "1.0.0",
   "project": "@codluv/versionguard",
-  "generated": "2026-03-26T15:45:30.788Z",
+  "generated": "2026-03-26T17:38:38.361Z",
   "concepts": [
     {
       "id": "concept-ManifestConfig",
@@ -294,6 +294,33 @@
       ]
     },
     {
+      "id": "concept-CkmConfigEntry",
+      "name": "CkmConfigEntry",
+      "what": "A config schema entry with type, description, and default.",
+      "properties": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Dotted key path (e.g., `'CalVerConfig.format'`)."
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "TypeScript type."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description from TSDoc."
+        },
+        {
+          "name": "default",
+          "type": "string | undefined",
+          "description": "Default value if specified via `@defaultValue`."
+        }
+      ]
+    },
+    {
       "id": "concept-FeedbackResult",
       "name": "FeedbackResult",
       "what": "Aggregates validation errors with suggested next steps.",
@@ -494,6 +521,22 @@
       ],
       "outputs": {
         "text": "The result of validating the changelog file."
+      }
+    },
+    {
+      "id": "op-createCkmEngine",
+      "name": "createCkmEngine",
+      "what": "Creates a CKM engine from a parsed manifest.",
+      "inputs": [
+        {
+          "name": "manifest",
+          "type": "unknown",
+          "required": true,
+          "description": "Parsed CKM manifest (from forge-ts `ckm.json`)."
+        }
+      ],
+      "outputs": {
+        "text": "A configured CKM engine."
       }
     },
     {
@@ -964,6 +1007,26 @@
       "key": "VersionGuardConfig.ignore",
       "type": "string[]",
       "description": "Files or patterns excluded from validation."
+    },
+    {
+      "key": "CkmConfigEntry.key",
+      "type": "string",
+      "description": "Dotted key path (e.g., `'CalVerConfig.format'`)."
+    },
+    {
+      "key": "CkmConfigEntry.type",
+      "type": "string",
+      "description": "TypeScript type."
+    },
+    {
+      "key": "CkmConfigEntry.description",
+      "type": "string",
+      "description": "Description from TSDoc."
+    },
+    {
+      "key": "CkmConfigEntry.default",
+      "type": "string | undefined",
+      "description": "Default value if specified via `@defaultValue`."
     },
     {
       "key": "InitOptions.cwd",

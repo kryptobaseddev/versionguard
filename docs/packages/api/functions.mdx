@@ -449,6 +449,33 @@ import { fixChangesetMangling } from 'versionguard';
 const fixed = fixChangesetMangling('CHANGELOG.md');
 ```
 
+## createCkmEngine(manifest)
+
+Creates a CKM engine from a parsed manifest.
+
+**Signature**
+
+```typescript
+(manifest: CkmManifest) => CkmEngine
+```
+
+**Parameters**
+
+| Name       | Type          | Description                                     |
+| ---------- | ------------- | ----------------------------------------------- |
+| `manifest` | `CkmManifest` | Parsed CKM manifest (from forge-ts `ckm.json`). |
+
+**Returns** — A configured CKM engine.
+
+**Example**
+
+```ts
+import { createCkmEngine } from './ckm/engine';
+
+const engine = createCkmEngine(manifest);
+console.log(engine.getTopicIndex('mytool'));
+```
+
 ## parse(version)
 
 Parses a semantic version string.
@@ -1809,60 +1836,6 @@ import { runGuardChecks } from './guard';
 const report = runGuardChecks(config, process.cwd());
 if (!report.safe) console.error('Guard check failed:', report.warnings);
 ```
-
-## getTopicIndex()
-
-Returns the topic index listing.
-
-**Signature**
-
-```typescript
-() => string
-```
-
-**Returns** — Formatted topic list for terminal display.
-
-## getTopicContent(topicName)
-
-Returns help content for a specific topic.
-
-**Signature**
-
-```typescript
-(topicName: string) => string | null
-```
-
-**Parameters**
-
-| Name        | Type     | Description            |
-| ----------- | -------- | ---------------------- |
-| `topicName` | `string` | Topic name to look up. |
-
-**Returns** — The topic content, or null if not found.
-
-## getLlmContext()
-
-Returns the full API context for LLM consumption.
-
-**Signature**
-
-```typescript
-() => string
-```
-
-**Returns** — The llms.txt content string.
-
-## getHelpJson()
-
-Returns the topic index as a JSON structure for machine parsing.
-
-**Signature**
-
-```typescript
-(topicName?: string) => object
-```
-
-**Returns** — JSON-serializable help structure.
 
 ## getDefaultConfig()
 

@@ -16,6 +16,7 @@ npm test
 npm run build
 npm run forge:check
 npm run forge:doctor
+node dist/cli.js validate
 ```
 
 ## Verified Features
@@ -23,72 +24,117 @@ npm run forge:doctor
 | Status | Feature | Description | Validation |
 | --- | --- | --- | --- |
 | [x] | SemVer | Strict SemVer parsing, validation, comparison, and increment helpers with leading-zero rejection and prerelease/build support | `src/__tests__/semver.test.ts` |
-| [x] | CalVer | Multiple format support (`YYYY.MM.DD`, `YYYY.MM.PATCH`, `YY.M.PATCH`, `YYYY.0M.0D`), chronological comparison, patch increment, and future-date prevention | `src/__tests__/calver.test.ts` |
-| [x] | Config File | YAML-based config loading, defaults, and project initialization via `.versionguard.yml` | `src/__tests__/cli.test.ts`, `src/__tests__/config.test.ts` |
-| [x] | Auto-Sync | Regex/template-driven updates across configured files using `package.json` as the source of truth | `src/__tests__/sync.test.ts`, `src/__tests__/cli.test.ts` (`sync`) |
-| [x] | Hardcoded Detection | Mismatch scanning across configured files with ignore patterns and protection for changelog `Unreleased` headers | `src/__tests__/sync.test.ts`, `src/__tests__/index.test.ts` |
-| [x] | Changelog Validation | Keep a Changelog structure checks, required version entry checks, and entry insertion helper | `src/__tests__/changelog.test.ts` |
-| [x] | Git Hooks | Pre-commit, pre-push, and post-tag hook installation/uninstallation with managed scripts | `src/__tests__/hooks.test.ts`, `src/__tests__/cli.test.ts` (`hooks install`) |
-| [x] | Tag Automation | Annotated tag creation tied to package version and optional release automation | `src/__tests__/tag.test.ts`, `src/__tests__/cli.test.ts` (`tag`) |
-| [x] | Release Guardrails | Tag flows refuse unsafe release actions when hooks are required, the worktree is dirty, or preflight validation fails | `src/__tests__/tag.test.ts` |
-| [x] | Remote Tag/Push Validation | Local-vs-remote tag compatibility and push-readiness are validated with integration coverage | `src/__tests__/tag.test.ts` |
-| [x] | CLI | `init`, `check`, `validate`, `doctor`, `sync`, `fix`, `bump`, `tag`, `hooks install`, `hooks uninstall`, and `hooks status` are implemented and exercised | `src/__tests__/cli.test.ts` |
-| [x] | Doctor Command | One-pass repository readiness reporting for version, sync, changelog, hooks, and worktree state | `src/__tests__/cli.test.ts`, `src/__tests__/index.test.ts` |
-| [x] | JSON Output | `doctor --json` and `validate --json` provide machine-readable output for CI and agent workflows | `src/__tests__/cli.test.ts` |
-| [x] | Actionable Feedback | Version, sync, changelog, and tag feedback helpers produce repair-oriented guidance | `src/__tests__/feedback.test.ts` |
-| [x] | Auto-Fix Helpers | Deterministic remediation helpers update package version, changelog entries, and synced files | `src/__tests__/fix.test.ts` |
-| [x] | ESM Package Output | Full ESM package output with executable CLI bundle | `npm run build`, `npm install` |
-| [x] | Vite Build | Production build uses Vite and generates distributable artifacts in `dist/` | `npm run build` |
-| [x] | Vitest Test Suite | Project test runner is Vitest with coverage | `npm test` |
-| [x] | Biome | Formatting and baseline lint checks are configured and passing | `npm run lint` |
-| [x] | ESLint | Semantic TypeScript linting is configured and passing | `npm run lint` |
-| [x] | Forge Setup | Forge is installed, initialized, locked, and wired into the repo with config, docs scaffolding, and hook support | `npm run forge:doctor` |
-| [x] | Forge Compliance | Current exported API docs pass Forge checks with zero warnings and zero errors | `npm run forge:check` |
+| [x] | CalVer (Full Spec) | Composable token-based format strings (YYYY, YY, 0Y, MM, M, 0M, WW, 0W, DD, D, 0D, MICRO, PATCH), strict regex validation (MM: 1-12, DD: 1-31), MODIFIER support (-alpha.1, -rc2), isValidCalVerFormat() | `src/__tests__/calver.test.ts` |
+| [x] | Scheme Rules | schemeRules.allowedModifiers whitelist, schemeRules.maxNumericSegments warning threshold | `src/__tests__/calver.test.ts` |
+| [x] | Config File | YAML-based config loading, defaults, deep merge, and project initialization via `.versionguard.yml` | `src/__tests__/config.test.ts` |
+| [x] | Language-Agnostic Manifests | Version source providers for package.json, Cargo.toml, pyproject.toml, pubspec.yaml, composer.json, pom.xml, VERSION files, git tags, and custom regex | `src/__tests__/sources.test.ts` |
+| [x] | Manifest Auto-Detection | Scans for known manifest files in priority order when manifest.source is 'auto' | `src/__tests__/sources.test.ts` |
+| [x] | Auto-Sync | Regex/template-driven version updates across configured files | `src/__tests__/sync.test.ts` |
+| [x] | Hardcoded Detection | Mismatch scanning across configured files with ignore patterns | `src/__tests__/sync.test.ts`, `src/__tests__/index.test.ts` |
+| [x] | Changelog Validation | Keep a Changelog structure checks, required version entry, date format enforcement | `src/__tests__/changelog.test.ts` |
+| [x] | Changelog Auto-Fix | Detects and restructures Changesets-mangled changelogs into Keep a Changelog format | `src/__tests__/changelog.test.ts` |
+| [x] | Cooperative Git Hooks | Appends VG block with markers to existing hooks (Husky, lefthook, etc.), idempotent re-install, clean uninstall | `src/__tests__/hooks.test.ts` |
+| [x] | Agent Guardrails | `--strict` mode detects hook bypasses (HOOKS_PATH_OVERRIDE, HUSKY_BYPASS, HOOK_MISSING, HOOK_REPLACED, HOOK_TAMPERED, HOOKS_NOT_ENFORCED) | `src/__tests__/guard.test.ts` |
+| [x] | Tag Automation | Annotated tag creation with version validation, auto-fix, and post-tag workflows | `src/__tests__/tag.test.ts` |
+| [x] | Interactive Init Wizard | @clack/prompts guided setup: versioning type, CalVer format, manifest source, hooks, changelog | `src/__tests__/cli.test.ts` |
+| [x] | Headless Init | `--type`, `--format`, `--manifest`, `--hooks/--no-hooks`, `--changelog/--no-changelog`, `--yes`, `--force` flags | `src/__tests__/cli.test.ts` |
+| [x] | Init Idempotency | Re-running init requires `--force` to overwrite; hooks replaced in-place without duplication | `src/__tests__/cli.test.ts` |
+| [x] | Project Root Detection | Commands walk up from cwd to find .versionguard.yml, .git, or manifest files; helpful error when outside a project | CLI integration tests |
+| [x] | CKM Help System | `versionguard ckm` with auto-derived topics from forge-ts ckm.json, --json for LLM agents, --llm for full API context | CLI integration tests |
+| [x] | Path Traversal Protection | Custom manifest paths validated to stay within project directory | `src/__tests__/sources.test.ts` |
+| [x] | JSON Output | `validate --json`, `doctor --json`, `check --json`, `ckm --json` for CI and agent workflows | `src/__tests__/cli.test.ts` |
+| [x] | Actionable Feedback | Version, sync, changelog, and tag feedback with `npx versionguard fix` suggestions | `src/__tests__/feedback.test.ts` |
+| [x] | ESM Package | Full ESM build with Vite, executable CLI bundle, forge-ts docs embedded | `npm run build` |
+| [x] | Forge Compliance | forge-ts check passes with 0 errors, CKM manifest generated | `npm run forge:check` |
+| [x] | 198 Tests | Full test suite with 94%+ coverage across 13 test files | `npm test` |
 
-## Notes on Verified Scope
+## Roadmap: Future Epics
 
-Some checked features are validated at different layers:
+VersionGuard is an enforcement layer. It validates and guards. It does not own version selection, changelog authoring, or publishing. See `docs/VISION.md` for the integration philosophy.
 
-- CLI commands are validated partly through command tests and partly through the underlying tested core modules they delegate to
-- tag and hook behavior are validated in temporary git repositories created during tests
-- installability is treated as a product feature because `prepare` runs the build during `npm install`
-- Forge compliance is validated separately from runtime behavior and confirms the public API surface is documented and structured correctly
+### EPIC-VG-001: CKM Quickstart Layer
 
-## Roadmap: Planned but Not Yet Checked Off
+**Priority**: HIGH
+**Problem**: CKM topics auto-derive from TypeScript interfaces (config schema) but don't include actionable CLI commands, workflows, or quick-start guides. A user asking "how do I set up a Rust project" gets type definitions, not a command to run.
 
-VersionGuard is an enforcement layer. It validates and guards. It does not own version selection, changelog authoring, or publishing. Those belong to release automation tools like Changesets. See `docs/VISION.md` for the full integration philosophy.
+**Deliverables**:
+- [ ] Add `@workflow` tags to composite functions (init flows, release flows)
+- [ ] CKM engine renders workflow steps as actionable CLI commands
+- [ ] `versionguard ckm quickstart` topic with per-language setup instructions
+- [ ] `versionguard ckm <topic>` output includes "Quick Start" section with example commands
+- [ ] Enum values (ManifestSourceType, CalVerFormat tokens) surfaced in CKM config schema
 
-The roadmap focuses on deepening enforcement, not broadening into release automation.
+**Depends on**: forge-ts `@workflow` tag support (v0.21+), enum value extraction enhancement
 
-| Status | Priority | Feature | Why it matters |
-| --- | --- | --- | --- |
-| [ ] | 1 | Agent guardrails | Detect `--no-verify` bypasses, warn about skipped hooks, add `--strict` mode that fails on any policy gap. Core differentiator per the vision. |
-| [ ] | 2 | Smarter hardcoded version scanning | Scan the entire repo for accidental version literals beyond configured sync files. Catches drift that pattern-based sync misses. |
-| [ ] | 3 | Stronger CLI integration coverage | Add explicit automated tests for every CLI command branch, not just the primary paths. Increases consumer confidence. |
-| [ ] | 4 | Safer release commit policy | Block tagging when HEAD is not a clean version-bump commit. Detect amended or rebased history. Tighten the release boundary. |
-| [ ] | 5 | Remote tag/push workflow coverage | Validate remote tag compatibility and push-preflight behavior end to end. |
+### EPIC-VG-002: forge-ts Enum & Workflow Enhancements
 
-### Removed from roadmap
+**Priority**: HIGH
+**Problem**: forge-ts ckm.json reports `type: ManifestSourceType` but doesn't resolve the union to its concrete values. LLM agents can't determine valid options without reading source code. `@workflow` tags exist but aren't populated.
+
+**Deliverables**:
+- [ ] Research and build repro for forge-ts enum resolution request
+  - Input: `type ManifestSourceType = 'auto' | 'package.json' | 'Cargo.toml' | ...`
+  - Expected CKM output: `{ type: "enum", values: ["auto", "package.json", "Cargo.toml", ...] }`
+  - Same for `CalVerToken` union type
+- [ ] Research and build repro for `@workflow` tag population
+  - Input: `@workflow` on `runWizard`, `fixAll`, `createTag`
+  - Expected CKM output: `workflows[]` with step sequences
+- [ ] File issues on kryptobaseddev/forge-ts with repro projects
+- [ ] Integrate enhancements into VG once shipped
+
+**Repo**: kryptobaseddev/forge-ts
+
+### EPIC-VG-003: Smarter Hardcoded Version Scanning
+
+**Priority**: MEDIUM
+**Problem**: Current sync scanning only checks configured files. Accidental version literals in source code, CI configs, or Docker files go undetected.
+
+**Deliverables**:
+- [ ] Scan entire repo (respecting .gitignore) for version-like patterns
+- [ ] Configurable allowlist for intentional version references
+- [ ] Report with file:line locations and severity (warning vs error)
+- [ ] Integration with `validate --strict`
+
+### EPIC-VG-004: Changelog Structure Enforcement
+
+**Priority**: MEDIUM
+**Problem**: The CleoCode integration spec requests `changelog.enforceStructure` and `changelog.sections` config to validate that entries use valid Keep a Changelog section names (Added, Changed, Deprecated, Removed, Fixed, Security).
+
+**Deliverables**:
+- [ ] `changelog.sections` config: whitelist of allowed section names
+- [ ] `changelog.enforceStructure` config: fail on non-standard sections
+- [ ] Detect and warn on empty sections
+- [ ] Integration with `validate` and `fix`
+
+### EPIC-VG-005: Release Commit Policy
+
+**Priority**: LOW
+**Problem**: Nothing prevents tagging a commit that isn't a clean version-bump. Amended or rebased history can create confusing release states.
+
+**Deliverables**:
+- [ ] Block tagging when HEAD is not a clean version-bump commit
+- [ ] Detect amended or rebased commits in release range
+- [ ] Configurable via `git.releasePolicy` in config
+
+### EPIC-VG-006: CKM Standalone Package
+
+**Priority**: LOW
+**Problem**: The `src/ckm/` module is reusable but lives inside VersionGuard. Other CLI tools can't consume it without copying files.
+
+**Deliverables**:
+- [ ] Extract `src/ckm/` into `@codluv/ckm-cli` standalone package
+- [ ] Commander integration helper (drop-in command registration)
+- [ ] Citty integration helper
+- [ ] Documentation and examples for third-party adoption
+- [ ] Publish to npm under `@codluv` scope
+
+## Removed from Roadmap
 
 | Feature | Why removed |
 | --- | --- |
-| Dedicated changelog subcommands | Changelog authoring belongs to release automation (Changesets). VersionGuard validates changelog structure, it does not generate content. |
-| Configurable sync capture semantics | Low impact. The current regex/template approach covers real-world patterns. Named capture groups can be revisited if users report limitations. |
-
-## Claimed Feature Summary
-
-The original assumed features are now in this state:
-
-| Feature | State | Notes |
-| --- | --- | --- |
-| SemVer | verified | core parser/validator/comparator/increment path tested |
-| CalVer | verified | multiple formats and future-date checks tested |
-| Git Hooks | verified | install/uninstall and all three hook files validated |
-| Auto-Sync | verified | sync updates configured files correctly |
-| Hardcoded Detection | verified | mismatch scanning tested |
-| Changelog | verified | validation and insertion helper tested |
-| CLI | verified | core command surface implemented and exercised |
-| Forge | verified | installed, initialized, locked, hooked, and passing |
+| Dedicated changelog subcommands | Changelog authoring belongs to release automation (Changesets). VersionGuard validates and auto-fixes structure, it does not generate content. |
+| Configurable sync capture semantics | Low impact. The current regex/template approach covers real-world patterns. |
+| Tree-sitter/LSP/AST integration | Research concluded these are overkill for manifest field extraction. Format-specific parsers + regex cover all use cases. See `docs/research/language-agnostic-version-extraction.md`. |
 
 ## Exit Criteria for Future Checkboxes
 

@@ -149,38 +149,6 @@ const suggestions = suggestNextVersion('1.2.3', config, 'minor');
 console.log(suggestions[0]?.version);
 ```
 
-### getTopicIndex()
-
-Returns the topic index listing.
-
-```typescript
-() => string
-```
-
-### getTopicContent(topicName)
-
-Returns help content for a specific topic.
-
-```typescript
-(topicName: string) => string | null
-```
-
-### getLlmContext()
-
-Returns the full API context for LLM consumption.
-
-```typescript
-() => string
-```
-
-### getHelpJson()
-
-Returns the topic index as a JSON structure for machine parsing.
-
-```typescript
-(topicName?: string) => object
-```
-
 ### getLatestTag(cwd)
 
 Returns the most recent reachable git tag for a repository.

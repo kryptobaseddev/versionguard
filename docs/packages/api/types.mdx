@@ -292,6 +292,118 @@ Describes the outcome of validating a changelog file.
 | `errors`             | `string[]` | Yes      | Human-readable validation errors.                                            |
 | `hasEntryForVersion` | `boolean`  | Yes      | Indicates whether the changelog contains an entry for the requested version. |
 
+## CkmConcept
+
+A domain concept extracted from an exported interface or type.
+
+| Property     | Type                         | Required | Description                                                 |
+| ------------ | ---------------------------- | -------- | ----------------------------------------------------------- |
+| `id`         | `string`                     | Yes      | Unique concept identifier (e.g., `'concept-CalVerConfig'`). |
+| `name`       | `string`                     | Yes      | Interface or type name (e.g., `'CalVerConfig'`).            |
+| `what`       | `string`                     | Yes      | One-line description from TSDoc summary.                    |
+| `properties` | `CkmProperty[] \| undefined` | No       | Properties of the interface, if applicable.                 |
+
+## CkmProperty
+
+A property within a concept.
+
+| Property      | Type     | Required | Description                 |
+| ------------- | -------- | -------- | --------------------------- |
+| `name`        | `string` | Yes      | Property name.              |
+| `type`        | `string` | Yes      | TypeScript type annotation. |
+| `description` | `string` | Yes      | Description from TSDoc.     |
+
+## CkmOperation
+
+A user-facing operation extracted from an exported function.
+
+| Property  | Type                             | Required | Description                                          |
+| --------- | -------------------------------- | -------- | ---------------------------------------------------- |
+| `id`      | `string`                         | Yes      | Unique operation identifier (e.g., `'op-validate'`). |
+| `name`    | `string`                         | Yes      | Function name (e.g., `'validate'`).                  |
+| `what`    | `string`                         | Yes      | One-line description from TSDoc summary.             |
+| `inputs`  | `CkmInput[] \| undefined`        | No       | Function parameters.                                 |
+| `outputs` | `{ text: string; } \| undefined` | No       | Return value description.                            |
+
+## CkmInput
+
+A function parameter within an operation.
+
+| Property      | Type      | Required | Description                          |
+| ------------- | --------- | -------- | ------------------------------------ |
+| `name`        | `string`  | Yes      | Parameter name.                      |
+| `type`        | `string`  | Yes      | TypeScript type annotation.          |
+| `required`    | `boolean` | Yes      | Whether the parameter is required.   |
+| `description` | `string`  | Yes      | Description from TSDoc `@param` tag. |
+
+## CkmConstraint
+
+A constraint enforced by the tool.
+
+| Property     | Type     | Required | Description                          |
+| ------------ | -------- | -------- | ------------------------------------ |
+| `id`         | `string` | Yes      | Unique constraint identifier.        |
+| `rule`       | `string` | Yes      | The rule being enforced.             |
+| `enforcedBy` | `string` | Yes      | Function or module that enforces it. |
+
+## CkmWorkflow
+
+A multi-step workflow for a common goal.
+
+| Property | Type                                                      | Required | Description                 |
+| -------- | --------------------------------------------------------- | -------- | --------------------------- |
+| `id`     | `string`                                                  | Yes      | Unique workflow identifier. |
+| `goal`   | `string`                                                  | Yes      | What the workflow achieves. |
+| `steps`  | `{ command?: string; manual?: string; note?: string; }[]` | No       | Ordered steps.              |
+
+## CkmConfigEntry
+
+A config schema entry with type, description, and default.
+
+| Property      | Type                  | Required | Description                                      |
+| ------------- | --------------------- | -------- | ------------------------------------------------ |
+| `key`         | `string`              | Yes      | Dotted key path (e.g., `'CalVerConfig.format'`). |
+| `type`        | `string`              | Yes      | TypeScript type.                                 |
+| `description` | `string`              | Yes      | Description from TSDoc.                          |
+| `default`     | `string \| undefined` | No       | Default value if specified via `@defaultValue`.  |
+
+## CkmManifest
+
+The complete Codebase Knowledge Manifest.
+
+| Property       | Type               | Required | Description                                  |
+| -------------- | ------------------ | -------- | -------------------------------------------- |
+| `concepts`     | `CkmConcept[]`     | Yes      | Domain concepts (interfaces, types).         |
+| `operations`   | `CkmOperation[]`   | Yes      | User-facing operations (exported functions). |
+| `constraints`  | `CkmConstraint[]`  | Yes      | Enforced rules.                              |
+| `workflows`    | `CkmWorkflow[]`    | Yes      | Multi-step workflows.                        |
+| `configSchema` | `CkmConfigEntry[]` | Yes      | Configuration schema entries.                |
+
+## CkmTopic
+
+An auto-generated topic derived from CKM data.
+
+| Property       | Type               | Required | Description                                         |
+| -------------- | ------------------ | -------- | --------------------------------------------------- |
+| `name`         | `string`           | Yes      | Topic slug used as CLI argument (e.g., `'calver'`). |
+| `summary`      | `string`           | Yes      | One-line summary.                                   |
+| `concepts`     | `CkmConcept[]`     | Yes      | Related concept names from the CKM.                 |
+| `operations`   | `CkmOperation[]`   | Yes      | Related operations from the CKM.                    |
+| `configSchema` | `CkmConfigEntry[]` | Yes      | Related config entries from the CKM.                |
+| `constraints`  | `CkmConstraint[]`  | Yes      | Related constraints from the CKM.                   |
+
+## CkmEngine
+
+The CKM engine — provides topic derivation, filtering, and output formatting.
+
+| Property          | Type                                    | Required | Description                                               |
+| ----------------- | --------------------------------------- | -------- | --------------------------------------------------------- |
+| `topics`          | `CkmTopic[]`                            | Yes      | All auto-derived topics.                                  |
+| `getTopicIndex`   | `(toolName?: string) => string`         | No       | Returns a formatted topic index for terminal display.     |
+| `getTopicContent` | `(topicName: string) => string \| null` | Yes      | Returns human-readable content for a topic.               |
+| `getTopicJson`    | `(topicName?: string) => object`        | No       | Returns CKM-filtered JSON for a topic (machine-readable). |
+| `getManifest`     | `() => CkmManifest`                     | Yes      | Returns the raw CKM manifest.                             |
+
 ## Suggestion
 
 Feedback entry point exports for suggestion and guidance helpers.
@@ -383,16 +495,6 @@ Result of a full guard check pass.
 | ---------- | ---------------- | -------- | ----------------------------------------------------------- |
 | `safe`     | `boolean`        | Yes      | True when no errors were found. Warnings alone do not fail. |
 | `warnings` | `GuardWarning[]` | Yes      | All findings from the guard check.                          |
-
-## HelpTopic
-
-Embedded help topics for the CLI help system.
-
-| Property  | Type     | Required | Description                           |
-| --------- | -------- | -------- | ------------------------------------- |
-| `name`    | `string` | Yes      | Short name used as CLI argument.      |
-| `summary` | `string` | Yes      | One-line summary shown in topic list. |
-| `content` | `string` | Yes      | Full help text for the topic.         |
 
 ## ProjectRootResult
 

@@ -5,7 +5,6 @@
 - [Functions](#functions)
 - [Types](#types)
 - [Classes](#classes)
-- [Constants](#constants)
 
 ## Functions
 
@@ -355,6 +354,27 @@ Fixes a Changesets-mangled changelog into proper Keep a Changelog format.
 import { fixChangesetMangling } from 'versionguard';
 
 const fixed = fixChangesetMangling('CHANGELOG.md');
+```
+
+### `createCkmEngine`
+
+Creates a CKM engine from a parsed manifest.
+
+```typescript
+(manifest: CkmManifest) => CkmEngine
+```
+
+**Parameters:**
+
+- `manifest` — Parsed CKM manifest (from forge-ts `ckm.json`).
+
+**Returns:** A configured CKM engine.
+
+```ts
+import { createCkmEngine } from './ckm/engine';
+
+const engine = createCkmEngine(manifest);
+console.log(engine.getTopicIndex('mytool'));
 ```
 
 ### `parse`
@@ -1233,50 +1253,6 @@ import { runGuardChecks } from './guard';
 const report = runGuardChecks(config, process.cwd());
 if (!report.safe) console.error('Guard check failed:', report.warnings);
 ```
-
-### `getTopicIndex`
-
-Returns the topic index listing.
-
-```typescript
-() => string
-```
-
-**Returns:** Formatted topic list for terminal display.
-
-### `getTopicContent`
-
-Returns help content for a specific topic.
-
-```typescript
-(topicName: string) => string | null
-```
-
-**Parameters:**
-
-- `topicName` — Topic name to look up.
-
-**Returns:** The topic content, or null if not found.
-
-### `getLlmContext`
-
-Returns the full API context for LLM consumption.
-
-```typescript
-() => string
-```
-
-**Returns:** The llms.txt content string.
-
-### `getHelpJson`
-
-Returns the topic index as a JSON structure for machine parsing.
-
-```typescript
-(topicName?: string) => object
-```
-
-**Returns:** JSON-serializable help structure.
 
 ### `getDefaultConfig`
 
@@ -2217,6 +2193,158 @@ ChangelogValidationResult
 - `errors` — Human-readable validation errors.
 - `hasEntryForVersion` — Indicates whether the changelog contains an entry for the requested version.
 
+### `CkmConcept`
+
+A domain concept extracted from an exported interface or type.
+
+```typescript
+CkmConcept
+```
+
+**Members:**
+
+- `id` — Unique concept identifier (e.g., `'concept-CalVerConfig'`).
+- `name` — Interface or type name (e.g., `'CalVerConfig'`).
+- `what` — One-line description from TSDoc summary.
+- `properties` — Properties of the interface, if applicable.
+
+### `CkmProperty`
+
+A property within a concept.
+
+```typescript
+CkmProperty
+```
+
+**Members:**
+
+- `name` — Property name.
+- `type` — TypeScript type annotation.
+- `description` — Description from TSDoc.
+
+### `CkmOperation`
+
+A user-facing operation extracted from an exported function.
+
+```typescript
+CkmOperation
+```
+
+**Members:**
+
+- `id` — Unique operation identifier (e.g., `'op-validate'`).
+- `name` — Function name (e.g., `'validate'`).
+- `what` — One-line description from TSDoc summary.
+- `inputs` — Function parameters.
+- `outputs` — Return value description.
+
+### `CkmInput`
+
+A function parameter within an operation.
+
+```typescript
+CkmInput
+```
+
+**Members:**
+
+- `name` — Parameter name.
+- `type` — TypeScript type annotation.
+- `required` — Whether the parameter is required.
+- `description` — Description from TSDoc `@param` tag.
+
+### `CkmConstraint`
+
+A constraint enforced by the tool.
+
+```typescript
+CkmConstraint
+```
+
+**Members:**
+
+- `id` — Unique constraint identifier.
+- `rule` — The rule being enforced.
+- `enforcedBy` — Function or module that enforces it.
+
+### `CkmWorkflow`
+
+A multi-step workflow for a common goal.
+
+```typescript
+CkmWorkflow
+```
+
+**Members:**
+
+- `id` — Unique workflow identifier.
+- `goal` — What the workflow achieves.
+- `steps` — Ordered steps.
+
+### `CkmConfigEntry`
+
+A config schema entry with type, description, and default.
+
+```typescript
+CkmConfigEntry
+```
+
+**Members:**
+
+- `key` — Dotted key path (e.g., `'CalVerConfig.format'`).
+- `type` — TypeScript type.
+- `description` — Description from TSDoc.
+- `default` — Default value if specified via `@defaultValue`.
+
+### `CkmManifest`
+
+The complete Codebase Knowledge Manifest.
+
+```typescript
+CkmManifest
+```
+
+**Members:**
+
+- `concepts` — Domain concepts (interfaces, types).
+- `operations` — User-facing operations (exported functions).
+- `constraints` — Enforced rules.
+- `workflows` — Multi-step workflows.
+- `configSchema` — Configuration schema entries.
+
+### `CkmTopic`
+
+An auto-generated topic derived from CKM data.
+
+```typescript
+CkmTopic
+```
+
+**Members:**
+
+- `name` — Topic slug used as CLI argument (e.g., `'calver'`).
+- `summary` — One-line summary.
+- `concepts` — Related concept names from the CKM.
+- `operations` — Related operations from the CKM.
+- `configSchema` — Related config entries from the CKM.
+- `constraints` — Related constraints from the CKM.
+
+### `CkmEngine`
+
+The CKM engine — provides topic derivation, filtering, and output formatting.
+
+```typescript
+CkmEngine
+```
+
+**Members:**
+
+- `topics` — All auto-derived topics.
+- `getTopicIndex` — Returns a formatted topic index for terminal display.
+- `getTopicContent` — Returns human-readable content for a topic.
+- `getTopicJson` — Returns CKM-filtered JSON for a topic (machine-readable).
+- `getManifest` — Returns the raw CKM manifest.
+
 ### `Suggestion`
 
 Feedback entry point exports for suggestion and guidance helpers.
@@ -2340,20 +2468,6 @@ GuardReport
 
 - `safe` — True when no errors were found. Warnings alone do not fail.
 - `warnings` — All findings from the guard check.
-
-### `HelpTopic`
-
-Embedded help topics for the CLI help system.
-
-```typescript
-HelpTopic
-```
-
-**Members:**
-
-- `name` — Short name used as CLI argument.
-- `summary` — One-line summary shown in topic list.
-- `content` — Full help text for the topic.
 
 ### `ProjectRootResult`
 
@@ -2510,11 +2624,3 @@ typeof YamlVersionSource
 - `exists` — Returns `true` when the manifest file exists in `cwd`.
 - `getVersion` — Reads the version string from the YAML manifest.
 - `setVersion` — Writes a version string to the YAML manifest, preserving formatting.
-
-## Constants
-
-### `TOPICS`
-
-```typescript
-HelpTopic[]
-```
