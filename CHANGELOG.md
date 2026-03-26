@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-03-26
+
+### Added
+
+- Add changelog structure enforcement and `vg` CLI alias
+
+  - Added `changelog.enforceStructure` config to validate section headers against an allowed list
+  - Added `changelog.sections` config for custom section whitelists (defaults to Keep a Changelog: Added, Changed, Deprecated, Removed, Fixed, Security)
+  - Empty changelog sections are detected and reported
+  - Added `vg` as a CLI alias for `versionguard` — shorter to type, same functionality
+  - CLI help text now shows `vg` as the primary command name
+  - 7 new changelog structure enforcement tests (225 total)
+
+
 ## [0.6.0] - 2026-03-26
 
 ### Added
@@ -21,7 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Headless init supports `--allow-v-prefix`, `--no-build-metadata`, `--require-prerelease` flags
   - CKM automatically generates a `semver` topic from the new `SemVerConfig` interface
   - 20 new tests covering all SemVer config knobs and schemeRules integration
-
 
 ## [0.5.0] - 2026-03-26
 
@@ -145,7 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI with init, check, validate, sync, bump commands
 - Configurable via .versionguard.yml
 
-[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.3.0...v0.4.0
