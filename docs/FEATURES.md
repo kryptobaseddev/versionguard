@@ -52,7 +52,7 @@ node dist/cli.js validate
 
 VersionGuard is an enforcement layer. It validates and guards. It does not own version selection, changelog authoring, or publishing. See `docs/VISION.md` for the integration philosophy.
 
-### EPIC-VG-001: CKM Quickstart Layer
+### T001: CKM Quickstart Layer
 
 **Priority**: HIGH
 **Problem**: CKM topics auto-derive from TypeScript interfaces (config schema) but don't include actionable CLI commands, workflows, or quick-start guides. A user asking "how do I set up a Rust project" gets type definitions, not a command to run.
@@ -64,9 +64,9 @@ VersionGuard is an enforcement layer. It validates and guards. It does not own v
 - [ ] `versionguard ckm <topic>` output includes "Quick Start" section with example commands
 - [ ] Enum values (ManifestSourceType, CalVerFormat tokens) surfaced in CKM config schema
 
-**Depends on**: forge-ts `@workflow` tag support (v0.21+), enum value extraction enhancement
+**Depends on**: T002 (forge-ts enum/workflow enhancements)
 
-### EPIC-VG-002: forge-ts Enum & Workflow Enhancements
+### T002: forge-ts Enum & Workflow Enhancements
 
 **Priority**: HIGH
 **Problem**: forge-ts ckm.json reports `type: ManifestSourceType` but doesn't resolve the union to its concrete values. LLM agents can't determine valid options without reading source code. `@workflow` tags exist but aren't populated.
@@ -82,9 +82,9 @@ VersionGuard is an enforcement layer. It validates and guards. It does not own v
 - [ ] File issues on kryptobaseddev/forge-ts with repro projects
 - [ ] Integrate enhancements into VG once shipped
 
-**Repo**: kryptobaseddev/forge-ts
+**Upstream repo**: kryptobaseddev/forge-ts
 
-### EPIC-VG-003: Smarter Hardcoded Version Scanning
+### T003: Smarter Hardcoded Version Scanning
 
 **Priority**: MEDIUM
 **Problem**: Current sync scanning only checks configured files. Accidental version literals in source code, CI configs, or Docker files go undetected.
@@ -95,7 +95,7 @@ VersionGuard is an enforcement layer. It validates and guards. It does not own v
 - [ ] Report with file:line locations and severity (warning vs error)
 - [ ] Integration with `validate --strict`
 
-### EPIC-VG-004: Changelog Structure Enforcement
+### T004: Changelog Structure Enforcement
 
 **Priority**: MEDIUM
 **Problem**: The CleoCode integration spec requests `changelog.enforceStructure` and `changelog.sections` config to validate that entries use valid Keep a Changelog section names (Added, Changed, Deprecated, Removed, Fixed, Security).
@@ -106,7 +106,7 @@ VersionGuard is an enforcement layer. It validates and guards. It does not own v
 - [ ] Detect and warn on empty sections
 - [ ] Integration with `validate` and `fix`
 
-### EPIC-VG-005: Release Commit Policy
+### T005: Release Commit Policy
 
 **Priority**: LOW
 **Problem**: Nothing prevents tagging a commit that isn't a clean version-bump. Amended or rebased history can create confusing release states.
@@ -116,7 +116,7 @@ VersionGuard is an enforcement layer. It validates and guards. It does not own v
 - [ ] Detect amended or rebased commits in release range
 - [ ] Configurable via `git.releasePolicy` in config
 
-### EPIC-VG-006: CKM Standalone Package
+### T006: CKM Standalone Package
 
 **Priority**: LOW
 **Problem**: The `src/ckm/` module is reusable but lives inside VersionGuard. Other CLI tools can't consume it without copying files.
