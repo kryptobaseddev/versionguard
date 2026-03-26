@@ -92,11 +92,10 @@ describe('feedback helpers', () => {
     expect(futureMonth.suggestions[0]?.message).toContain('Current month is 3');
     expect(futureMonth.suggestions[0]?.fix).toContain('npx versionguard fix --version 2026.03.05');
 
+    // Strict regex rejects month 13 at parse level — feedback gives format guidance
     const invalidMonth = getVersionFeedback('2026.13.05', config);
     expect(invalidMonth.valid).toBe(false);
-    expect(
-      invalidMonth.suggestions.some((suggestion) => suggestion.message.includes('Month must be')),
-    ).toBe(true);
+    expect(invalidMonth.suggestions[0]?.message).toContain('Expected format');
 
     const futureDay = getVersionFeedback('2026.03.20', config);
     expect(futureDay.valid).toBe(false);

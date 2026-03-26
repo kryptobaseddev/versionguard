@@ -16,9 +16,14 @@ const CONFIG_FILE_NAMES = [
 const DEFAULT_CONFIG: VersionGuardConfig = {
   versioning: {
     type: 'semver',
+    schemeRules: {
+      maxNumericSegments: 3,
+      allowedModifiers: ['dev', 'alpha', 'beta', 'rc'],
+    },
     calver: {
       format: 'YYYY.MM.PATCH',
       preventFutureDates: true,
+      strictMutualExclusion: true,
     },
   },
   manifest: {

@@ -61,7 +61,12 @@ export function validateVersion(version: string, config: VersionGuardConfig): Va
   }
 
   const calverConfig = getCalVerConfig(config);
-  return calver.validate(version, calverConfig.format, calverConfig.preventFutureDates);
+  return calver.validate(
+    version,
+    calverConfig.format,
+    calverConfig.preventFutureDates,
+    config.versioning.schemeRules,
+  );
 }
 
 /**

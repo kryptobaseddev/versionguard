@@ -78,11 +78,12 @@ describe('calver', () => {
       valid: false,
       errors: [{ message: 'Invalid CalVer format: "not-a-calver". Expected format: YYYY.MM.DD' }],
     });
+    // Strict regex rejects invalid month/day at parse level
     expect(calver.validate('2026.13.1', 'YYYY.MM.DD', false).errors[0]?.message).toContain(
-      'Invalid month: 13',
+      'Invalid CalVer format',
     );
     expect(calver.validate('2026.3.32', 'YYYY.MM.DD', false).errors[0]?.message).toContain(
-      'Invalid day: 32',
+      'Invalid CalVer format',
     );
     expect(calver.validate('2026.2.30', 'YYYY.MM.DD', false).errors[0]?.message).toContain(
       'has only 28 days',
@@ -152,6 +153,50 @@ describe('calver', () => {
     expect(calver.isValidCalVerFormat('MM.YYYY')).toBe(false); // Year must be first
     expect(calver.isValidCalVerFormat('YYYY.WW.MM')).toBe(false); // Week + Month mutual exclusion
     expect(calver.isValidCalVerFormat('YYYY.MICRO.MM')).toBe(false); // Counter must be last
+  });
+
+  it('parses and formats versions with modifiers', () => {
+    const parsed = calver.parse('2026.3.0-alpha.1', 'YYYY.M.MICRO');
+    expect(parsed).toMatchObject({ year: 2026, month: 3, patch: 0, modifier: 'alpha.1' });
+
+    const formatted = calver.format(parsed!);
+    expect(formatted).toBe('2026.3.0-alpha.1');
+
+    expect(calver.parse('2026.03.21-rc2', 'YYYY.0M.0D')?.modifier).toBe('rc2');
+    expect(calver.parse('2026.3.5-dev', 'YYYY.M.MICRO')?.modifier).toBe('dev');
+
+    // Without modifier
+    expect(calver.parse('2026.3.0', 'YYYY.M.MICRO')?.modifier).toBeUndefined();
+  });
+
+  it('validates modifiers against allowed list', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-21T12:00:00Z'));
+
+    const rules = { maxNumericSegments: 3, allowedModifiers: ['alpha', 'beta', 'rc'] };
+
+    // Allowed modifier
+    expect(calver.validate('2026.3.0-alpha.1', 'YYYY.M.MICRO', true, rules).valid).toBe(true);
+    expect(calver.validate('2026.3.0-rc2', 'YYYY.M.MICRO', true, rules).valid).toBe(true);
+
+    // Disallowed modifier
+    const result = calver.validate('2026.3.0-nightly', 'YYYY.M.MICRO', true, rules);
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]?.message).toContain('not allowed');
+  });
+
+  it('warns on segment count exceeding max', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-21T12:00:00Z'));
+
+    const rules = { maxNumericSegments: 3, allowedModifiers: [] };
+
+    // 4 segments triggers warning (but still valid — warnings don't fail)
+    const result = calver.validate('2026.03.21.0', 'YYYY.0M.0D.MICRO', false, rules);
+    expect(result.valid).toBe(true);
+    expect(
+      result.errors.some((e) => e.severity === 'warning' && e.message.includes('4 segments')),
+    ).toBe(true);
   });
 
   it('throws on unsupported comparisons and increments', () => {

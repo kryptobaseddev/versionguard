@@ -354,6 +354,7 @@ function getTagPreflightError(
           version,
           config.versioning.calver?.format ?? 'YYYY.MM.PATCH',
           config.versioning.calver?.preventFutureDates ?? true,
+          config.versioning.schemeRules,
         );
 
   if (!versionResult.valid) {

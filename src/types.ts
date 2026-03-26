@@ -108,6 +108,35 @@ export type CalVerToken =
 export type CalVerFormat = string & { readonly __calverFormat?: never };
 
 /**
+ * Configures scheme-level validation rules applied regardless of versioning type.
+ *
+ * @public
+ * @since 0.3.0
+ * @forgeIgnore E020
+ */
+export interface SchemeRules {
+  /**
+   * Maximum number of numeric segments before a warning is emitted.
+   *
+   * Convention is 3 (e.g., `YYYY.MM.MICRO`). Formats with 4+ segments
+   * (e.g., `YYYY.0M.0D.MICRO`) are valid but trigger a warning.
+   *
+   * @defaultValue 3
+   */
+  maxNumericSegments: number;
+
+  /**
+   * Allowed pre-release modifier tags.
+   *
+   * When set, version modifiers (e.g., `-alpha`, `-rc1`) are validated
+   * against this whitelist. An empty array disallows all modifiers.
+   *
+   * @defaultValue ['dev', 'alpha', 'beta', 'rc']
+   */
+  allowedModifiers: string[];
+}
+
+/**
  * Configures CalVer validation rules.
  *
  * @public
@@ -126,6 +155,13 @@ export interface CalVerConfig {
    * @defaultValue true
    */
   preventFutureDates: boolean;
+
+  /**
+   * Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens.
+   *
+   * @defaultValue true
+   */
+  strictMutualExclusion?: boolean;
 }
 
 /**
@@ -266,6 +302,13 @@ export interface VersioningConfig {
   type: VersioningType;
 
   /**
+   * Scheme-level validation rules applied regardless of versioning type.
+   *
+   * @defaultValue `{ maxNumericSegments: 3, allowedModifiers: ['dev', 'alpha', 'beta', 'rc'] }`
+   */
+  schemeRules?: SchemeRules;
+
+  /**
    * CalVer-specific settings when `type` is `'calver'`.
    *
    * @defaultValue undefined
@@ -400,7 +443,7 @@ export interface CalVer {
   year: number;
 
   /**
-   * Month value from 1 through 12.
+   * Month or week value (1-12 for months, 1-53 for weeks).
    */
   month: number;
 
@@ -412,11 +455,18 @@ export interface CalVer {
   day?: number;
 
   /**
-   * Patch counter when the selected format includes a patch token.
+   * Micro/patch counter when the selected format includes a counter token.
    *
    * @defaultValue undefined
    */
   patch?: number;
+
+  /**
+   * Pre-release modifier string (e.g., `'alpha'`, `'rc1'`, `'dev'`).
+   *
+   * @defaultValue undefined
+   */
+  modifier?: string;
 
   /**
    * Source format used to interpret the raw string.

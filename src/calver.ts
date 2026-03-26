@@ -12,7 +12,14 @@
  * @packageDocumentation
  */
 
-import type { CalVer, CalVerFormat, CalVerToken, ValidationError, ValidationResult } from './types';
+import type {
+  CalVer,
+  CalVerFormat,
+  CalVerToken,
+  SchemeRules,
+  ValidationError,
+  ValidationResult,
+} from './types';
 
 /** All recognized CalVer tokens. */
 const VALID_TOKENS = new Set<string>([
@@ -175,25 +182,40 @@ export function parseFormat(calverFormat: CalVerFormat): ParsedCalVerFormat {
   return result;
 }
 
+/** The optional modifier suffix pattern (e.g., `-alpha.1`, `-rc2`). */
+const MODIFIER_PATTERN = '(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?';
+
+/**
+ * Maps a CalVer token to a strict regex capture group.
+ *
+ * Patterns enforce value-level constraints (e.g., month 1-12, day 1-31)
+ * at the regex level, not just structurally.
+ */
 function tokenPattern(token: string): string {
   switch (token) {
     case 'YYYY':
-      return '(\\d{4})';
+      return '([1-9]\\d{3})';
     case 'YY':
+      return '(\\d{1,3})';
     case '0Y':
-    case '0M':
-    case '0D':
-    case '0W':
-      return '(\\d{2})';
+      return '(\\d{2,3})';
     case 'MM':
-    case 'DD':
     case 'M':
-    case 'D':
+      return '([1-9]|1[0-2])';
+    case '0M':
+      return '(0[1-9]|1[0-2])';
     case 'WW':
-      return '(\\d{1,2})';
+      return '([1-9]|[1-4]\\d|5[0-3])';
+    case '0W':
+      return '(0[1-9]|[1-4]\\d|5[0-3])';
+    case 'DD':
+    case 'D':
+      return '([1-9]|[12]\\d|3[01])';
+    case '0D':
+      return '(0[1-9]|[12]\\d|3[01])';
     case 'MICRO':
     case 'PATCH':
-      return '(\\d+)';
+      return '(0|[1-9]\\d*)';
     default:
       throw new Error(`Unsupported CalVer token: ${token}`);
   }
@@ -223,7 +245,8 @@ function tokenPattern(token: string): string {
 export function getRegexForFormat(calverFormat: CalVerFormat): RegExp {
   const tokens = calverFormat.split('.');
   const pattern = tokens.map(tokenPattern).join('\\.');
-  return new RegExp(`^${pattern}$`);
+  // Append optional MODIFIER suffix (e.g., -alpha.1, -rc2)
+  return new RegExp(`^${pattern}${MODIFIER_PATTERN}$`);
 }
 
 /**
@@ -286,13 +309,19 @@ export function parse(version: string, calverFormat: CalVerFormat): CalVer | nul
 
   if (definition.counter) {
     patch = Number.parseInt(match[cursor], 10);
+    cursor += 1;
   }
+
+  // MODIFIER is always the last capture group from the regex
+  const modifierGroup = match[cursor];
+  const modifier = modifierGroup || undefined;
 
   return {
     year,
     month: month ?? 1,
     day,
     patch,
+    modifier,
     format: calverFormat,
     raw: version,
   };
@@ -325,6 +354,7 @@ export function validate(
   version: string,
   calverFormat: CalVerFormat,
   preventFutureDates: boolean = true,
+  schemeRules?: SchemeRules,
 ): ValidationResult {
   const errors: ValidationError[] = [];
   const parsed = parse(version, calverFormat);
@@ -406,8 +436,31 @@ export function validate(
     }
   }
 
+  // Modifier validation against allowed list
+  if (parsed.modifier && schemeRules?.allowedModifiers) {
+    // Extract base modifier name: "alpha.1" → "alpha", "rc2" → "rc", "dev" → "dev"
+    const baseModifier = parsed.modifier.replace(/[\d.]+$/, '') || parsed.modifier;
+    if (!schemeRules.allowedModifiers.includes(baseModifier)) {
+      errors.push({
+        message: `Modifier "${parsed.modifier}" is not allowed. Allowed: ${schemeRules.allowedModifiers.join(', ')}`,
+        severity: 'error',
+      });
+    }
+  }
+
+  // Segment count warning
+  if (schemeRules?.maxNumericSegments) {
+    const segmentCount = calverFormat.split('.').length;
+    if (segmentCount > schemeRules.maxNumericSegments) {
+      errors.push({
+        message: `Format has ${segmentCount} segments, convention recommends ${schemeRules.maxNumericSegments} or fewer`,
+        severity: 'warning',
+      });
+    }
+  }
+
   return {
-    valid: errors.length === 0,
+    valid: errors.filter((e) => e.severity === 'error').length === 0,
     errors,
     version: { type: 'calver', version: parsed },
   };
@@ -470,7 +523,8 @@ export function format(version: CalVer): string {
     parts.push(formatToken(definition.counter, version.patch ?? 0));
   }
 
-  return parts.join('.');
+  const base = parts.join('.');
+  return version.modifier ? `${base}-${version.modifier}` : base;
 }
 
 /**
