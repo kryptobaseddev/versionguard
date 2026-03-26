@@ -4,9 +4,7 @@ versioning:
 sync:
   files:
     - "README.md"
-  patterns:
-    - regex: '(npm install -D @codluv/versionguard@)(\S+)'
-      template: '$1{{version}}'
+  patterns: []
 
 changelog:
   enabled: true
