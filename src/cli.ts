@@ -83,6 +83,9 @@ export function createProgram(): Command {
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('-t, --type <type>', 'Versioning type: semver or calver')
     .option('-f, --format <format>', 'CalVer format tokens (e.g., YYYY.M.MICRO)')
+    .option('--allow-v-prefix', 'SemVer: allow v-prefix (e.g., v1.2.3)')
+    .option('--no-build-metadata', 'SemVer: disallow +build metadata')
+    .option('--require-prerelease', 'SemVer: require prerelease labels')
     .option('--manifest <source>', 'Manifest source (e.g., Cargo.toml, pyproject.toml, auto)')
     .option('--hooks', 'Install git hooks (default: true)')
     .option('--no-hooks', 'Skip git hooks')
@@ -95,6 +98,9 @@ export function createProgram(): Command {
         cwd: string;
         type?: string;
         format?: string;
+        allowVPrefix?: boolean;
+        buildMetadata?: boolean;
+        requirePrerelease?: boolean;
         manifest?: string;
         hooks?: boolean;
         changelog?: boolean;
@@ -102,7 +108,14 @@ export function createProgram(): Command {
         force?: boolean;
       }) => {
         try {
-          const isHeadless = options.yes || options.type || options.format || options.manifest;
+          const isHeadless =
+            options.yes ||
+            options.type ||
+            options.format ||
+            options.manifest ||
+            options.allowVPrefix ||
+            options.buildMetadata === false ||
+            options.requirePrerelease;
 
           let configPath: string | null;
 
@@ -112,6 +125,9 @@ export function createProgram(): Command {
               cwd: options.cwd,
               type: options.type as 'semver' | 'calver' | undefined,
               format: options.format,
+              allowVPrefix: options.allowVPrefix,
+              allowBuildMetadata: options.buildMetadata,
+              requirePrerelease: options.requirePrerelease,
               manifest: options.manifest,
               hooks: options.hooks,
               changelog: options.changelog,

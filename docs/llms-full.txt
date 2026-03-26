@@ -3,11 +3,30 @@
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
 
 Version: 0.5.0
-Generated: 2026-03-26T17:38:38.356Z
+Generated: 2026-03-26T20:51:51.370Z
 
 ## Package: main
 
 ### Functions
+
+#### getSemVerConfig()
+
+(config: VersionGuardConfig) => SemVerConfig
+
+Resolves the SemVer config from a VersionGuard config.
+
+Returns the explicit `semver` block when present, otherwise falls back to sensible defaults. Unlike CalVer, SemVer works out of the box without explicit configuration.
+
+Parameters:
+- config: The full VersionGuard configuration object.
+
+Returns: The resolved SemVer configuration.
+
+Example:
+  import { getSemVerConfig } from './types';
+  
+  const sv = getSemVerConfig(config);
+  console.log(sv.allowVPrefix); // false
 
 #### getCalVerConfig()
 
@@ -27,6 +46,26 @@ Example:
   
   const calver = getCalVerConfig(config);
   console.log(calver.format); // 'YYYY.MM.DD'
+
+#### validateModifier()
+
+(modifier: string, schemeRules?: SchemeRules) => ValidationError | null
+
+Validates a pre-release / modifier tag against the allowed modifiers list.
+
+Both SemVer prerelease identifiers (e.g. `alpha` from `1.2.3-alpha.1`) and CalVer modifiers (e.g. `rc` from `2026.3.0-rc2`) share the same validation logic: strip trailing digits/dots to get the base tag, then check the whitelist.
+
+Parameters:
+- modifier: Raw modifier string (e.g. `"alpha.1"`, `"rc2"`, `"dev"`).
+- schemeRules: Scheme rules containing the allowed modifiers list.
+
+Returns: A validation error when the modifier is disallowed, otherwise `null`.
+
+Example:
+  import { validateModifier } from './scheme-rules';
+  
+  const error = validateModifier('alpha.1', { maxNumericSegments: 3, allowedModifiers: ['dev', 'alpha', 'beta', 'rc'] });
+  // => null (allowed)
 
 #### isValidCalVerFormat()
 
@@ -365,14 +404,16 @@ Example:
 
 #### validate()
 
-(version: string) => ValidationResult
+(version: string, semverConfig?: SemVerConfig, schemeRules?: SchemeRules) => ValidationResult
 
 Validates that a string is a supported semantic version.
 
-When validation fails, the result includes targeted structural errors for common cases such as leading `v` prefixes and numeric segments with leading zeroes.
+When validation fails, the result includes targeted structural errors for common cases such as leading `v` prefixes and numeric segments with leading zeroes.  When a `SemVerConfig` is provided, additional policy checks are applied (v-prefix tolerance, build-metadata restrictions, prerelease requirements). When `SchemeRules` are provided, the prerelease tag is validated against the allowed modifiers list — the same logic CalVer uses for its modifiers.
 
 Parameters:
 - version: Version string to validate.
+- semverConfig: Optional SemVer-specific configuration.
+- schemeRules: Optional scheme rules for modifier validation.
 
 Returns: A validation result containing any detected errors and the parsed version on success.
 
@@ -2062,6 +2103,32 @@ string[]
 
 Allowed pre-release modifier tags.  When set, version modifiers (e.g., `-alpha`, `-rc1`) are validated against this whitelist. An empty array disallows all modifiers.
 
+#### SemVerConfig
+
+SemVerConfig
+
+Configures SemVer validation rules.
+
+Members:
+
+##### allowVPrefix
+
+boolean
+
+Tolerates a leading `v` prefix (e.g. `v1.2.3`).  When enabled the prefix is stripped before parsing.
+
+##### allowBuildMetadata
+
+boolean
+
+Permits `+build` metadata on version strings.
+
+##### requirePrerelease
+
+boolean
+
+Requires every version to carry a prerelease label.
+
 #### CalVerConfig
 
 CalVerConfig
@@ -2225,6 +2292,12 @@ Versioning strategy used for the project.
 SchemeRules | undefined
 
 Scheme-level validation rules applied regardless of versioning type.
+
+##### semver
+
+SemVerConfig | undefined
+
+SemVer-specific settings when `type` is `'semver'`.
 
 ##### calver
 
@@ -3368,6 +3441,24 @@ Versioning type (semver or calver).
 string | undefined
 
 CalVer format string.
+
+##### allowVPrefix
+
+boolean | undefined
+
+Allow v-prefix on SemVer versions.
+
+##### allowBuildMetadata
+
+boolean | undefined
+
+Allow build metadata on SemVer versions.
+
+##### requirePrerelease
+
+boolean | undefined
+
+Require prerelease labels on SemVer versions.
 
 ##### manifest
 

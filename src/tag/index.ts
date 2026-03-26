@@ -9,7 +9,7 @@ import { areHooksInstalled } from '../hooks';
 import { getPackageVersion } from '../project';
 import { validate as validateSemVer } from '../semver';
 import { checkHardcodedVersions } from '../sync';
-import type { VersionGuardConfig } from '../types';
+import { getSemVerConfig, type VersionGuardConfig } from '../types';
 
 /**
  * Tag management helpers for reading, validating, and creating release tags.
@@ -349,7 +349,7 @@ function getTagPreflightError(
   const version = expectedVersion ?? getPackageVersion(cwd, config.manifest);
   const versionResult =
     config.versioning.type === 'semver'
-      ? validateSemVer(version)
+      ? validateSemVer(version, getSemVerConfig(config), config.versioning.schemeRules)
       : validateCalVer(
           version,
           config.versioning.calver?.format ?? 'YYYY.MM.PATCH',

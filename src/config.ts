@@ -20,6 +20,11 @@ const DEFAULT_CONFIG: VersionGuardConfig = {
       maxNumericSegments: 3,
       allowedModifiers: ['dev', 'alpha', 'beta', 'rc'],
     },
+    semver: {
+      allowVPrefix: false,
+      allowBuildMetadata: true,
+      requirePrerelease: false,
+    },
     calver: {
       format: 'YYYY.MM.PATCH',
       preventFutureDates: true,
@@ -203,8 +208,16 @@ export function initConfig(cwd: string = process.cwd()): string {
 
 function generateDefaultConfig(): string {
   return `# VersionGuard Configuration
+# Change "type" to switch between semver and calver — both blocks are always present.
 versioning:
   type: semver
+  semver:
+    allowVPrefix: false
+    allowBuildMetadata: true
+    requirePrerelease: false
+  calver:
+    format: "YYYY.MM.PATCH"
+    preventFutureDates: true
 
 sync:
   files:

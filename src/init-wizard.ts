@@ -26,6 +26,12 @@ export interface InitOptions {
   type?: 'semver' | 'calver';
   /** CalVer format string. */
   format?: string;
+  /** Allow v-prefix on SemVer versions. */
+  allowVPrefix?: boolean;
+  /** Allow build metadata on SemVer versions. */
+  allowBuildMetadata?: boolean;
+  /** Require prerelease labels on SemVer versions. */
+  requirePrerelease?: boolean;
   /** Manifest source type. */
   manifest?: string;
   /** Whether to install git hooks. */
@@ -82,8 +88,12 @@ export async function runWizard(cwd: string): Promise<string | null> {
     return null;
   }
 
-  // Step 2: CalVer format (if calver)
+  // Step 2: Type-specific options
   let format: string | undefined;
+  let allowVPrefix = false;
+  let allowBuildMetadata = true;
+  let requirePrerelease = false;
+
   if (type === 'calver') {
     const selected = await selectCalVerFormat();
     if (!selected) {
@@ -91,6 +101,16 @@ export async function runWizard(cwd: string): Promise<string | null> {
       return null;
     }
     format = selected;
+  } else {
+    // SemVer options
+    const semverOptions = await selectSemVerOptions();
+    if (!semverOptions) {
+      p.outro('Setup cancelled.');
+      return null;
+    }
+    allowVPrefix = semverOptions.allowVPrefix;
+    allowBuildMetadata = semverOptions.allowBuildMetadata;
+    requirePrerelease = semverOptions.requirePrerelease;
   }
 
   // Step 3: Manifest source
@@ -124,6 +144,9 @@ export async function runWizard(cwd: string): Promise<string | null> {
   const config = buildConfig({
     type: type,
     format,
+    allowVPrefix,
+    allowBuildMetadata,
+    requirePrerelease,
     manifest: manifest === 'auto' ? undefined : manifest,
     hooks: hooks,
     changelog: changelog,
@@ -166,6 +189,9 @@ export function runHeadless(options: InitOptions): string {
   const config = buildConfig({
     type: options.type ?? 'semver',
     format: options.format,
+    allowVPrefix: options.allowVPrefix ?? false,
+    allowBuildMetadata: options.allowBuildMetadata ?? true,
+    requirePrerelease: options.requirePrerelease ?? false,
     manifest: options.manifest,
     hooks: options.hooks ?? true,
     changelog: options.changelog ?? true,
@@ -210,6 +236,42 @@ async function selectCalVerFormat(): Promise<string | null> {
   return preset as string;
 }
 
+async function selectSemVerOptions(): Promise<{
+  allowVPrefix: boolean;
+  allowBuildMetadata: boolean;
+  requirePrerelease: boolean;
+} | null> {
+  const customize = await p.confirm({
+    message: 'Customize SemVer rules? (defaults work for most projects)',
+    initialValue: false,
+  });
+  if (p.isCancel(customize)) return null;
+
+  if (!customize) {
+    return { allowVPrefix: false, allowBuildMetadata: true, requirePrerelease: false };
+  }
+
+  const allowVPrefix = await p.confirm({
+    message: 'Allow v-prefix? (e.g., v1.2.3)',
+    initialValue: false,
+  });
+  if (p.isCancel(allowVPrefix)) return null;
+
+  const allowBuildMetadata = await p.confirm({
+    message: 'Allow build metadata? (e.g., 1.2.3+build.123)',
+    initialValue: true,
+  });
+  if (p.isCancel(allowBuildMetadata)) return null;
+
+  const requirePrerelease = await p.confirm({
+    message: 'Require prerelease labels? (e.g., 1.2.3-alpha.1)',
+    initialValue: false,
+  });
+  if (p.isCancel(requirePrerelease)) return null;
+
+  return { allowVPrefix, allowBuildMetadata, requirePrerelease };
+}
+
 async function selectManifest(cwd: string): Promise<string | null> {
   // Detect what exists
   const detected: { value: string; label: string; hint?: string }[] = [];
@@ -251,25 +313,30 @@ async function selectManifest(cwd: string): Promise<string | null> {
 interface ConfigInput {
   type: 'semver' | 'calver';
   format?: string;
+  allowVPrefix: boolean;
+  allowBuildMetadata: boolean;
+  requirePrerelease: boolean;
   manifest?: string;
   hooks: boolean;
   changelog: boolean;
 }
 
 function buildConfig(input: ConfigInput): Partial<VersionGuardConfig> {
-  const config: Record<string, unknown> = {
-    versioning: {
-      type: input.type,
-      ...(input.type === 'calver' && input.format
-        ? {
-            calver: {
-              format: input.format,
-              preventFutureDates: true,
-            },
-          }
-        : {}),
+  // Always emit both blocks — `type` is the switch
+  const versioning: Record<string, unknown> = {
+    type: input.type,
+    semver: {
+      allowVPrefix: input.allowVPrefix,
+      allowBuildMetadata: input.allowBuildMetadata,
+      requirePrerelease: input.requirePrerelease,
+    },
+    calver: {
+      format: input.format ?? 'YYYY.MM.PATCH',
+      preventFutureDates: true,
     },
   };
+
+  const config: Record<string, unknown> = { versioning };
 
   if (input.manifest) {
     config.manifest = { source: input.manifest };

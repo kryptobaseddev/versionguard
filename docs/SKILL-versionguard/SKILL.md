@@ -1,7 +1,7 @@
 ---
 name: SKILL-versionguard
 description: >
-  Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync Use when: (1) running versionguard CLI commands, (2) calling its 87 API functions, (3) configuring @codluv/versionguard, (4) understanding its 51 type definitions, (5) working with its 6 classes, (6) user mentions "semver", "calver", "versioning", "git-hooks", "changelog", (7) user mentions "@codluv/versionguard" or asks about its API.
+  Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync Use when: (1) running versionguard CLI commands, (2) calling its 89 API functions, (3) configuring @codluv/versionguard, (4) understanding its 52 type definitions, (5) working with its 6 classes, (6) user mentions "semver", "calver", "versioning", "git-hooks", "changelog", (7) user mentions "@codluv/versionguard" or asks about its API.
 ---
 
 # @codluv/versionguard
@@ -22,7 +22,9 @@ npx versionguard --help
 
 | Function | Description |
 |----------|-------------|
+| `getSemVerConfig()` | Resolves the SemVer config from a VersionGuard config. |
 | `getCalVerConfig()` | Extracts the CalVer config from a VersionGuard config, throwing if missing. |
+| `validateModifier()` | Validates a pre-release / modifier tag against the allowed modifiers list. |
 | `isValidCalVerFormat()` | Validates that a CalVer format string is composed of valid tokens and follows structural rules. |
 | `parseFormat()` | Breaks a CalVer format string into its component tokens. |
 | `getRegexForFormat()` | Builds a regular expression that matches a supported CalVer format. |
@@ -35,9 +37,7 @@ npx versionguard --help
 | `getNextVersions()` | Returns the most likely next CalVer candidates. |
 | `validateChangelog()` | Validates a changelog file for release readiness. |
 | `getLatestVersion()` | Gets the most recent released version from a changelog. |
-| `addVersionEntry()` | Inserts a new version entry beneath the `[Unreleased]` section. |
-| `isChangesetMangled()` | Detects whether a changelog has been mangled by Changesets. |
-| ... | 72 more — see API reference |
+| ... | 74 more — see API reference |
 
 ## Configuration
 
@@ -64,10 +64,10 @@ See [references/CONFIGURATION.md](references/CONFIGURATION.md) for full details.
 - **`CalVerToken`** — Valid CalVer token names for building format strings.
 - **`CalVerFormat`** — A CalVer format string composed of dot-separated tokens.
 - **`SchemeRules`** — Configures scheme-level validation rules applied regardless of versioning type.
+- **`SemVerConfig`** — Configures SemVer validation rules.
 - **`CalVerConfig`** — Configures CalVer validation rules.
 - **`SyncPattern`** — Describes a search-and-replace pattern used during version synchronization.
 - **`SyncConfig`** — Configures files and patterns that should stay in sync with the canonical version.
-- **`ChangelogConfig`** — Controls changelog validation behavior.
 
 ## References
 

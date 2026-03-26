@@ -12,6 +12,7 @@
  * @packageDocumentation
  */
 
+import { validateModifier } from './scheme-rules';
 import type {
   CalVer,
   CalVerFormat,
@@ -437,15 +438,11 @@ export function validate(
     }
   }
 
-  // Modifier validation against allowed list
-  if (parsed.modifier && schemeRules?.allowedModifiers) {
-    // Extract base modifier name: "alpha.1" → "alpha", "rc2" → "rc", "dev" → "dev"
-    const baseModifier = parsed.modifier.replace(/[\d.]+$/, '') || parsed.modifier;
-    if (!schemeRules.allowedModifiers.includes(baseModifier)) {
-      errors.push({
-        message: `Modifier "${parsed.modifier}" is not allowed. Allowed: ${schemeRules.allowedModifiers.join(', ')}`,
-        severity: 'error',
-      });
+  // Modifier validation against allowed list (shared with SemVer)
+  if (parsed.modifier) {
+    const modifierError = validateModifier(parsed.modifier, schemeRules);
+    if (modifierError) {
+      errors.push(modifierError);
     }
   }
 

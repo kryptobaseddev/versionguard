@@ -5,6 +5,19 @@ description: Usage examples for the . package
 
 All usage examples from the package, aggregated for quick reference.
 
+## `getSemVerConfig()`
+
+*Resolves the SemVer config from a VersionGuard config.*
+
+[View in API reference](/packages/./api/functions#getsemverconfig)
+
+```ts
+import { getSemVerConfig } from './types';
+
+const sv = getSemVerConfig(config);
+console.log(sv.allowVPrefix); // false
+```
+
 ## `getCalVerConfig()`
 
 *Extracts the CalVer config from a VersionGuard config, throwing if missing.*
@@ -16,6 +29,19 @@ import { getCalVerConfig } from './types';
 
 const calver = getCalVerConfig(config);
 console.log(calver.format); // 'YYYY.MM.DD'
+```
+
+## `validateModifier()`
+
+*Validates a pre-release / modifier tag against the allowed modifiers list.*
+
+[View in API reference](/packages/./api/functions#validatemodifier)
+
+```ts
+import { validateModifier } from './scheme-rules';
+
+const error = validateModifier('alpha.1', { maxNumericSegments: 3, allowedModifiers: ['dev', 'alpha', 'beta', 'rc'] });
+// => null (allowed)
 ```
 
 ## `isValidCalVerFormat()`

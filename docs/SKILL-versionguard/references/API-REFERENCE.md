@@ -8,6 +8,27 @@
 
 ## Functions
 
+### `getSemVerConfig`
+
+Resolves the SemVer config from a VersionGuard config.
+
+```typescript
+(config: VersionGuardConfig) => SemVerConfig
+```
+
+**Parameters:**
+
+- `config` — The full VersionGuard configuration object.
+
+**Returns:** The resolved SemVer configuration.
+
+```ts
+import { getSemVerConfig } from './types';
+
+const sv = getSemVerConfig(config);
+console.log(sv.allowVPrefix); // false
+```
+
 ### `getCalVerConfig`
 
 Extracts the CalVer config from a VersionGuard config, throwing if missing.
@@ -27,6 +48,28 @@ import { getCalVerConfig } from './types';
 
 const calver = getCalVerConfig(config);
 console.log(calver.format); // 'YYYY.MM.DD'
+```
+
+### `validateModifier`
+
+Validates a pre-release / modifier tag against the allowed modifiers list.
+
+```typescript
+(modifier: string, schemeRules?: SchemeRules) => ValidationError | null
+```
+
+**Parameters:**
+
+- `modifier` — Raw modifier string (e.g. `"alpha.1"`, `"rc2"`, `"dev"`).
+- `schemeRules` — Scheme rules containing the allowed modifiers list.
+
+**Returns:** A validation error when the modifier is disallowed, otherwise `null`.
+
+```ts
+import { validateModifier } from './scheme-rules';
+
+const error = validateModifier('alpha.1', { maxNumericSegments: 3, allowedModifiers: ['dev', 'alpha', 'beta', 'rc'] });
+// => null (allowed)
 ```
 
 ### `isValidCalVerFormat`
@@ -403,12 +446,14 @@ parse('1.2.3-alpha.1+build.5')?.prerelease;
 Validates that a string is a supported semantic version.
 
 ```typescript
-(version: string) => ValidationResult
+(version: string, semverConfig?: SemVerConfig, schemeRules?: SchemeRules) => ValidationResult
 ```
 
 **Parameters:**
 
 - `version` — Version string to validate.
+- `semverConfig` — Optional SemVer-specific configuration.
+- `schemeRules` — Optional scheme rules for modifier validation.
 
 **Returns:** A validation result containing any detected errors and the parsed version on success.
 
@@ -1873,6 +1918,20 @@ SchemeRules
 - `maxNumericSegments` — Maximum number of numeric segments before a warning is emitted.  Convention is 3 (e.g., `YYYY.MM.MICRO`). Formats with 4+ segments (e.g., `YYYY.0M.0D.MICRO`) are valid but trigger a warning.
 - `allowedModifiers` — Allowed pre-release modifier tags.  When set, version modifiers (e.g., `-alpha`, `-rc1`) are validated against this whitelist. An empty array disallows all modifiers.
 
+### `SemVerConfig`
+
+Configures SemVer validation rules.
+
+```typescript
+SemVerConfig
+```
+
+**Members:**
+
+- `allowVPrefix` — Tolerates a leading `v` prefix (e.g. `v1.2.3`).  When enabled the prefix is stripped before parsing.
+- `allowBuildMetadata` — Permits `+build` metadata on version strings.
+- `requirePrerelease` — Requires every version to carry a prerelease label.
+
 ### `CalVerConfig`
 
 Configures CalVer validation rules.
@@ -1967,6 +2026,7 @@ VersioningConfig
 
 - `type` — Versioning strategy used for the project.
 - `schemeRules` — Scheme-level validation rules applied regardless of versioning type.
+- `semver` — SemVer-specific settings when `type` is `'semver'`.
 - `calver` — CalVer-specific settings when `type` is `'calver'`.
 
 ### `VersionGuardConfig`
@@ -2514,6 +2574,9 @@ InitOptions
 - `cwd` — Working directory path.
 - `type` — Versioning type (semver or calver).
 - `format` — CalVer format string.
+- `allowVPrefix` — Allow v-prefix on SemVer versions.
+- `allowBuildMetadata` — Allow build metadata on SemVer versions.
+- `requirePrerelease` — Require prerelease labels on SemVer versions.
 - `manifest` — Manifest source type.
 - `hooks` — Whether to install git hooks.
 - `changelog` — Whether to enable changelog validation.

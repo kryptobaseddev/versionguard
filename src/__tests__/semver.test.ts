@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
 import * as semver from '../semver';
+import type { SchemeRules, SemVerConfig } from '../types';
+
+const defaults: SemVerConfig = {
+  allowVPrefix: false,
+  allowBuildMetadata: true,
+  requirePrerelease: false,
+};
+
+const defaultRules: SchemeRules = {
+  maxNumericSegments: 3,
+  allowedModifiers: ['dev', 'alpha', 'beta', 'rc'],
+};
 
 describe('semver', () => {
   it('parses valid semantic versions with prerelease and build metadata', () => {
@@ -107,5 +119,86 @@ describe('semver', () => {
         raw: 'ignored',
       }),
     ).toBe('1.0.0');
+  });
+
+  describe('SemVerConfig', () => {
+    it('strips v-prefix when allowVPrefix is true', () => {
+      const config: SemVerConfig = { ...defaults, allowVPrefix: true };
+      const result = semver.validate('v1.2.3', config);
+      expect(result.valid).toBe(true);
+      expect(result.version).toMatchObject({
+        type: 'semver',
+        version: { major: 1, minor: 2, patch: 3 },
+      });
+    });
+
+    it('rejects v-prefix when allowVPrefix is false', () => {
+      const result = semver.validate('v1.2.3', defaults);
+      expect(result.valid).toBe(false);
+      expect(result.errors[0]?.message).toContain("should not start with 'v'");
+    });
+
+    it('handles uppercase V prefix when allowVPrefix is true', () => {
+      const config: SemVerConfig = { ...defaults, allowVPrefix: true };
+      expect(semver.validate('V2.0.0', config).valid).toBe(true);
+    });
+
+    it('rejects build metadata when allowBuildMetadata is false', () => {
+      const config: SemVerConfig = { ...defaults, allowBuildMetadata: false };
+      const result = semver.validate('1.2.3+build.123', config);
+      expect(result.valid).toBe(false);
+      expect(result.errors[0]?.message).toContain('Build metadata is not allowed');
+    });
+
+    it('allows build metadata by default', () => {
+      const result = semver.validate('1.2.3+build.123', defaults);
+      expect(result.valid).toBe(true);
+    });
+
+    it('requires prerelease when requirePrerelease is true', () => {
+      const config: SemVerConfig = { ...defaults, requirePrerelease: true };
+      const result = semver.validate('1.2.3', config);
+      expect(result.valid).toBe(false);
+      expect(result.errors[0]?.message).toContain('prerelease label is required');
+    });
+
+    it('passes requirePrerelease when prerelease is present', () => {
+      const config: SemVerConfig = { ...defaults, requirePrerelease: true };
+      expect(semver.validate('1.2.3-alpha.1', config).valid).toBe(true);
+    });
+
+    it('validates without config (backwards compatible)', () => {
+      expect(semver.validate('1.2.3').valid).toBe(true);
+      expect(semver.validate('v1.2.3').valid).toBe(false);
+    });
+  });
+
+  describe('schemeRules integration', () => {
+    it('rejects disallowed prerelease modifiers', () => {
+      const rules: SchemeRules = { ...defaultRules, allowedModifiers: ['alpha', 'beta'] };
+      const result = semver.validate('1.2.3-gamma.1', defaults, rules);
+      expect(result.valid).toBe(false);
+      expect(result.errors[0]?.message).toContain('not allowed');
+      expect(result.errors[0]?.message).toContain('alpha, beta');
+    });
+
+    it('allows permitted prerelease modifiers', () => {
+      const result = semver.validate('1.2.3-alpha.1', defaults, defaultRules);
+      expect(result.valid).toBe(true);
+    });
+
+    it('strips trailing digits from modifier before checking (rc2 → rc)', () => {
+      const result = semver.validate('1.2.3-rc2', defaults, defaultRules);
+      expect(result.valid).toBe(true);
+    });
+
+    it('skips modifier check when no schemeRules provided', () => {
+      expect(semver.validate('1.2.3-custom.1').valid).toBe(true);
+    });
+
+    it('skips modifier check when no prerelease present', () => {
+      const result = semver.validate('1.2.3', defaults, defaultRules);
+      expect(result.valid).toBe(true);
+    });
   });
 });

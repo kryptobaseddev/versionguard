@@ -5,6 +5,33 @@ description: Functions and classes for the . package
 
 Functions and classes exported by this package.
 
+## getSemVerConfig(config)
+
+Resolves the SemVer config from a VersionGuard config.
+
+**Signature**
+
+```typescript
+(config: VersionGuardConfig) => SemVerConfig
+```
+
+**Parameters**
+
+| Name     | Type                 | Description                                 |
+| -------- | -------------------- | ------------------------------------------- |
+| `config` | `VersionGuardConfig` | The full VersionGuard configuration object. |
+
+**Returns** — The resolved SemVer configuration.
+
+**Example**
+
+```ts
+import { getSemVerConfig } from './types';
+
+const sv = getSemVerConfig(config);
+console.log(sv.allowVPrefix); // false
+```
+
 ## getCalVerConfig(config)
 
 Extracts the CalVer config from a VersionGuard config, throwing if missing.
@@ -30,6 +57,34 @@ import { getCalVerConfig } from './types';
 
 const calver = getCalVerConfig(config);
 console.log(calver.format); // 'YYYY.MM.DD'
+```
+
+## validateModifier(modifier, schemeRules)
+
+Validates a pre-release / modifier tag against the allowed modifiers list.
+
+**Signature**
+
+```typescript
+(modifier: string, schemeRules?: SchemeRules) => ValidationError | null
+```
+
+**Parameters**
+
+| Name          | Type            | Description                                               |
+| ------------- | --------------- | --------------------------------------------------------- |
+| `modifier`    | `string`        | Raw modifier string (e.g. `"alpha.1"`, `"rc2"`, `"dev"`). |
+| `schemeRules` | `: SchemeRules` | Scheme rules containing the allowed modifiers list.       |
+
+**Returns** — A validation error when the modifier is disallowed, otherwise `null`.
+
+**Example**
+
+```ts
+import { validateModifier } from './scheme-rules';
+
+const error = validateModifier('alpha.1', { maxNumericSegments: 3, allowedModifiers: ['dev', 'alpha', 'beta', 'rc'] });
+// => null (allowed)
 ```
 
 ## isValidCalVerFormat(formatStr)
@@ -503,21 +558,23 @@ parse('1.2.3-alpha.1+build.5')?.prerelease;
 // => ['alpha', '1']
 ```
 
-## validate(version)
+## validate(version, semverConfig, schemeRules)
 
 Validates that a string is a supported semantic version.
 
 **Signature**
 
 ```typescript
-(version: string) => ValidationResult
+(version: string, semverConfig?: SemVerConfig, schemeRules?: SchemeRules) => ValidationResult
 ```
 
 **Parameters**
 
-| Name      | Type     | Description                 |
-| --------- | -------- | --------------------------- |
-| `version` | `string` | Version string to validate. |
+| Name           | Type             | Description                                    |
+| -------------- | ---------------- | ---------------------------------------------- |
+| `version`      | `string`         | Version string to validate.                    |
+| `semverConfig` | `: SemVerConfig` | Optional SemVer-specific configuration.        |
+| `schemeRules`  | `: SchemeRules`  | Optional scheme rules for modifier validation. |
 
 **Returns** — A validation result containing any detected errors and the parsed version on success.
 

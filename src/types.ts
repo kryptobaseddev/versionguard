@@ -137,6 +137,38 @@ export interface SchemeRules {
 }
 
 /**
+ * Configures SemVer validation rules.
+ *
+ * @public
+ * @since 0.6.0
+ * @forgeIgnore E020
+ */
+export interface SemVerConfig {
+  /**
+   * Tolerates a leading `v` prefix (e.g. `v1.2.3`).
+   *
+   * When enabled the prefix is stripped before parsing.
+   *
+   * @defaultValue false
+   */
+  allowVPrefix: boolean;
+
+  /**
+   * Permits `+build` metadata on version strings.
+   *
+   * @defaultValue true
+   */
+  allowBuildMetadata: boolean;
+
+  /**
+   * Requires every version to carry a prerelease label.
+   *
+   * @defaultValue false
+   */
+  requirePrerelease: boolean;
+}
+
+/**
  * Configures CalVer validation rules.
  *
  * @public
@@ -309,6 +341,13 @@ export interface VersioningConfig {
   schemeRules?: SchemeRules;
 
   /**
+   * SemVer-specific settings when `type` is `'semver'`.
+   *
+   * @defaultValue `{ allowVPrefix: false, allowBuildMetadata: true, requirePrerelease: false }`
+   */
+  semver?: SemVerConfig;
+
+  /**
    * CalVer-specific settings when `type` is `'calver'`.
    *
    * @defaultValue undefined
@@ -355,6 +394,43 @@ export interface VersionGuardConfig {
    * Files or patterns excluded from validation.
    */
   ignore: string[];
+}
+
+/**
+ * Default SemVer configuration used when no explicit config is provided.
+ *
+ * @internal
+ */
+const DEFAULT_SEMVER_CONFIG: SemVerConfig = {
+  allowVPrefix: false,
+  allowBuildMetadata: true,
+  requirePrerelease: false,
+};
+
+/**
+ * Resolves the SemVer config from a VersionGuard config.
+ *
+ * @remarks
+ * Returns the explicit `semver` block when present, otherwise falls back
+ * to sensible defaults. Unlike CalVer, SemVer works out of the box without
+ * explicit configuration.
+ *
+ * @param config - The full VersionGuard configuration object.
+ * @returns The resolved SemVer configuration.
+ *
+ * @example
+ * ```ts
+ * import { getSemVerConfig } from './types';
+ *
+ * const sv = getSemVerConfig(config);
+ * console.log(sv.allowVPrefix); // false
+ * ```
+ *
+ * @public
+ * @since 0.6.0
+ */
+export function getSemVerConfig(config: VersionGuardConfig): SemVerConfig {
+  return { ...DEFAULT_SEMVER_CONFIG, ...config.versioning.semver };
 }
 
 /**

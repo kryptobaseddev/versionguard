@@ -56,6 +56,16 @@ Configures scheme-level validation rules applied regardless of versioning type.
 | `maxNumericSegments` | `number`   | Yes      | Maximum number of numeric segments before a warning is emitted.  Convention is 3 (e.g., `YYYY.MM.MICRO`). Formats with 4+ segments (e.g., `YYYY.0M.0D.MICRO`) are valid but trigger a warning. |
 | `allowedModifiers`   | `string[]` | Yes      | Allowed pre-release modifier tags.  When set, version modifiers (e.g., `-alpha`, `-rc1`) are validated against this whitelist. An empty array disallows all modifiers.                         |
 
+## SemVerConfig
+
+Configures SemVer validation rules.
+
+| Property             | Type      | Required | Description                                                                                          |
+| -------------------- | --------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| `allowVPrefix`       | `boolean` | Yes      | Tolerates a leading `v` prefix (e.g. `v1.2.3`).  When enabled the prefix is stripped before parsing. |
+| `allowBuildMetadata` | `boolean` | Yes      | Permits `+build` metadata on version strings.                                                        |
+| `requirePrerelease`  | `boolean` | Yes      | Requires every version to carry a prerelease label.                                                  |
+
 ## CalVerConfig
 
 Configures CalVer validation rules.
@@ -122,6 +132,7 @@ Configures the active versioning mode.
 | ------------- | --------------------------- | -------- | -------------------------------------------------------------------- |
 | `type`        | `VersioningType`            | Yes      | Versioning strategy used for the project.                            |
 | `schemeRules` | `SchemeRules \| undefined`  | No       | Scheme-level validation rules applied regardless of versioning type. |
+| `semver`      | `SemVerConfig \| undefined` | No       | SemVer-specific settings when `type` is `'semver'`.                  |
 | `calver`      | `CalVerConfig \| undefined` | No       | CalVer-specific settings when `type` is `'calver'`.                  |
 
 ## VersionGuardConfig
@@ -524,13 +535,16 @@ Tag entry point exports for release-tag management helpers.
 
 Options for headless (non-interactive) initialization.
 
-| Property    | Type                                | Required | Description                             |
-| ----------- | ----------------------------------- | -------- | --------------------------------------- |
-| `cwd`       | `string`                            | Yes      | Working directory path.                 |
-| `type`      | `"semver" \| "calver" \| undefined` | No       | Versioning type (semver or calver).     |
-| `format`    | `string \| undefined`               | No       | CalVer format string.                   |
-| `manifest`  | `string \| undefined`               | No       | Manifest source type.                   |
-| `hooks`     | `boolean \| undefined`              | No       | Whether to install git hooks.           |
-| `changelog` | `boolean \| undefined`              | No       | Whether to enable changelog validation. |
-| `yes`       | `boolean \| undefined`              | No       | Accept defaults without prompting.      |
-| `force`     | `boolean \| undefined`              | No       | Overwrite existing config.              |
+| Property             | Type                                | Required | Description                                   |
+| -------------------- | ----------------------------------- | -------- | --------------------------------------------- |
+| `cwd`                | `string`                            | Yes      | Working directory path.                       |
+| `type`               | `"semver" \| "calver" \| undefined` | No       | Versioning type (semver or calver).           |
+| `format`             | `string \| undefined`               | No       | CalVer format string.                         |
+| `allowVPrefix`       | `boolean \| undefined`              | No       | Allow v-prefix on SemVer versions.            |
+| `allowBuildMetadata` | `boolean \| undefined`              | No       | Allow build metadata on SemVer versions.      |
+| `requirePrerelease`  | `boolean \| undefined`              | No       | Require prerelease labels on SemVer versions. |
+| `manifest`           | `string \| undefined`               | No       | Manifest source type.                         |
+| `hooks`              | `boolean \| undefined`              | No       | Whether to install git hooks.                 |
+| `changelog`          | `boolean \| undefined`              | No       | Whether to enable changelog validation.       |
+| `yes`                | `boolean \| undefined`              | No       | Accept defaults without prompting.            |
+| `force`              | `boolean \| undefined`              | No       | Overwrite existing config.                    |

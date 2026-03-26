@@ -18,6 +18,7 @@ import {
   type DoctorReport,
   type FullValidationResult,
   getCalVerConfig,
+  getSemVerConfig,
   type ValidationResult,
   type VersionGuardConfig,
 } from './types';
@@ -59,7 +60,7 @@ export * from './types';
  */
 export function validateVersion(version: string, config: VersionGuardConfig): ValidationResult {
   if (config.versioning.type === 'semver') {
-    return semver.validate(version);
+    return semver.validate(version, getSemVerConfig(config), config.versioning.schemeRules);
   }
 
   const calverConfig = getCalVerConfig(config);

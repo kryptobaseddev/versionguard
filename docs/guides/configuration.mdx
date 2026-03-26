@@ -20,6 +20,16 @@ Configures the version source manifest.
 | `path`   | `string \| undefined` | Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml. |
 | `regex`  | `string \| undefined` | Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.                                                                  |
 
+### `SemVerConfig`
+
+Configures SemVer validation rules.
+
+| Property             | Type      | Description                                                                                          |
+| -------------------- | --------- | ---------------------------------------------------------------------------------------------------- |
+| `allowVPrefix`       | `boolean` | Tolerates a leading `v` prefix (e.g. `v1.2.3`).  When enabled the prefix is stripped before parsing. |
+| `allowBuildMetadata` | `boolean` | Permits `+build` metadata on version strings.                                                        |
+| `requirePrerelease`  | `boolean` | Requires every version to carry a prerelease label.                                                  |
+
 ### `CalVerConfig`
 
 Configures CalVer validation rules.
@@ -77,6 +87,7 @@ Configures the active versioning mode.
 | ------------- | --------------------------- | -------------------------------------------------------------------- |
 | `type`        | `VersioningType`            | Versioning strategy used for the project.                            |
 | `schemeRules` | `SchemeRules \| undefined`  | Scheme-level validation rules applied regardless of versioning type. |
+| `semver`      | `SemVerConfig \| undefined` | SemVer-specific settings when `type` is `'semver'`.                  |
 | `calver`      | `CalVerConfig \| undefined` | CalVer-specific settings when `type` is `'calver'`.                  |
 
 ### `VersionGuardConfig`
@@ -107,15 +118,18 @@ A config schema entry with type, description, and default.
 
 Options for headless (non-interactive) initialization.
 
-| Property    | Type                                | Description                             |
-| ----------- | ----------------------------------- | --------------------------------------- |
-| `cwd`       | `string`                            | Working directory path.                 |
-| `type`      | `"semver" \| "calver" \| undefined` | Versioning type (semver or calver).     |
-| `format`    | `string \| undefined`               | CalVer format string.                   |
-| `manifest`  | `string \| undefined`               | Manifest source type.                   |
-| `hooks`     | `boolean \| undefined`              | Whether to install git hooks.           |
-| `changelog` | `boolean \| undefined`              | Whether to enable changelog validation. |
-| `yes`       | `boolean \| undefined`              | Accept defaults without prompting.      |
-| `force`     | `boolean \| undefined`              | Overwrite existing config.              |
+| Property             | Type                                | Description                                   |
+| -------------------- | ----------------------------------- | --------------------------------------------- |
+| `cwd`                | `string`                            | Working directory path.                       |
+| `type`               | `"semver" \| "calver" \| undefined` | Versioning type (semver or calver).           |
+| `format`             | `string \| undefined`               | CalVer format string.                         |
+| `allowVPrefix`       | `boolean \| undefined`              | Allow v-prefix on SemVer versions.            |
+| `allowBuildMetadata` | `boolean \| undefined`              | Allow build metadata on SemVer versions.      |
+| `requirePrerelease`  | `boolean \| undefined`              | Require prerelease labels on SemVer versions. |
+| `manifest`           | `string \| undefined`               | Manifest source type.                         |
+| `hooks`              | `boolean \| undefined`              | Whether to install git hooks.                 |
+| `changelog`          | `boolean \| undefined`              | Whether to enable changelog validation.       |
+| `yes`                | `boolean \| undefined`              | Accept defaults without prompting.            |
+| `force`              | `boolean \| undefined`              | Overwrite existing config.                    |
 
 {/* FORGE:AUTO-END guide-configuration */}

@@ -4,7 +4,8 @@
  * @packageDocumentation
  */
 
-import type { SemVer, ValidationError, ValidationResult } from './types';
+import { validateModifier } from './scheme-rules';
+import type { SchemeRules, SemVer, SemVerConfig, ValidationError, ValidationResult } from './types';
 
 const SEMVER_REGEX =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
@@ -97,7 +98,14 @@ function getStructuralErrors(version: string): ValidationError[] {
  * When validation fails, the result includes targeted structural errors for common cases such as
  * leading `v` prefixes and numeric segments with leading zeroes.
  *
+ * When a {@link SemVerConfig} is provided, additional policy checks are applied
+ * (v-prefix tolerance, build-metadata restrictions, prerelease requirements).
+ * When {@link SchemeRules} are provided, the prerelease tag is validated against
+ * the allowed modifiers list — the same logic CalVer uses for its modifiers.
+ *
  * @param version - Version string to validate.
+ * @param semverConfig - Optional SemVer-specific configuration.
+ * @param schemeRules - Optional scheme rules for modifier validation.
  * @returns A validation result containing any detected errors and the parsed version on success.
  *
  * @example
@@ -111,8 +119,23 @@ function getStructuralErrors(version: string): ValidationError[] {
  * @public
  * @since 0.1.0
  */
-export function validate(version: string): ValidationResult {
-  const parsed = parse(version);
+export function validate(
+  version: string,
+  semverConfig?: SemVerConfig,
+  schemeRules?: SchemeRules,
+): ValidationResult {
+  let input = version;
+
+  // Handle v-prefix: strip when allowed, error when not
+  if (input.startsWith('v') || input.startsWith('V')) {
+    if (semverConfig?.allowVPrefix) {
+      input = input.slice(1);
+    }
+    // When no config or allowVPrefix is false, fall through to
+    // getStructuralErrors which already reports the v-prefix error.
+  }
+
+  const parsed = parse(input);
 
   if (!parsed) {
     return {
@@ -121,9 +144,35 @@ export function validate(version: string): ValidationResult {
     };
   }
 
+  const errors: ValidationError[] = [];
+
+  // Build metadata policy
+  if (semverConfig && !semverConfig.allowBuildMetadata && parsed.build.length > 0) {
+    errors.push({
+      message: `Build metadata is not allowed: "${parsed.build.join('.')}"`,
+      severity: 'error',
+    });
+  }
+
+  // Prerelease requirement
+  if (semverConfig?.requirePrerelease && parsed.prerelease.length === 0) {
+    errors.push({
+      message: 'A prerelease label is required (e.g., 1.2.3-alpha.1)',
+      severity: 'error',
+    });
+  }
+
+  // Modifier validation against allowed list (shared with CalVer)
+  if (parsed.prerelease.length > 0) {
+    const modifierError = validateModifier(parsed.prerelease[0], schemeRules);
+    if (modifierError) {
+      errors.push(modifierError);
+    }
+  }
+
   return {
-    valid: true,
-    errors: [],
+    valid: errors.filter((e) => e.severity === 'error').length === 0,
+    errors,
     version: { type: 'semver', version: parsed },
   };
 }

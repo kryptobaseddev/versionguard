@@ -23,6 +23,29 @@ const config: Partial<ManifestConfig> = {
 | `path` | `string | undefined` | Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml. |
 | `regex` | `string | undefined` | Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string. |
 
+## `SemVerConfig`
+
+Configures SemVer validation rules.
+
+```typescript
+import type { SemVerConfig } from "@codluv/versionguard";
+
+const config: Partial<SemVerConfig> = {
+  // Tolerates a leading `v` prefix (e.g. `v1.2.3`).  When enabled the prefix is stripped before parsing.
+  allowVPrefix: true,
+  // Permits `+build` metadata on version strings.
+  allowBuildMetadata: true,
+  // Requires every version to carry a prerelease label.
+  requirePrerelease: true,
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `allowVPrefix` | `boolean` | Tolerates a leading `v` prefix (e.g. `v1.2.3`).  When enabled the prefix is stripped before parsing. |
+| `allowBuildMetadata` | `boolean` | Permits `+build` metadata on version strings. |
+| `requirePrerelease` | `boolean` | Requires every version to carry a prerelease label. |
+
 ## `CalVerConfig`
 
 Configures CalVer validation rules.
@@ -147,6 +170,8 @@ const config: Partial<VersioningConfig> = {
   type: { /* ... */ },
   // Scheme-level validation rules applied regardless of versioning type.
   schemeRules: { /* ... */ },
+  // SemVer-specific settings when `type` is `'semver'`.
+  semver: { /* ... */ },
   // CalVer-specific settings when `type` is `'calver'`.
   calver: { /* ... */ },
 };
@@ -156,6 +181,7 @@ const config: Partial<VersioningConfig> = {
 |----------|------|-------------|
 | `type` | `VersioningType` | Versioning strategy used for the project. |
 | `schemeRules` | `SchemeRules | undefined` | Scheme-level validation rules applied regardless of versioning type. |
+| `semver` | `SemVerConfig | undefined` | SemVer-specific settings when `type` is `'semver'`. |
 | `calver` | `CalVerConfig | undefined` | CalVer-specific settings when `type` is `'calver'`. |
 
 ## `VersionGuardConfig`
