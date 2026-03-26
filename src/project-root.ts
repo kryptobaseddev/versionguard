@@ -134,9 +134,22 @@ function buildResult(root: string, marker: string): ProjectRootResult {
 /**
  * Formats a helpful error message when a command can't find a project.
  *
+ * @remarks
+ * The message includes actionable hints such as running `versionguard init` or
+ * changing to a project root directory. Useful for CLI commands that require a
+ * VersionGuard-enabled project.
+ *
  * @param cwd - The directory that was checked.
  * @param command - The command that was attempted.
  * @returns A formatted, helpful error message.
+ *
+ * @example
+ * ```ts
+ * import { formatNotProjectError } from 'versionguard';
+ *
+ * const msg = formatNotProjectError('/tmp/empty', 'validate');
+ * console.error(msg);
+ * ```
  *
  * @public
  * @since 0.4.0

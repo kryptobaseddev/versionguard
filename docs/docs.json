@@ -1,5 +1,5 @@
 {
-  "name": "versionguard",
+  "name": "@codluv/versionguard",
   "theme": "mint",
   "colors": {
     "primary": "#0ea5e9",
@@ -47,7 +47,9 @@
     ]
   },
   "footer": {
-    "socials": {}
+    "socials": {
+      "github": "https://github.com/kryptobaseddev/versionguard"
+    }
   },
   "contextual": {
     "options": ["copy", "view", "chatgpt", "claude", "perplexity"]

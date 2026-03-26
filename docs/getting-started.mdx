@@ -1,14 +1,14 @@
 ---
 title: Getting Started
-description: Quick start guide for versionguard
+description: Quick start guide for @codluv/versionguard
 ---
 
-Get up and running with **versionguard** in minutes.
+Get up and running with **@codluv/versionguard** in minutes.
 
 ## Step 1: Install
 
 ```bash
-npm install -D versionguard
+npm install -D @codluv/versionguard
 ```
 
 ## Step 2: Add TSDoc to your code
@@ -56,11 +56,9 @@ npx forge-ts build
 
 Your code examples become live documentation:
 
-```ts
-import { parseFormat } from 'versionguard';
-
-parseFormat('YYYY.MM.PATCH');
-// => { year: 'YYYY', month: 'MM', patch: 'PATCH' }
+```typescript
+const feedbackResult = getVersionFeedback('1.2.3', config, '1.2.2');
+console.log(feedbackResult.valid);
 ```
 
 ## What's Next?

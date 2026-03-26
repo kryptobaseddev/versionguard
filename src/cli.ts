@@ -16,6 +16,7 @@ const CLI_VERSION: string = (
 import * as feedback from './feedback';
 import * as fix from './fix';
 import * as guard from './guard';
+import { getHelpJson, getLlmContext, getTopicContent, getTopicIndex } from './help';
 import * as versionguard from './index';
 import { runHeadless, runWizard } from './init-wizard';
 import * as project from './project';
@@ -531,6 +532,36 @@ export function createProgram(): Command {
         }
       },
     );
+
+  program
+    .command('help [topic]')
+    .description('Show help for a topic (config, calver, manifest, hooks, changelog)')
+    .option('--json', 'Machine-readable JSON output')
+    .option('--llm', 'Full API context for LLM agents')
+    .action((topic: string | undefined, options: { json?: boolean; llm?: boolean }) => {
+      if (options.llm) {
+        console.log(getLlmContext());
+        return;
+      }
+
+      if (options.json) {
+        console.log(JSON.stringify(getHelpJson(topic), null, 2));
+        return;
+      }
+
+      if (topic) {
+        const content = getTopicContent(topic);
+        if (!content) {
+          console.error(styles.error(`Unknown topic: ${topic}`));
+          console.log('');
+          console.log(getTopicIndex());
+          process.exit(1);
+        }
+        console.log(content);
+      } else {
+        console.log(getTopicIndex());
+      }
+    });
 
   const hooksCommand = program.command('hooks').description('Manage git hooks');
 

@@ -7,32 +7,68 @@ Type contracts exported by this package: interfaces, type aliases, and enums.
 
 ## VersioningType
 
-Supported versioning strategies.    0.1.0
+Supported versioning strategies.
 
 ```typescript
-any
+VersioningType
+```
+
+## ManifestSourceType
+
+Supported manifest source types for version extraction.
+
+```typescript
+ManifestSourceType
+```
+
+## ManifestConfig
+
+Configures the version source manifest.
+
+| Property | Type                  | Required | Description                                                                                                                                                                         |
+| -------- | --------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `source` | `ManifestSourceType`  | Yes      | Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename.                                                                          |
+| `path`   | `string \| undefined` | No       | Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml. |
+| `regex`  | `string \| undefined` | No       | Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.                                                                  |
+
+## CalVerToken
+
+Valid CalVer token names for building format strings.
+
+```typescript
+CalVerToken
 ```
 
 ## CalVerFormat
 
-Supported calendar version string layouts.    0.1.0
+A CalVer format string composed of dot-separated tokens.
 
 ```typescript
-any
+CalVerFormat
 ```
+
+## SchemeRules
+
+Configures scheme-level validation rules applied regardless of versioning type.
+
+| Property             | Type       | Required | Description                                                                                                                                                                                    |
+| -------------------- | ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maxNumericSegments` | `number`   | Yes      | Maximum number of numeric segments before a warning is emitted.  Convention is 3 (e.g., `YYYY.MM.MICRO`). Formats with 4+ segments (e.g., `YYYY.0M.0D.MICRO`) are valid but trigger a warning. |
+| `allowedModifiers`   | `string[]` | Yes      | Allowed pre-release modifier tags.  When set, version modifiers (e.g., `-alpha`, `-rc1`) are validated against this whitelist. An empty array disallows all modifiers.                         |
 
 ## CalVerConfig
 
-Configures CalVer validation rules.    0.1.0
+Configures CalVer validation rules.
 
-| Property             | Type           | Required | Description                                                |
-| -------------------- | -------------- | -------- | ---------------------------------------------------------- |
-| `format`             | `CalVerFormat` | Yes      | Calendar format used when parsing and validating versions. |
-| `preventFutureDates` | `boolean`      | Yes      | Rejects versions that point to a future date.              |
+| Property                | Type                   | Required | Description                                                              |
+| ----------------------- | ---------------------- | -------- | ------------------------------------------------------------------------ |
+| `format`                | `CalVerFormat`         | Yes      | Calendar format used when parsing and validating versions.               |
+| `preventFutureDates`    | `boolean`              | Yes      | Rejects versions that point to a future date.                            |
+| `strictMutualExclusion` | `boolean \| undefined` | No       | Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens. |
 
 ## SyncPattern
 
-Describes a search-and-replace pattern used during version synchronization.    0.1.0
+Describes a search-and-replace pattern used during version synchronization.
 
 | Property   | Type     | Required | Description                                               |
 | ---------- | -------- | -------- | --------------------------------------------------------- |
@@ -41,7 +77,7 @@ Describes a search-and-replace pattern used during version synchronization.    0
 
 ## SyncConfig
 
-Configures files and patterns that should stay in sync with the canonical version.    0.1.0
+Configures files and patterns that should stay in sync with the canonical version.
 
 | Property   | Type            | Required | Description                                                     |
 | ---------- | --------------- | -------- | --------------------------------------------------------------- |
@@ -50,7 +86,7 @@ Configures files and patterns that should stay in sync with the canonical versio
 
 ## ChangelogConfig
 
-Controls changelog validation behavior.    0.1.0
+Controls changelog validation behavior.
 
 | Property       | Type      | Required | Description                                 |
 | -------------- | --------- | -------- | ------------------------------------------- |
@@ -61,7 +97,7 @@ Controls changelog validation behavior.    0.1.0
 
 ## GitHooksConfig
 
-Toggles each supported git hook integration.    0.1.0
+Toggles each supported git hook integration.
 
 | Property       | Type      | Required | Description                                      |
 | -------------- | --------- | -------- | ------------------------------------------------ |
@@ -71,7 +107,7 @@ Toggles each supported git hook integration.    0.1.0
 
 ## GitConfig
 
-Configures git-related enforcement.    0.1.0
+Configures git-related enforcement.
 
 | Property       | Type             | Required | Description                                           |
 | -------------- | ---------------- | -------- | ----------------------------------------------------- |
@@ -80,20 +116,22 @@ Configures git-related enforcement.    0.1.0
 
 ## VersioningConfig
 
-Configures the active versioning mode.    0.1.0
+Configures the active versioning mode.
 
-| Property | Type                        | Required | Description                                         |
-| -------- | --------------------------- | -------- | --------------------------------------------------- |
-| `type`   | `VersioningType`            | Yes      | Versioning strategy used for the project.           |
-| `calver` | `CalVerConfig \| undefined` | No       | CalVer-specific settings when `type` is `'calver'`. |
+| Property      | Type                        | Required | Description                                                          |
+| ------------- | --------------------------- | -------- | -------------------------------------------------------------------- |
+| `type`        | `VersioningType`            | Yes      | Versioning strategy used for the project.                            |
+| `schemeRules` | `SchemeRules \| undefined`  | No       | Scheme-level validation rules applied regardless of versioning type. |
+| `calver`      | `CalVerConfig \| undefined` | No       | CalVer-specific settings when `type` is `'calver'`.                  |
 
 ## VersionGuardConfig
 
-Top-level configuration consumed by versionguard.    0.1.0
+Top-level configuration consumed by versionguard.
 
 | Property     | Type               | Required | Description                                            |
 | ------------ | ------------------ | -------- | ------------------------------------------------------ |
 | `versioning` | `VersioningConfig` | Yes      | Active versioning settings.                            |
+| `manifest`   | `ManifestConfig`   | Yes      | Version source manifest settings.                      |
 | `sync`       | `SyncConfig`       | Yes      | Synchronization settings for mirrored version strings. |
 | `changelog`  | `ChangelogConfig`  | Yes      | Changelog validation settings.                         |
 | `git`        | `GitConfig`        | Yes      | Git enforcement settings.                              |
@@ -101,7 +139,7 @@ Top-level configuration consumed by versionguard.    0.1.0
 
 ## SemVer
 
-Parsed semantic version components.    0.1.0
+Parsed semantic version components.
 
 | Property     | Type       | Required | Description                         |
 | ------------ | ---------- | -------- | ----------------------------------- |
@@ -114,20 +152,21 @@ Parsed semantic version components.    0.1.0
 
 ## CalVer
 
-Parsed calendar version components.    0.1.0
+Parsed calendar version components.
 
-| Property | Type                  | Required | Description                                                       |
-| -------- | --------------------- | -------- | ----------------------------------------------------------------- |
-| `year`   | `number`              | Yes      | Four-digit year value.                                            |
-| `month`  | `number`              | Yes      | Month value from 1 through 12.                                    |
-| `day`    | `number \| undefined` | No       | Day-of-month value when the selected format includes a day token. |
-| `patch`  | `number \| undefined` | No       | Patch counter when the selected format includes a patch token.    |
-| `format` | `CalVerFormat`        | Yes      | Source format used to interpret the raw string.                   |
-| `raw`    | `string`              | Yes      | Original version string.                                          |
+| Property   | Type                  | Required | Description                                                            |
+| ---------- | --------------------- | -------- | ---------------------------------------------------------------------- |
+| `year`     | `number`              | Yes      | Four-digit year value.                                                 |
+| `month`    | `number`              | Yes      | Month or week value (1-12 for months, 1-53 for weeks).                 |
+| `day`      | `number \| undefined` | No       | Day-of-month value when the selected format includes a day token.      |
+| `patch`    | `number \| undefined` | No       | Micro/patch counter when the selected format includes a counter token. |
+| `modifier` | `string \| undefined` | No       | Pre-release modifier string (e.g., `'alpha'`, `'rc1'`, `'dev'`).       |
+| `format`   | `CalVerFormat`        | Yes      | Source format used to interpret the raw string.                        |
+| `raw`      | `string`              | Yes      | Original version string.                                               |
 
 ## ParsedSemVer
 
-Parsed semantic version result wrapper.    0.1.0
+Parsed semantic version result wrapper.
 
 | Property  | Type       | Required | Description                                 |
 | --------- | ---------- | -------- | ------------------------------------------- |
@@ -136,7 +175,7 @@ Parsed semantic version result wrapper.    0.1.0
 
 ## ParsedCalVer
 
-Parsed calendar version result wrapper.    0.1.0
+Parsed calendar version result wrapper.
 
 | Property  | Type       | Required | Description                                 |
 | --------- | ---------- | -------- | ------------------------------------------- |
@@ -145,15 +184,15 @@ Parsed calendar version result wrapper.    0.1.0
 
 ## ParsedVersion
 
-Union of supported parsed version payloads.    0.1.0
+Union of supported parsed version payloads.
 
 ```typescript
-any
+ParsedVersion
 ```
 
 ## ValidationError
 
-Describes a single validation problem.    0.1.0
+Describes a single validation problem.
 
 | Property   | Type                   | Required | Description                                                     |
 | ---------- | ---------------------- | -------- | --------------------------------------------------------------- |
@@ -164,7 +203,7 @@ Describes a single validation problem.    0.1.0
 
 ## ValidationResult
 
-Result returned by version parsing and validation helpers.    0.1.0
+Result returned by version parsing and validation helpers.
 
 | Property  | Type                         | Required | Description                                            |
 | --------- | ---------------------------- | -------- | ------------------------------------------------------ |
@@ -174,7 +213,7 @@ Result returned by version parsing and validation helpers.    0.1.0
 
 ## SyncChange
 
-Describes a single in-file version replacement.    0.1.0
+Describes a single in-file version replacement.
 
 | Property   | Type     | Required | Description                                           |
 | ---------- | -------- | -------- | ----------------------------------------------------- |
@@ -184,7 +223,7 @@ Describes a single in-file version replacement.    0.1.0
 
 ## SyncResult
 
-Reports the result of synchronizing a single file.    0.1.0
+Reports the result of synchronizing a single file.
 
 | Property  | Type           | Required | Description                                    |
 | --------- | -------------- | -------- | ---------------------------------------------- |
@@ -194,7 +233,7 @@ Reports the result of synchronizing a single file.    0.1.0
 
 ## VersionMismatch
 
-Reports a discovered version mismatch.    0.1.0
+Reports a discovered version mismatch.
 
 | Property | Type     | Required | Description                            |
 | -------- | -------- | -------- | -------------------------------------- |
@@ -204,7 +243,7 @@ Reports a discovered version mismatch.    0.1.0
 
 ## FullValidationResult
 
-Combined result from a full project validation run.    0.1.0
+Combined result from a full project validation run.
 
 | Property         | Type       | Required | Description                                                  |
 | ---------------- | ---------- | -------- | ------------------------------------------------------------ |
@@ -217,12 +256,12 @@ Combined result from a full project validation run.    0.1.0
 
 ## DoctorReport
 
-Reports whether a project is ready to pass VersionGuard checks.     0.1.0
+Reports whether a project is ready to pass VersionGuard checks.
 
 | Property         | Type       | Required | Description                                                                 |
 | ---------------- | ---------- | -------- | --------------------------------------------------------------------------- |
 | `ready`          | `boolean`  | Yes      | Indicates whether all doctor checks passed.                                 |
-| `version`        | `string`   | Yes      | Package version resolved from `package.json`.                               |
+| `version`        | `string`   | Yes      | Package version resolved from the configured manifest source.               |
 | `versionValid`   | `boolean`  | Yes      | Indicates whether the package version matches the configured scheme.        |
 | `syncValid`      | `boolean`  | Yes      | Indicates whether synced files match the package version.                   |
 | `changelogValid` | `boolean`  | Yes      | Indicates whether changelog validation passed.                              |
@@ -233,18 +272,19 @@ Reports whether a project is ready to pass VersionGuard checks.     0.1.0
 
 ## ParsedCalVerFormat
 
-Parsed token layout for a supported CalVer format string.    0.1.0
+Parsed token layout for a supported CalVer format string.
 
-| Property | Type                               | Required | Description                                               |
-| -------- | ---------------------------------- | -------- | --------------------------------------------------------- |
-| `year`   | `"YYYY" \| "YY"`                   | Yes      | Year token captured from the format string.               |
-| `month`  | `"MM" \| "M" \| "0M"`              | Yes      | Month token captured from the format string.              |
-| `day`    | `"DD" \| "D" \| "0D" \| undefined` | No       | Day token captured from the format string when present.   |
-| `patch`  | `"PATCH" \| undefined`             | No       | Patch token captured from the format string when present. |
+| Property  | Type                               | Required | Description                                                                                                           |
+| --------- | ---------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
+| `year`    | `"YYYY" \| "YY" \| "0Y"`           | Yes      | Year token captured from the format string.                                                                           |
+| `month`   | `"MM" \| "M" \| "0M" \| undefined` | No       | Month token captured from the format string when present.                                                             |
+| `week`    | `"WW" \| "0W" \| undefined`        | No       | Week token captured from the format string when present.                                                              |
+| `day`     | `"DD" \| "D" \| "0D" \| undefined` | No       | Day token captured from the format string when present.                                                               |
+| `counter` | `"MICRO" \| "PATCH" \| undefined`  | No       | Counter token captured from the format string when present. Both `MICRO` and `PATCH` map to the same numeric counter. |
 
 ## ChangelogValidationResult
 
-Describes the outcome of validating a changelog file.    0.1.0
+Describes the outcome of validating a changelog file.
 
 | Property             | Type       | Required | Description                                                                  |
 | -------------------- | ---------- | -------- | ---------------------------------------------------------------------------- |
@@ -254,7 +294,7 @@ Describes the outcome of validating a changelog file.    0.1.0
 
 ## Suggestion
 
-Feedback entry point exports for suggestion and guidance helpers.     0.1.0
+Feedback entry point exports for suggestion and guidance helpers.
 
 | Property      | Type                  | Required | Description                                                            |
 | ------------- | --------------------- | -------- | ---------------------------------------------------------------------- |
@@ -264,7 +304,7 @@ Feedback entry point exports for suggestion and guidance helpers.     0.1.0
 
 ## FeedbackResult
 
-Aggregates validation errors with suggested next steps.    0.1.0
+Aggregates validation errors with suggested next steps.
 
 | Property      | Type                | Required | Description                                                    |
 | ------------- | ------------------- | -------- | -------------------------------------------------------------- |
@@ -273,9 +313,41 @@ Aggregates validation errors with suggested next steps.    0.1.0
 | `suggestions` | `Suggestion[]`      | Yes      | Suggested next steps for resolving the reported issues.        |
 | `canAutoFix`  | `boolean`           | Yes      | Indicates whether at least one suggestion can be auto-applied. |
 
+## VersionSourceProvider
+
+Abstraction for reading and writing a version string from any manifest format.
+
+| Property       | Type                                     | Required | Description                                                                      |
+| -------------- | ---------------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| `name`         | `string`                                 | Yes      | Human-readable provider name (e.g. `'package.json'`, `'Cargo.toml'`).            |
+| `manifestFile` | `string`                                 | Yes      | Default manifest filename this provider handles.                                 |
+| `exists`       | `(cwd: string) => boolean`               | Yes      | Returns `true` when the manifest file exists in `cwd`.                           |
+| `getVersion`   | `(cwd: string) => string`                | Yes      | Reads the version string from the manifest. Throws if missing or unreadable.     |
+| `setVersion`   | `(version: string, cwd: string) => void` | Yes      | Writes a version string back to the manifest. Throws if the file does not exist. |
+
+## PackageJsonValue
+
+JSON-compatible scalar, array, or object value used by package metadata.
+
+```typescript
+PackageJsonValue
+```
+
+## PackageJsonArray
+
+Recursive array type used for arbitrary JSON-compatible package values.
+
+```typescript
+PackageJsonArray
+```
+
+## PackageJsonObject
+
+Recursive object type used for arbitrary JSON-compatible package values.
+
 ## PackageJson
 
-Minimal shape of a `package.json` document used by VersionGuard.    0.1.0
+Minimal shape of a `package.json` document used by VersionGuard.
 
 | Property  | Type                  | Required | Description             |
 | --------- | --------------------- | -------- | ----------------------- |
@@ -284,7 +356,7 @@ Minimal shape of a `package.json` document used by VersionGuard.    0.1.0
 
 ## FixResult
 
-Fix entry point exports for auto-remediation helpers.     0.1.0
+Fix entry point exports for auto-remediation helpers.
 
 | Property  | Type                  | Required | Description                                                  |
 | --------- | --------------------- | -------- | ------------------------------------------------------------ |
@@ -292,9 +364,52 @@ Fix entry point exports for auto-remediation helpers.     0.1.0
 | `message` | `string`              | Yes      | Human-readable description of the fix attempt.               |
 | `file`    | `string \| undefined` | No       | Absolute path to the file that was updated, when applicable. |
 
+## GuardWarning
+
+Describes a single guard finding.
+
+| Property   | Type                   | Required | Description                                         |
+| ---------- | ---------------------- | -------- | --------------------------------------------------- |
+| `code`     | `string`               | Yes      | Machine-readable code for filtering and automation. |
+| `severity` | `"error" \| "warning"` | Yes      | Severity: errors block releases, warnings inform.   |
+| `message`  | `string`               | Yes      | Human-readable description of the issue.            |
+| `fix`      | `string \| undefined`  | No       | Suggested remediation command when available.       |
+
+## GuardReport
+
+Result of a full guard check pass.
+
+| Property   | Type             | Required | Description                                                 |
+| ---------- | ---------------- | -------- | ----------------------------------------------------------- |
+| `safe`     | `boolean`        | Yes      | True when no errors were found. Warnings alone do not fail. |
+| `warnings` | `GuardWarning[]` | Yes      | All findings from the guard check.                          |
+
+## HelpTopic
+
+Embedded help topics for the CLI help system.
+
+| Property  | Type     | Required | Description                           |
+| --------- | -------- | -------- | ------------------------------------- |
+| `name`    | `string` | Yes      | Short name used as CLI argument.      |
+| `summary` | `string` | Yes      | One-line summary shown in topic list. |
+| `content` | `string` | Yes      | Full help text for the topic.         |
+
+## ProjectRootResult
+
+Result of project root detection.
+
+| Property      | Type                  | Required | Description                                                            |
+| ------------- | --------------------- | -------- | ---------------------------------------------------------------------- |
+| `found`       | `boolean`             | Yes      | Whether a project root was found.                                      |
+| `root`        | `string`              | Yes      | The resolved project root directory, or the original cwd if not found. |
+| `marker`      | `string \| undefined` | No       | Which marker file was found.                                           |
+| `hasConfig`   | `boolean`             | Yes      | Whether the directory has a VersionGuard config.                       |
+| `hasGit`      | `boolean`             | Yes      | Whether the directory is inside a git repository.                      |
+| `hasManifest` | `boolean`             | Yes      | Whether a version manifest file exists.                                |
+
 ## TagInfo
 
-Tag entry point exports for release-tag management helpers.     0.1.0
+Tag entry point exports for release-tag management helpers.
 
 | Property  | Type                  | Required | Description                                          |
 | --------- | --------------------- | -------- | ---------------------------------------------------- |
@@ -302,3 +417,18 @@ Tag entry point exports for release-tag management helpers.     0.1.0
 | `version` | `string`              | Yes      | Normalized version string derived from the tag name. |
 | `message` | `string \| undefined` | No       | Annotated tag message when one is available.         |
 | `date`    | `Date`                | Yes      | Timestamp associated with the tag lookup result.     |
+
+## InitOptions
+
+Options for headless (non-interactive) initialization.
+
+| Property    | Type                                | Required | Description                             |
+| ----------- | ----------------------------------- | -------- | --------------------------------------- |
+| `cwd`       | `string`                            | Yes      | Working directory path.                 |
+| `type`      | `"semver" \| "calver" \| undefined` | No       | Versioning type (semver or calver).     |
+| `format`    | `string \| undefined`               | No       | CalVer format string.                   |
+| `manifest`  | `string \| undefined`               | No       | Manifest source type.                   |
+| `hooks`     | `boolean \| undefined`              | No       | Whether to install git hooks.           |
+| `changelog` | `boolean \| undefined`              | No       | Whether to enable changelog validation. |
+| `yes`       | `boolean \| undefined`              | No       | Accept defaults without prompting.      |
+| `force`     | `boolean \| undefined`              | No       | Overwrite existing config.              |

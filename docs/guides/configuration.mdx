@@ -10,18 +10,29 @@ How to configure the project using its exported configuration interfaces.
 
 ## Configuration Interfaces
 
+### `ManifestConfig`
+
+Configures the version source manifest.
+
+| Property | Type                  | Description                                                                                                                                                                         |
+| -------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `source` | `ManifestSourceType`  | Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename.                                                                          |
+| `path`   | `string \| undefined` | Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml. |
+| `regex`  | `string \| undefined` | Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.                                                                  |
+
 ### `CalVerConfig`
 
-Configures CalVer validation rules.    0.1.0
+Configures CalVer validation rules.
 
-| Property             | Type           | Description                                                |
-| -------------------- | -------------- | ---------------------------------------------------------- |
-| `format`             | `CalVerFormat` | Calendar format used when parsing and validating versions. |
-| `preventFutureDates` | `boolean`      | Rejects versions that point to a future date.              |
+| Property                | Type                   | Description                                                              |
+| ----------------------- | ---------------------- | ------------------------------------------------------------------------ |
+| `format`                | `CalVerFormat`         | Calendar format used when parsing and validating versions.               |
+| `preventFutureDates`    | `boolean`              | Rejects versions that point to a future date.                            |
+| `strictMutualExclusion` | `boolean \| undefined` | Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens. |
 
 ### `SyncConfig`
 
-Configures files and patterns that should stay in sync with the canonical version.    0.1.0
+Configures files and patterns that should stay in sync with the canonical version.
 
 | Property   | Type            | Description                                                     |
 | ---------- | --------------- | --------------------------------------------------------------- |
@@ -30,7 +41,7 @@ Configures files and patterns that should stay in sync with the canonical versio
 
 ### `ChangelogConfig`
 
-Controls changelog validation behavior.    0.1.0
+Controls changelog validation behavior.
 
 | Property       | Type      | Description                                 |
 | -------------- | --------- | ------------------------------------------- |
@@ -41,7 +52,7 @@ Controls changelog validation behavior.    0.1.0
 
 ### `GitHooksConfig`
 
-Toggles each supported git hook integration.    0.1.0
+Toggles each supported git hook integration.
 
 | Property       | Type      | Description                                      |
 | -------------- | --------- | ------------------------------------------------ |
@@ -51,7 +62,7 @@ Toggles each supported git hook integration.    0.1.0
 
 ### `GitConfig`
 
-Configures git-related enforcement.    0.1.0
+Configures git-related enforcement.
 
 | Property       | Type             | Description                                           |
 | -------------- | ---------------- | ----------------------------------------------------- |
@@ -60,23 +71,40 @@ Configures git-related enforcement.    0.1.0
 
 ### `VersioningConfig`
 
-Configures the active versioning mode.    0.1.0
+Configures the active versioning mode.
 
-| Property | Type                        | Description                                         |
-| -------- | --------------------------- | --------------------------------------------------- |
-| `type`   | `VersioningType`            | Versioning strategy used for the project.           |
-| `calver` | `CalVerConfig \| undefined` | CalVer-specific settings when `type` is `'calver'`. |
+| Property      | Type                        | Description                                                          |
+| ------------- | --------------------------- | -------------------------------------------------------------------- |
+| `type`        | `VersioningType`            | Versioning strategy used for the project.                            |
+| `schemeRules` | `SchemeRules \| undefined`  | Scheme-level validation rules applied regardless of versioning type. |
+| `calver`      | `CalVerConfig \| undefined` | CalVer-specific settings when `type` is `'calver'`.                  |
 
 ### `VersionGuardConfig`
 
-Top-level configuration consumed by versionguard.    0.1.0
+Top-level configuration consumed by versionguard.
 
 | Property     | Type               | Description                                            |
 | ------------ | ------------------ | ------------------------------------------------------ |
 | `versioning` | `VersioningConfig` | Active versioning settings.                            |
+| `manifest`   | `ManifestConfig`   | Version source manifest settings.                      |
 | `sync`       | `SyncConfig`       | Synchronization settings for mirrored version strings. |
 | `changelog`  | `ChangelogConfig`  | Changelog validation settings.                         |
 | `git`        | `GitConfig`        | Git enforcement settings.                              |
 | `ignore`     | `string[]`         | Files or patterns excluded from validation.            |
+
+### `InitOptions`
+
+Options for headless (non-interactive) initialization.
+
+| Property    | Type                                | Description                             |
+| ----------- | ----------------------------------- | --------------------------------------- |
+| `cwd`       | `string`                            | Working directory path.                 |
+| `type`      | `"semver" \| "calver" \| undefined` | Versioning type (semver or calver).     |
+| `format`    | `string \| undefined`               | CalVer format string.                   |
+| `manifest`  | `string \| undefined`               | Manifest source type.                   |
+| `hooks`     | `boolean \| undefined`              | Whether to install git hooks.           |
+| `changelog` | `boolean \| undefined`              | Whether to enable changelog validation. |
+| `yes`       | `boolean \| undefined`              | Accept defaults without prompting.      |
+| `force`     | `boolean \| undefined`              | Overwrite existing config.              |
 
 {/* FORGE:AUTO-END guide-configuration */}

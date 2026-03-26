@@ -1,15 +1,59 @@
-# . - Full Context
+# @codluv/versionguard — Full Context
 
-Root: .
-Generated: 2026-03-22T05:00:59.586Z
+> Strict versioning enforcement for SemVer and CalVer with git hooks, changelog validation, and file sync from package.json
 
-## Functions
+Version: 0.4.0
+Generated: 2026-03-26T15:45:30.783Z
 
-### parseFormat()
+## Package: main
+
+### Functions
+
+#### getCalVerConfig()
+
+(config: VersionGuardConfig) => CalVerConfig
+
+Extracts the CalVer config from a VersionGuard config, throwing if missing.
+
+This is a convenience helper that validates the `calver` block exists before returning it. Use this instead of accessing `config.versioning.calver` directly to get a clear error when the config is misconfigured.
+
+Parameters:
+- config: The full VersionGuard configuration object.
+
+Returns: The validated CalVer configuration.
+
+Example:
+  import { getCalVerConfig } from './types';
+  
+  const calver = getCalVerConfig(config);
+  console.log(calver.format); // 'YYYY.MM.DD'
+
+#### isValidCalVerFormat()
+
+(formatStr: string) => formatStr is CalVerFormat
+
+Validates that a CalVer format string is composed of valid tokens and follows structural rules.
+
+Structural rules enforced: - Must have at least 2 segments - First segment must be a year token - Week tokens and Month/Day tokens are mutually exclusive - Counter (MICRO/PATCH) can only appear as the last segment
+
+Parameters:
+- formatStr: Format string to validate.
+
+Returns: `true` when the format is valid.
+
+Example:
+  import { isValidCalVerFormat } from 'versionguard';
+  
+  isValidCalVerFormat('YYYY.MM.MICRO'); // true
+  isValidCalVerFormat('INVALID');        // false
+
+#### parseFormat()
 
 (calverFormat: CalVerFormat) => ParsedCalVerFormat
 
 Breaks a CalVer format string into its component tokens.
+
+This helper is used internally by parsing, formatting, and version generation helpers to decide which date parts or counters are present in a given CalVer layout.
 
 Parameters:
 - calverFormat: Format string to inspect.
@@ -19,14 +63,16 @@ Returns: The parsed token definition for the requested format.
 Example:
   import { parseFormat } from 'versionguard';
   
-  parseFormat('YYYY.MM.PATCH');
-  // => { year: 'YYYY', month: 'MM', patch: 'PATCH' }
+  parseFormat('YYYY.MM.MICRO');
+  // => { year: 'YYYY', month: 'MM', counter: 'MICRO' }
 
-### getRegexForFormat()
+#### getRegexForFormat()
 
 (calverFormat: CalVerFormat) => RegExp
 
 Builds a regular expression that matches a supported CalVer format.
+
+The returned regular expression is anchored to the start and end of the string so it can be used directly for strict validation of a complete version value.
 
 Parameters:
 - calverFormat: Format string to convert into a regular expression.
@@ -39,11 +85,13 @@ Example:
   getRegexForFormat('YYYY.0M.0D').test('2026.03.21');
   // => true
 
-### parse()
+#### parse()
 
 (version: string, calverFormat: CalVerFormat) => CalVer | null
 
 Parses a CalVer string using the supplied format.
+
+The parser returns `null` when the string does not structurally match the requested format. It does not enforce range rules such as future-date rejection; use `validate` for that.
 
 Parameters:
 - version: Version string to parse.
@@ -54,33 +102,38 @@ Returns: Parsed CalVer components, or `null` when the string does not match the 
 Example:
   import { parse } from 'versionguard';
   
-  parse('2026.03.21', 'YYYY.0M.0D')?.month;
+  parse('2026.3.0', 'YYYY.M.MICRO')?.month;
   // => 3
 
-### validate()
+#### validate()
 
-(version: string, calverFormat: CalVerFormat, preventFutureDates?: boolean) => ValidationResult
+(version: string, calverFormat: CalVerFormat, preventFutureDates?: boolean, schemeRules?: SchemeRules) => ValidationResult
 
 Validates a CalVer string against formatting and date rules.
+
+Validation checks the requested CalVer format, month and day ranges, and optionally rejects future dates relative to the current system date.
 
 Parameters:
 - version: Version string to validate.
 - calverFormat: Format expected for the version string.
 - preventFutureDates: Whether future dates should be reported as errors.
+- schemeRules: Optional scheme rules for modifier validation and segment count warnings.
 
 Returns: A validation result containing any discovered errors and the parsed version on success.
 
 Example:
   import { validate } from 'versionguard';
   
-  validate('2026.03.21', 'YYYY.0M.0D', false).valid;
+  validate('2026.3.0', 'YYYY.M.MICRO', false).valid;
   // => true
 
-### format()
+#### format()
 
 (version: CalVer) => string
 
 Formats a parsed CalVer object back into a version string.
+
+Missing `day` and `patch` values fall back to `1` and `0` respectively when the selected format requires those tokens.
 
 Parameters:
 - version: Parsed CalVer value to serialize.
@@ -95,11 +148,13 @@ Example:
   format(version);
   // => '2026.03.21'
 
-### getCurrentVersion()
+#### getCurrentVersion()
 
 (calverFormat: CalVerFormat, now?: Date) => string
 
 Creates the current CalVer string for a format.
+
+This helper derives its values from the provided date and initializes any counter to `0`. It is useful for generating a same-day baseline before incrementing counter-based formats.
 
 Parameters:
 - calverFormat: Format to generate.
@@ -110,14 +165,16 @@ Returns: The current version string for the requested format.
 Example:
   import { getCurrentVersion } from 'versionguard';
   
-  getCurrentVersion('YYYY.MM.PATCH', new Date('2026-03-21T00:00:00Z'));
+  getCurrentVersion('YYYY.M.MICRO', new Date('2026-03-21T00:00:00Z'));
   // => '2026.3.0'
 
-### compare()
+#### compare()
 
 (a: string, b: string, calverFormat: CalVerFormat) => number
 
 Compares two CalVer strings using a shared format.
+
+Comparison is performed component-by-component in year, month, day, then counter order. Missing day and counter values are treated as `0` during comparison.
 
 Parameters:
 - a: Left-hand version string.
@@ -129,14 +186,16 @@ Returns: `1` when `a` is greater, `-1` when `b` is greater, or `0` when they are
 Example:
   import { compare } from 'versionguard';
   
-  compare('2026.03.2', '2026.03.1', 'YYYY.MM.PATCH');
+  compare('2026.3.2', '2026.3.1', 'YYYY.M.MICRO');
   // => 1
 
-### increment()
+#### increment()
 
 (version: string, calverFormat: CalVerFormat) => string
 
 Increments a CalVer string.
+
+Counter-based formats increment the existing counter. Formats without a counter are promoted to a counter-based output by appending `.MICRO` with an initial value of `0`.
 
 Parameters:
 - version: Current version string.
@@ -147,14 +206,16 @@ Returns: The next version string.
 Example:
   import { increment } from 'versionguard';
   
-  increment('2026.03.1', 'YYYY.MM.PATCH');
+  increment('2026.3.1', 'YYYY.M.MICRO');
   // => '2026.3.2'
 
-### getNextVersions()
+#### getNextVersions()
 
 (currentVersion: string, calverFormat: CalVerFormat) => string[]
 
 Returns the most likely next CalVer candidates.
+
+The first candidate is the version derived from the current date. The second candidate is the incremented form of the supplied current version.
 
 Parameters:
 - currentVersion: Existing project version.
@@ -165,14 +226,16 @@ Returns: Two candidate version strings ordered as current-date then incremented 
 Example:
   import { getNextVersions } from 'versionguard';
   
-  getNextVersions('2026.03.1', 'YYYY.MM.PATCH').length;
+  getNextVersions('2026.3.1', 'YYYY.M.MICRO').length;
   // => 2
 
-### validateChangelog()
+#### validateChangelog()
 
 (changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean) => ChangelogValidationResult
 
-Validates a changelog file for release readiness.    0.1.0
+Validates a changelog file for release readiness.
+
+The validator checks for a top-level changelog heading, an `[Unreleased]` section, and optionally a dated entry for the requested version.
 
 Parameters:
 - changelogPath: Path to the changelog file.
@@ -187,11 +250,13 @@ Example:
   
   const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true);
 
-### getLatestVersion()
+#### getLatestVersion()
 
 (changelogPath: string) => string | null
 
-Gets the most recent released version from a changelog.    0.1.0
+Gets the most recent released version from a changelog.
+
+The `[Unreleased]` section is skipped so the first concrete version heading is treated as the latest release.
 
 Parameters:
 - changelogPath: Path to the changelog file.
@@ -203,11 +268,13 @@ Example:
   
   const latest = getLatestVersion('CHANGELOG.md');
 
-### addVersionEntry()
+#### addVersionEntry()
 
 (changelogPath: string, version: string, date?: string) => void
 
-Inserts a new version entry beneath the `[Unreleased]` section.    0.1.0
+Inserts a new version entry beneath the `[Unreleased]` section.
+
+If the changelog already contains the requested version, no changes are made. The inserted entry includes a starter `Added` subsection for follow-up edits.
 
 Parameters:
 - changelogPath: Path to the changelog file.
@@ -219,11 +286,52 @@ Example:
   
   addVersionEntry('CHANGELOG.md', '1.2.0', '2026-03-21');
 
-### parse()
+#### isChangesetMangled()
+
+(changelogPath: string) => boolean
+
+Detects whether a changelog has been mangled by Changesets.
+
+Changesets prepends version content above the Keep a Changelog preamble, producing `## 0.4.0` (no brackets, no date) before the "All notable changes" paragraph. This function detects that pattern.
+
+Parameters:
+- changelogPath: Path to the changelog file.
+
+Returns: `true` when the changelog appears to be mangled by Changesets.
+
+Example:
+  import { isChangesetMangled } from 'versionguard';
+  
+  if (isChangesetMangled('CHANGELOG.md')) {
+    fixChangesetMangling('CHANGELOG.md');
+  }
+
+#### fixChangesetMangling()
+
+(changelogPath: string, date?: string) => boolean
+
+Fixes a Changesets-mangled changelog into proper Keep a Changelog format.
+
+This function: 1. Extracts the version number and content prepended by Changesets 2. Converts Changesets section names (Minor Changes, Patch Changes) to    Keep a Changelog names (Added, Fixed) 3. Strips commit hashes from entry lines 4. Adds the date and brackets to the version header 5. Inserts the entry after `## [Unreleased]` in the correct position 6. Restores the preamble to its proper location
+
+Parameters:
+- changelogPath: Path to the changelog file to fix.
+- date: Release date in `YYYY-MM-DD` format.
+
+Returns: `true` when the file was modified, `false` when no fix was needed.
+
+Example:
+  import { fixChangesetMangling } from 'versionguard';
+  
+  const fixed = fixChangesetMangling('CHANGELOG.md');
+
+#### parse()
 
 (version: string) => SemVer | null
 
 Parses a semantic version string.
+
+This helper enforces the standard SemVer structure and returns `null` when the input does not match. It preserves prerelease and build identifiers as ordered string segments.
 
 Parameters:
 - version: Version string to parse.
@@ -236,11 +344,13 @@ Example:
   parse('1.2.3-alpha.1+build.5')?.prerelease;
   // => ['alpha', '1']
 
-### validate()
+#### validate()
 
 (version: string) => ValidationResult
 
 Validates that a string is a supported semantic version.
+
+When validation fails, the result includes targeted structural errors for common cases such as leading `v` prefixes and numeric segments with leading zeroes.
 
 Parameters:
 - version: Version string to validate.
@@ -253,11 +363,13 @@ Example:
   validate('1.2.3').valid;
   // => true
 
-### compare()
+#### compare()
 
 (a: string, b: string) => number
 
 Compares two semantic version strings.
+
+Comparison follows SemVer precedence rules, including special handling for prerelease identifiers and ignoring build metadata.
 
 Parameters:
 - a: Left-hand version string.
@@ -271,11 +383,13 @@ Example:
   compare('1.2.3', '1.2.3-alpha.1');
   // => 1
 
-### gt()
+#### gt()
 
 (a: string, b: string) => boolean
 
 Checks whether one semantic version is greater than another.
+
+This is a convenience wrapper around `compare` for callers that only need a boolean.
 
 Parameters:
 - a: Left-hand version string.
@@ -289,11 +403,13 @@ Example:
   gt('1.2.4', '1.2.3');
   // => true
 
-### lt()
+#### lt()
 
 (a: string, b: string) => boolean
 
 Checks whether one semantic version is less than another.
+
+This is a convenience wrapper around `compare` for callers that only need a boolean.
 
 Parameters:
 - a: Left-hand version string.
@@ -307,11 +423,13 @@ Example:
   lt('1.2.3-alpha.1', '1.2.3');
   // => true
 
-### eq()
+#### eq()
 
 (a: string, b: string) => boolean
 
 Checks whether two semantic versions are equal in precedence.
+
+This is a convenience wrapper around `compare`. Build metadata is ignored because precedence comparisons in SemVer do not consider it.
 
 Parameters:
 - a: Left-hand version string.
@@ -325,11 +443,13 @@ Example:
   eq('1.2.3', '1.2.3');
   // => true
 
-### increment()
+#### increment()
 
-(version: string, release: "major" | "minor" | "patch", prerelease?: string | undefined) => string
+(version: string, release: "major" | "minor" | "patch", prerelease?: string) => string
 
 Increments a semantic version string by release type.
+
+Incrementing `major` or `minor` resets lower-order numeric segments. When a prerelease label is provided, it is appended to the newly generated version.
 
 Parameters:
 - version: Current semantic version string.
@@ -344,11 +464,13 @@ Example:
   increment('1.2.3', 'minor', 'beta.1');
   // => '1.3.0-beta.1'
 
-### format()
+#### format()
 
 (version: SemVer) => string
 
 Formats a parsed semantic version object.
+
+Prerelease and build metadata segments are only included when their arrays contain values.
 
 Parameters:
 - version: Parsed semantic version to serialize.
@@ -363,11 +485,13 @@ Example:
   format(version);
   // => '1.2.3-rc.1+build.5'
 
-### getVersionFeedback()
+#### getVersionFeedback()
 
-(version: string, config: VersionGuardConfig, previousVersion?: string | undefined) => FeedbackResult
+(version: string, config: VersionGuardConfig, previousVersion?: string) => FeedbackResult
 
-Generates actionable feedback for a version string.    0.1.0
+Generates actionable feedback for a version string.
+
+This helper dispatches to the SemVer or CalVer feedback flow based on the configured versioning strategy and returns both hard validation errors and softer suggestions for likely fixes.
 
 Parameters:
 - version: Version string to evaluate.
@@ -380,11 +504,13 @@ Example:
   const feedbackResult = getVersionFeedback('1.2.3', config, '1.2.2');
   console.log(feedbackResult.valid);
 
-### getSyncFeedback()
+#### getSyncFeedback()
 
 (file: string, foundVersion: string, expectedVersion: string) => Suggestion[]
 
-Generates suggestions for version sync mismatches in a file.    0.1.0
+Generates suggestions for version sync mismatches in a file.
+
+The returned suggestions include a general sync command and may include file-type-specific hints for markdown or source files.
 
 Parameters:
 - file: File containing the mismatched version string.
@@ -397,11 +523,13 @@ Example:
   const suggestions = getSyncFeedback('README.md', '1.0.0', '1.0.1');
   console.log(suggestions[0]?.message);
 
-### getChangelogFeedback()
+#### getChangelogFeedback()
 
-(hasEntry: boolean, version: string, latestChangelogVersion?: string | undefined) => Suggestion[]
+(hasEntry: boolean, version: string, latestChangelogVersion?: string) => Suggestion[]
 
-Generates suggestions for changelog-related validation issues.    0.1.0
+Generates suggestions for changelog-related validation issues.
+
+This helper suggests either creating a missing entry or reconciling the latest changelog version with the package version.
 
 Parameters:
 - hasEntry: Whether the changelog already contains an entry for the version.
@@ -414,11 +542,13 @@ Example:
   const suggestions = getChangelogFeedback(false, '1.2.3', '1.2.2');
   console.log(suggestions.length > 0);
 
-### getTagFeedback()
+#### getTagFeedback()
 
 (tagVersion: string, packageVersion: string, hasUnsyncedFiles: boolean) => Suggestion[]
 
-Generates suggestions for git tag mismatches.    0.1.0
+Generates suggestions for git tag mismatches.
+
+This helper focuses on discrepancies between git tag versions, package.json, and repository files that still need to be synchronized.
 
 Parameters:
 - tagVersion: Version represented by the git tag.
@@ -431,11 +561,109 @@ Example:
   const suggestions = getTagFeedback('v1.2.2', '1.2.3', true);
   console.log(suggestions.map((item) => item.message));
 
-### getPackageJsonPath()
+#### getNestedValue()
+
+(obj: Record<string, unknown>, dotPath: string) => unknown
+
+Traverses a nested object using a dotted key path.
+
+Walks each segment of the dotted path in order, returning `undefined` as soon as a missing or non-object segment is encountered.
+
+Parameters:
+- obj: Object to traverse.
+- dotPath: Dot-separated key path (e.g. `'package.version'`).
+
+Returns: The value at the path, or `undefined` if any segment is missing.
+
+Example:
+  import { getNestedValue } from './utils';
+  
+  const obj = { package: { version: '1.0.0' } };
+  const version = getNestedValue(obj, 'package.version'); // '1.0.0'
+
+#### setNestedValue()
+
+(obj: Record<string, unknown>, dotPath: string, value: unknown) => void
+
+Sets a value at a dotted key path, throwing if intermediate segments are missing.
+
+Traverses each intermediate segment and throws when a segment is missing or not an object. The final key is created or overwritten.
+
+Parameters:
+- obj: Object to mutate.
+- dotPath: Dot-separated key path.
+- value: Value to set at the final key.
+
+Example:
+  import { setNestedValue } from './utils';
+  
+  const obj = { package: { version: '1.0.0' } };
+  setNestedValue(obj, 'package.version', '2.0.0');
+
+#### escapeRegExp()
+
+(value: string) => string
+
+Escapes special regex characters in a string for safe use in `new RegExp()`.
+
+Prefixes every character that has special meaning in a regular expression with a backslash so the resulting string matches literally.
+
+Parameters:
+- value: Raw string to escape.
+
+Returns: The escaped string safe for embedding in a `RegExp` constructor.
+
+Example:
+  import { escapeRegExp } from './utils';
+  
+  const escaped = escapeRegExp('file.txt'); // 'file\\.txt'
+
+#### resolveVersionSource()
+
+(config: ManifestConfig, cwd?: string) => VersionSourceProvider
+
+Resolves the version source provider for a project.
+
+When `source` is `'auto'`, scans the project directory for known manifest files and returns the first match. Throws with helpful guidance if no supported manifest is found.
+
+Parameters:
+- config: Manifest configuration from `.versionguard.yml`.
+- cwd: Project directory to scan.
+
+Returns: The resolved version source provider.
+
+Example:
+  import { resolveVersionSource } from './resolve';
+  
+  const provider = resolveVersionSource({ source: 'auto' }, process.cwd());
+  const version = provider.getVersion(process.cwd());
+
+#### detectManifests()
+
+(cwd?: string) => ManifestSourceType[]
+
+Detects all manifest files present in a project directory.
+
+Useful for polyglot projects that may have multiple version sources. Scans the detection table in priority order and returns all matches.
+
+Parameters:
+- cwd: Project directory to scan.
+
+Returns: Array of detected manifest source types.
+
+Example:
+  import { detectManifests } from './resolve';
+  
+  const manifests = detectManifests(process.cwd());
+  // ['package.json', 'Cargo.toml']
+
+#### getPackageJsonPath()
 
 (cwd?: string) => string
 
-Gets the `package.json` path for a project directory.    0.1.0
+Gets the `package.json` path for a project directory.
+
+This is a convenience helper used by the package read and write helpers.
 
 Parameters:
 - cwd: Project directory containing `package.json`.
@@ -447,11 +675,13 @@ Example:
   
   const packagePath = getPackageJsonPath(process.cwd());
 
-### readPackageJson()
+#### readPackageJson()
 
 (cwd?: string) => PackageJson
 
-Reads and parses a project's `package.json` file.    0.1.0
+Reads and parses a project's `package.json` file.
+
+An error is thrown when `package.json` does not exist in the requested directory.
 
 Parameters:
 - cwd: Project directory containing `package.json`.
@@ -463,11 +693,13 @@ Example:
   
   const pkg = readPackageJson(process.cwd());
 
-### writePackageJson()
+#### writePackageJson()
 
 (pkg: PackageJson, cwd?: string) => void
 
-Writes a `package.json` document back to disk.    0.1.0
+Writes a `package.json` document back to disk.
+
+Output is formatted with two-space indentation and always ends with a trailing newline.
 
 Parameters:
 - pkg: Parsed `package.json` data to write.
@@ -479,42 +711,78 @@ Example:
   const pkg = readPackageJson(process.cwd());
   writePackageJson(pkg, process.cwd());
 
-### getPackageVersion()
+#### getPackageVersion()
 
-(cwd?: string) => string
+(cwd?: string, manifest?: ManifestConfig) => string
 
-Gets the version string from `package.json`.    0.1.0
+Gets the version string from the project manifest.  When a `manifest` config is provided, uses the configured version source provider (auto-detection or explicit). Falls back to `package.json` for backwards compatibility when no config is provided.
+
+This throws when the manifest file does not exist or does not contain a version field.
 
 Parameters:
-- cwd: Project directory containing `package.json`.
+- cwd: Project directory containing the manifest.
+- manifest: Optional manifest configuration for language-agnostic support.
 
-Returns: The package version string.
+Returns: The project version string.
 
 Example:
   import { getPackageVersion } from 'versionguard';
   
+  // Read from package.json (legacy fallback)
   const version = getPackageVersion(process.cwd());
+  
+  // Read from a configured manifest source
+  const versionAlt = getPackageVersion(process.cwd(), { source: 'Cargo.toml' });
 
-### setPackageVersion()
+#### setPackageVersion()
 
-(version: string, cwd?: string) => void
+(version: string, cwd?: string, manifest?: ManifestConfig) => void
 
-Sets the version field in `package.json`.    0.1.0
+Sets the version field in the project manifest.  When a `manifest` config is provided, uses the configured version source provider. Falls back to `package.json` for backwards compatibility when no config is provided.
+
+The existing document is read, the version field is replaced, and the file is written back to disk.
 
 Parameters:
 - version: Version string to persist.
-- cwd: Project directory containing `package.json`.
+- cwd: Project directory containing the manifest.
+- manifest: Optional manifest configuration for language-agnostic support.
 
 Example:
   import { setPackageVersion } from 'versionguard';
   
+  // Write to package.json (legacy fallback)
   setPackageVersion('1.2.3', process.cwd());
+  
+  // Write to a configured manifest source
+  setPackageVersion('1.2.3', process.cwd(), { source: 'Cargo.toml' });
 
-### syncVersion()
+#### getVersionSource()
+
+(manifest: ManifestConfig, cwd?: string) => VersionSourceProvider
+
+Resolves the version source provider for a project.
+
+Delegates to `resolveVersionSource` to create the appropriate provider for the configured manifest type. Use this when you need direct access to the provider's `exists`, `getVersion`, and `setVersion` methods.
+
+Parameters:
+- manifest: Manifest configuration.
+- cwd: Project directory.
+
+Returns: The resolved provider instance.
+
+Example:
+  import { getVersionSource } from 'versionguard';
+  
+  const source = getVersionSource({ source: 'package.json' }, process.cwd());
+  const version = source.getVersion(process.cwd());
+
+#### syncVersion()
 
 (version: string, config: SyncConfig, cwd?: string) => SyncResult[]
 
-Synchronizes configured files to a single version string.    0.1.0
+Synchronizes configured files to a single version string.
+
+File globs are resolved relative to `cwd`, then each matched file is updated with the configured replacement patterns.
 
 Parameters:
 - version: Version string to write into matching files.
@@ -528,11 +796,13 @@ Example:
   
   const results = syncVersion('1.2.3', getDefaultConfig().sync, process.cwd());
 
-### syncFile()
+#### syncFile()
 
 (filePath: string, version: string, patterns: SyncPattern[]) => SyncResult
 
-Synchronizes a single file to a target version.    0.1.0
+Synchronizes a single file to a target version.
+
+Each configured regex is applied globally, and `{{version}}` placeholders in templates are replaced with the supplied version.
 
 Parameters:
 - filePath: Absolute or relative path to the file to update.
@@ -546,11 +816,13 @@ Example:
   
   const result = syncFile('README.md', '1.2.3', getDefaultConfig().sync.patterns);
 
-### checkHardcodedVersions()
+#### checkHardcodedVersions()
 
 (expectedVersion: string, config: SyncConfig, ignorePatterns: string[], cwd?: string) => VersionMismatch[]
 
-Checks configured files for hardcoded version mismatches.    0.1.0
+Checks configured files for hardcoded version mismatches.
+
+Files matching the sync config are scanned without modification, and every captured version that differs from `expectedVersion` is returned.
 
 Parameters:
 - expectedVersion: Version all matching entries should use.
@@ -570,27 +842,36 @@ Example:
     process.cwd(),
   );
 
-### fixPackageVersion()
+#### fixPackageVersion()
 
-(targetVersion: string, cwd?: string) => FixResult
+(targetVersion: string, cwd?: string, manifest?: ManifestConfig) => FixResult
 
-Updates the `package.json` version field when needed.    0.1.0
+Updates the `package.json` version field when needed.
+
+This helper writes the target version only when `package.json` exists and the current version differs from the requested value.
 
 Parameters:
 - targetVersion: Version that should be written to `package.json`.
 - cwd: Repository directory containing `package.json`.
+- manifest: Optional manifest configuration for language-agnostic support.
 
 Returns: The result of the package version fix attempt.
 
 Example:
+  // Fix using legacy package.json fallback
   const result = fixPackageVersion('1.2.3', process.cwd());
   console.log(result.fixed);
+  
+  // Fix using a configured manifest source
+  const result2 = fixPackageVersion('1.2.3', process.cwd(), { source: 'Cargo.toml' });
 
-### fixSyncIssues()
+#### fixSyncIssues()
 
 (config: VersionGuardConfig, cwd?: string) => FixResult[]
 
-Synchronizes configured files to the package version.    0.1.0
+Synchronizes configured files to the package version.
+
+This helper uses the configured sync targets to update version strings across the repository and reports only the files that changed.
 
 Parameters:
 - config: Loaded VersionGuard configuration.
@@ -602,11 +883,13 @@ Example:
   const results = fixSyncIssues(config, process.cwd());
   console.log(results.length);
 
-### fixChangelog()
+#### fixChangelog()
 
 (version: string, config: VersionGuardConfig, cwd?: string) => FixResult
 
-Ensures the changelog contains an entry for a version.    0.1.0
+Ensures the changelog contains an entry for a version.
+
+When the changelog file does not exist, this helper creates a starter changelog. Otherwise it appends a new version entry only when one is missing.
 
 Parameters:
 - version: Version that should appear in the changelog.
@@ -619,11 +902,13 @@ Example:
   const result = fixChangelog('1.2.3', config, process.cwd());
   console.log(result.message);
 
-### fixAll()
+#### fixAll()
 
-(config: VersionGuardConfig, targetVersion?: string | undefined, cwd?: string) => FixResult[]
+(config: VersionGuardConfig, targetVersion?: string, cwd?: string) => FixResult[]
 
-Runs all configured auto-fix operations.    0.1.0
+Runs all configured auto-fix operations.
+
+This helper optionally updates the package version first, then synchronizes configured files, and finally updates the changelog when changelog support is enabled.
 
 Parameters:
 - config: Loaded VersionGuard configuration.
@@ -636,11 +921,13 @@ Example:
   const results = fixAll(config, '1.2.3', process.cwd());
   console.log(results.some((result) => result.fixed));
 
-### suggestNextVersion()
+#### suggestNextVersion()
 
-(currentVersion: string, config: VersionGuardConfig, changeType?: "major" | "minor" | "patch" | "auto" | undefined) => { version: string; reason: string; }[]
+(currentVersion: string, config: VersionGuardConfig, changeType?: "major" | "minor" | "patch" | "auto") => { version: string; reason: string; }[]
 
-Suggests candidate next versions for a release.    0.1.0
+Suggests candidate next versions for a release.
+
+The suggestions depend on the configured versioning mode. SemVer returns one or more bump options, while CalVer suggests the current date-based version and an incremented same-day release.
 
 Parameters:
 - currentVersion: Current package version.
@@ -653,11 +940,13 @@ Example:
   const suggestions = suggestNextVersion('1.2.3', config, 'minor');
   console.log(suggestions[0]?.version);
 
-### installHooks()
+#### installHooks()
 
 (config: GitConfig, cwd?: string) => void
 
-Installs VersionGuard-managed Git hooks in a repository.    0.1.0
+Installs VersionGuard-managed Git hooks in a repository.
+
+When a hook file already exists from another tool (Husky, lefthook, etc.), VersionGuard **appends** its validation block instead of overwriting. The block is delimited by markers so it can be cleanly removed later.  If the hook already contains a VersionGuard block, it is replaced in-place (idempotent).
 
 Parameters:
 - config: Git configuration that selects which hooks to install.
@@ -668,11 +957,13 @@ Example:
   
   installHooks(getDefaultConfig().git, process.cwd());
 
-### uninstallHooks()
+#### uninstallHooks()
 
 (cwd?: string) => void
 
-Removes VersionGuard-managed Git hooks from a repository.    0.1.0
+Removes VersionGuard-managed Git hooks from a repository.
+
+Only the VersionGuard block (delimited by markers) is removed. Other hook content from Husky, lefthook, etc. is preserved. If the hook becomes empty after removal, the file is deleted.
 
 Parameters:
 - cwd: Repository directory whose hooks should be cleaned up.
@@ -682,11 +973,13 @@ Example:
   
   uninstallHooks(process.cwd());
 
-### findGitDir()
+#### findGitDir()
 
 (cwd: string) => string | null
 
-Finds the nearest `.git` directory by walking up from a starting directory.    0.1.0
+Finds the nearest `.git` directory by walking up from a starting directory.
+
+This only resolves `.git` directories and returns `null` when the search reaches the filesystem root without finding a repository.
 
 Parameters:
 - cwd: Directory to start searching from.
@@ -698,11 +991,13 @@ Example:
   
   const gitDir = findGitDir(process.cwd());
 
-### areHooksInstalled()
+#### areHooksInstalled()
 
 (cwd?: string) => boolean
 
-Checks whether all VersionGuard-managed hooks are installed.    0.1.0
+Checks whether all VersionGuard-managed hooks are installed.
+
+A hook counts as installed when the file exists and contains the `versionguard` invocation — either as a standalone hook or appended to an existing hook from another tool.
 
 Parameters:
 - cwd: Repository directory to inspect.
@@ -714,11 +1009,13 @@ Example:
   
   const installed = areHooksInstalled(process.cwd());
 
-### generateHookScript()
+#### generateHookScript()
 
-(hookName: "pre-commit" | "pre-push" | "post-tag") => string
+(hookName: (typeof HOOK_NAMES)[number]) => string
 
-Generates the shell script content for a Git hook.    0.1.0
+Generates the shell script content for a Git hook.
+
+The generated script delegates to `npx versionguard validate` and exits with the validation status code. Uses delimited block markers for cooperative installation with other hook tools.
 
 Parameters:
 - hookName: Name of the Git hook to generate.
@@ -730,11 +1027,144 @@ Example:
   
   const script = generateHookScript('pre-commit');
 
-### getDefaultConfig()
+#### checkHooksPathOverride()
+
+(cwd: string) => GuardWarning | null
+
+Checks whether git hooks have been redirected away from the repository.
+
+When `core.hooksPath` is set to a non-default location, git hooks installed in `.git/hooks/` are silently ignored. This is a common bypass vector.
+
+Parameters:
+- cwd: Repository directory to inspect.
+
+Returns: A guard warning when a hooksPath override is detected.
+
+Example:
+  import { checkHooksPathOverride } from './guard';
+  
+  const warning = checkHooksPathOverride(process.cwd());
+  if (warning) console.warn(warning.message);
+
+#### checkHuskyBypass()
+
+() => GuardWarning | null
+
+Checks whether the HUSKY environment variable is disabling hooks.
+
+Setting `HUSKY=0` is a documented way to disable Husky hooks. Since VersionGuard hooks may run alongside or through Husky, this bypass can silently disable enforcement.
+
+Returns: A guard warning when the HUSKY bypass is detected.
+
+Example:
+  import { checkHuskyBypass } from './guard';
+  
+  const warning = checkHuskyBypass();
+  if (warning) console.warn(warning.message);
+
+#### checkHookIntegrity()
+
+(config: VersionGuardConfig, cwd: string) => GuardWarning[]
+
+Verifies that installed hook scripts match the expected content.
+
+This compares each hook file against what `generateHookScript` would produce. Tampered hooks that still contain "versionguard" pass `areHooksInstalled` but may have had critical lines removed or modified.
+
+Parameters:
+- config: VersionGuard configuration that defines which hooks should exist.
+- cwd: Repository directory to inspect.
+
+Returns: Guard warnings for each hook that has been tampered with.
+
+Example:
+  import { checkHookIntegrity } from './guard';
+  
+  const warnings = checkHookIntegrity(config, process.cwd());
+  for (const w of warnings) console.warn(w.code, w.message);
+
+#### checkEnforceHooksPolicy()
+
+(config: VersionGuardConfig) => GuardWarning | null
+
+Checks whether hooks are configured as required but not enforced.
+
+When hooks are enabled in the config but `enforceHooks` is false, validation will not fail for missing hooks. In strict mode this is a policy gap.
+
+Parameters:
+- config: VersionGuard configuration to inspect.
+
+Returns: A guard warning when hooks are enabled but not enforced.
+
+Example:
+  import { checkEnforceHooksPolicy } from './guard';
+  
+  const warning = checkEnforceHooksPolicy(config);
+  if (warning) console.warn(warning.message);
+
+#### runGuardChecks()
+
+(config: VersionGuardConfig, cwd: string) => GuardReport
+
+Runs all guard checks and returns a consolidated report.
+
+This is the primary entry point for strict mode. It runs every detection check and returns a report indicating whether the repository is safe from known bypass patterns.
+
+Parameters:
+- config: VersionGuard configuration.
+- cwd: Repository directory to inspect.
+
+Returns: A guard report with all findings.
+
+Example:
+  import { runGuardChecks } from './guard';
+  
+  const report = runGuardChecks(config, process.cwd());
+  if (!report.safe) console.error('Guard check failed:', report.warnings);
+
+#### getTopicIndex()
+
+() => string
+
+Returns the topic index listing.
+
+Returns: Formatted topic list for terminal display.
+
+#### getTopicContent()
+
+(topicName: string) => string | null
+
+Returns help content for a specific topic.
+
+Parameters:
+- topicName: Topic name to look up.
+
+Returns: The topic content, or null if not found.
+
+#### getLlmContext()
+
+() => string
+
+Returns the full API context for LLM consumption.
+
+This is the forge-ts generated llms.txt content, embedded at build time.
+
+Returns: The llms.txt content string.
+
+#### getHelpJson()
+
+(topicName?: string) => object
+
+Returns the topic index as a JSON structure for machine parsing.
+
+Returns: JSON-serializable help structure.
+
+#### getDefaultConfig()
 
 () => VersionGuardConfig
 
-Returns a deep-cloned copy of the built-in VersionGuard configuration.    0.1.0
+Returns a deep-cloned copy of the built-in VersionGuard configuration.
+
+A fresh clone is returned so callers can safely modify the result without mutating shared defaults.
 
 Returns: The default VersionGuard configuration.
 
@@ -743,11 +1173,13 @@ Example:
   
   const config = getDefaultConfig();
 
-### findConfig()
+#### findConfig()
 
 (cwd?: string) => string | null
 
-Finds the first supported VersionGuard config file in a directory.    0.1.0
+Finds the first supported VersionGuard config file in a directory.
+
+Search order follows `CONFIG_FILE_NAMES`, so `.versionguard.yml` takes precedence over the other supported filenames.
 
 Parameters:
 - cwd: Directory to search.
@@ -759,11 +1191,13 @@ Example:
   
   const configPath = findConfig(process.cwd());
 
-### loadConfig()
+#### loadConfig()
 
 (configPath: string) => VersionGuardConfig
 
-Loads a VersionGuard config file from disk.    0.1.0
+Loads a VersionGuard config file from disk.
+
+The parsed YAML object is merged with the built-in defaults so omitted keys inherit their default values.
 
 Parameters:
 - configPath: Path to the YAML config file.
@@ -775,11 +1209,13 @@ Example:
   
   const config = loadConfig('.versionguard.yml');
 
-### getConfig()
+#### getConfig()
 
 (cwd?: string) => VersionGuardConfig
 
-Resolves the active VersionGuard configuration for a project.    0.1.0
+Resolves the active VersionGuard configuration for a project.
+
+If no config file is present, this falls back to the built-in defaults.
 
 Parameters:
 - cwd: Project directory to inspect.
@@ -791,11 +1227,13 @@ Example:
   
   const config = getConfig(process.cwd());
 
-### initConfig()
+#### initConfig()
 
 (cwd?: string) => string
 
-Initializes a new VersionGuard config file in a project.    0.1.0
+Initializes a new VersionGuard config file in a project.
+
+This writes `.versionguard.yml` using the bundled example when available, otherwise it writes a generated default configuration.
 
 Parameters:
 - cwd: Project directory where the config should be created.
@@ -807,11 +1245,54 @@ Example:
   
   const configPath = initConfig(process.cwd());
 
-### getLatestTag()
+#### findProjectRoot()
+
+(startDir: string) => ProjectRootResult
+
+Walks up from `startDir` to find the nearest project root.
+
+Checks for VersionGuard config files first, then `.git`, then manifest files. Stops at the filesystem root if nothing is found.
+
+Parameters:
+- startDir: Directory to start searching from.
+
+Returns: Detection result with the project root path and what was found.
+
+Example:
+  import { findProjectRoot } from 'versionguard';
+  
+  const result = findProjectRoot(process.cwd());
+  if (!result.found) {
+    console.log('Not in a project directory');
+  }
+
+#### formatNotProjectError()
+
+(cwd: string, command: string) => string
+
+Formats a helpful error message when a command can't find a project.
+
+The message includes actionable hints such as running `versionguard init` or changing to a project root directory. Useful for CLI commands that require a VersionGuard-enabled project.
+
+Parameters:
+- cwd: The directory that was checked.
+- command: The command that was attempted.
+
+Returns: A formatted, helpful error message.
+
+Example:
+  import { formatNotProjectError } from 'versionguard';
+  
+  const msg = formatNotProjectError('/tmp/empty', 'validate');
+  console.error(msg);
+
+#### getLatestTag()
 
 (cwd?: string) => TagInfo | null
 
-Returns the most recent reachable git tag for a repository.    0.1.0
+Returns the most recent reachable git tag for a repository.
+
+This helper reads the most recent annotated or lightweight tag that `git describe` can resolve from the current HEAD. It returns `null` when no tags are available or when git metadata cannot be read.
 
 Parameters:
 - cwd: Repository directory to inspect.
@@ -825,11 +1306,13 @@ Example:
     console.log(latestTag.version);
   }
 
-### getAllTags()
+#### getAllTags()
 
 (cwd?: string) => TagInfo[]
 
-Lists all tags in a repository.    0.1.0
+Lists all tags in a repository.
+
+This helper returns tag names in the order provided by `git tag --list`. The `date` field is populated with the current time because the implementation does not perform per-tag date lookups.
 
 Parameters:
 - cwd: Repository directory to inspect.
@@ -840,11 +1323,13 @@ Example:
   const tags = getAllTags(process.cwd());
   console.log(tags.map((tag) => tag.name));
 
-### createTag()
+#### createTag()
 
-(version: string, message?: string | undefined, autoFix?: boolean, config?: VersionGuardConfig | undefined, cwd?: string) => { success: boolean; message: string; actions: string[]; }
+(version: string, message?: string, autoFix?: boolean, config?: VersionGuardConfig, cwd?: string) => { success: boolean; message: string; actions: string[]; }
 
-Creates a release tag and optionally fixes version state first.    0.1.0
+Creates a release tag and optionally fixes version state first.
+
+When `autoFix` is enabled, this helper updates versioned files, stages the changes, and creates a release commit before creating the annotated tag. It returns a structured result instead of throwing for most expected failures.
 
 Parameters:
 - version: Version to embed in the new tag name.
@@ -862,11 +1347,13 @@ Example:
     console.error(result.message);
   }
 
-### handlePostTag()
+#### handlePostTag()
 
 (config: VersionGuardConfig, cwd?: string) => { success: boolean; message: string; actions: string[]; }
 
-Runs post-tag validation and sync checks.    0.1.0
+Runs post-tag validation and sync checks.
+
+This helper is intended for the `post-tag` git hook flow. It validates the latest tag against the configured versioning rules and reports any required follow-up actions without mutating git history.
 
 Parameters:
 - config: Loaded VersionGuard configuration used during validation.
@@ -878,11 +1365,13 @@ Example:
   const result = handlePostTag(config, process.cwd());
   console.log(result.success);
 
-### validateTagForPush()
+#### validateTagForPush()
 
-(tagName: string, cwd?: string) => { valid: boolean; message: string; fix?: string | undefined; }
+(tagName: string, cwd?: string) => { valid: boolean; message: string; fix?: string; }
 
-Validates that a local tag is safe to push to the default remote.    0.1.0
+Validates that a local tag is safe to push to the default remote.
+
+This helper checks that the tag exists locally and, when the tag also exists on `origin`, verifies that both references point to the same commit.
 
 Parameters:
 - tagName: Name of the tag to validate.
@@ -894,11 +1383,13 @@ Example:
   const result = validateTagForPush('v1.2.3', process.cwd());
   console.log(result.valid);
 
-### suggestTagMessage()
+#### suggestTagMessage()
 
 (version: string, cwd?: string) => string
 
-Suggests an annotated tag message from changelog content.    0.1.0
+Suggests an annotated tag message from changelog content.
+
+When a matching changelog entry exists, this helper uses the first bullet point as a concise release summary. It falls back to a generic `Release {version}` message when no changelog context is available.
 
 Parameters:
 - version: Version that the tag will represent.
@@ -910,11 +1401,13 @@ Example:
   const message = suggestTagMessage('1.2.3', process.cwd());
   console.log(message);
 
-### validateVersion()
+#### validateVersion()
 
 (version: string, config: VersionGuardConfig) => ValidationResult
 
-Validates a version string against the active versioning strategy.    0.1.0
+Validates a version string against the active versioning strategy.
+
+This helper dispatches to SemVer or CalVer validation based on `config.versioning.type`.
 
 Parameters:
 - version: Version string to validate.
@@ -927,11 +1420,13 @@ Example:
   
   const result = validateVersion('1.2.3', getDefaultConfig());
 
-### validate()
+#### validate()
 
 (config: VersionGuardConfig, cwd?: string) => FullValidationResult
 
-Validates the current project state against the supplied configuration.    0.1.0
+Validates the current project state against the supplied configuration.
+
+This reads the package version from `package.json`, validates the version format, checks synchronized files, and optionally validates the changelog.
 
 Parameters:
 - config: VersionGuard configuration to apply.
@@ -944,11 +1439,13 @@ Example:
   
   const result = validate(getDefaultConfig(), process.cwd());
 
-### doctor()
+#### doctor()
 
 (config: VersionGuardConfig, cwd?: string) => DoctorReport
 
-Runs an extended readiness check for a project.    0.1.0
+Runs an extended readiness check for a project.
+
+In addition to `validate`, this inspects Git state so callers can determine whether hooks are installed and the worktree is clean.
 
 Parameters:
 - config: VersionGuard configuration to apply.
@@ -961,11 +1458,13 @@ Example:
   
   const report = doctor(getDefaultConfig(), process.cwd());
 
-### sync()
+#### sync()
 
 (config: VersionGuardConfig, cwd?: string) => void
 
-Synchronizes configured files to the current package version.    0.1.0
+Synchronizes configured files to the current package version.
+
+This reads the version from `package.json` and rewrites configured files using the sync patterns defined in the VersionGuard config.
 
 Parameters:
 - config: VersionGuard configuration containing sync rules.
@@ -976,11 +1475,13 @@ Example:
   
   sync(getDefaultConfig(), process.cwd());
 
-### canBump()
+#### canBump()
 
-(currentVersion: string, newVersion: string, config: VersionGuardConfig) => { canBump: boolean; error?: string | undefined; }
+(currentVersion: string, newVersion: string, config: VersionGuardConfig) => { canBump: boolean; error?: string; }
 
-Determines whether a project can move from one version to another.    0.1.0
+Determines whether a project can move from one version to another.
+
+Both the current and proposed versions must validate against the configured versioning scheme, and the new version must compare greater than the current version.
 
 Parameters:
 - currentVersion: Version currently in use.
@@ -994,11 +1495,45 @@ Example:
   
   const result = canBump('1.2.3', '1.3.0', getDefaultConfig());
 
-### createProgram()
+#### runWizard()
+
+(cwd: string) => Promise<string | null>
+
+Runs the interactive setup wizard.
+
+Walks the user through versioning type, CalVer format, manifest source, git hooks, and changelog configuration. Writes `.versionguard.yml` when done.
+
+Parameters:
+- cwd: Project directory to initialize.
+
+Returns: The path to the created config file, or `null` if cancelled.
+
+Example:
+  const configPath = await runWizard(process.cwd());
+
+#### runHeadless()
+
+(options: InitOptions) => string
+
+Initializes VersionGuard non-interactively using CLI flags.
+
+When `--yes` is passed, all defaults are used without prompting. Individual flags override specific defaults.
+
+Parameters:
+- options: Headless initialization options.
+
+Returns: The path to the created config file.
+
+Example:
+  const configPath = runHeadless({ cwd: process.cwd(), type: 'calver', format: 'YYYY.M.MICRO' });
+
+#### createProgram()
 
 () => Command
 
-Creates the VersionGuard CLI program definition.    0.1.0
+Creates the VersionGuard CLI program definition.
+
+This function wires all commands, options, and handlers onto a fresh Commander program instance without parsing arguments yet.
 
 Returns: A configured Commander program for the VersionGuard CLI.
 
@@ -1006,11 +1541,13 @@ Example:
   const program = createProgram();
   console.log(program.name());
 
-### runCli()
+#### runCli()
 
 (argv?: string[]) => Promise<void>
 
-Parses CLI arguments and executes the matching command.    0.1.0
+Parses CLI arguments and executes the matching command.
+
+This helper delegates argument parsing to the Commander program created by `createProgram`. It resolves when the selected command finishes.
 
 Parameters:
 - argv: Full argument vector to parse.
@@ -1019,11 +1556,13 @@ Example:
   const argv = ['node', 'versionguard', 'check'];
   await runCli(argv);
 
-### shouldRunCli()
+#### shouldRunCli()
 
 (argv?: string[], metaUrl?: string) => boolean
 
-Determines whether the current module is the invoked CLI entry point.    0.1.0
+Determines whether the current module is the invoked CLI entry point.
+
+This helper compares the resolved script path from `argv` with the current module URL so the CLI runs only during direct execution.
 
 Parameters:
 - argv: Full process argument vector.
@@ -1035,22 +1574,26 @@ Example:
   const shouldRun = shouldRunCli(process.argv, import.meta.url);
   console.log(shouldRun);
 
-### createTempProject()
+#### createTempProject()
 
 () => string
 
 Creates a temporary project directory with a minimal `package.json` fixture.
+
+The returned directory is isolated and suitable for integration-style tests that mutate files or initialize git state.
 
 Returns: The absolute path to the temporary project directory.
 
 Example:
   const cwd = createTempProject();
 
-### initGitRepo()
+#### initGitRepo()
 
 (cwd: string) => void
 
 Initializes a git repository in a fixture directory with a first commit.
+
+This helper configures a local git username and email so tests can commit without mutating global git configuration.
 
 Parameters:
 - cwd: Absolute path to the fixture repository.
@@ -1058,11 +1601,13 @@ Parameters:
 Example:
   initGitRepo(cwd);
 
-### writeTextFile()
+#### writeTextFile()
 
 (cwd: string, relativePath: string, content: string) => string
 
 Writes a text fixture file relative to a temporary project directory.
+
+Parent directories are created automatically when they do not already exist.
 
 Parameters:
 - cwd: Absolute path to the fixture project.
@@ -1074,22 +1619,26 @@ Returns: The absolute file path that was written.
 Example:
   writeTextFile(cwd, 'README.md', '# Fixture');
 
-### createBareRemote()
+#### createBareRemote()
 
 () => string
 
 Creates a bare git repository to use as a remote in integration tests.
+
+The returned directory can be attached as an `origin` remote for fixture repositories.
 
 Returns: The absolute path to the new bare repository.
 
 Example:
   const remote = createBareRemote();
 
-### addGitRemote()
+#### addGitRemote()
 
 (cwd: string, remotePath: string) => void
 
 Adds a local bare repository as the `origin` remote for a fixture repo.
+
+This helper is used by tag and push integration tests.
 
 Parameters:
 - cwd: Absolute path to the fixture repository.
@@ -1098,11 +1647,13 @@ Parameters:
 Example:
   addGitRemote(cwd, remotePath);
 
-### commitAll()
+#### commitAll()
 
 (cwd: string, message: string) => void
 
 Stages all changes and creates a commit in a fixture repository.
+
+The helper uses repository-local author metadata so tests stay hermetic.
 
 Parameters:
 - cwd: Absolute path to the fixture repository.
@@ -1111,784 +1662,1486 @@ Parameters:
 Example:
   commitAll(cwd, 'test: update fixture');
 
-## Interfaces
+### Classes
 
-### CalVerConfig
+#### GitTagSource
 
-any
+typeof GitTagSource
 
-Configures CalVer validation rules.    0.1.0
+Reads version from the latest Git tag. Writing creates a new annotated tag.
+
+This provider is used for languages where the version is determined entirely by Git tags (Go, Swift, PHP/Packagist).  The tag prefix (`v` by default) is auto-detected from existing tags when writing, so projects using unprefixed tags (e.g. `1.0.0`) stay consistent.
 
 Members:
 
-#### format
+##### name
+
+"git-tag"
+
+Human-readable provider name.
+
+##### manifestFile
+
+""
+
+Empty string since git-tag has no manifest file.
+
+##### exists()
+
+(cwd: string) => boolean
+
+Returns `true` when `cwd` is inside a Git repository.
+
+Parameters:
+- cwd: Project directory to check.
+
+Returns: Whether a Git repository is found.
+
+##### getVersion()
+
+(cwd: string) => string
+
+Reads the version string from the latest Git tag.
+
+Parameters:
+- cwd: Project directory containing the Git repository.
+
+Returns: The version string extracted from the latest version tag.
+
+##### setVersion()
+
+(version: string, cwd: string) => void
+
+Creates a new annotated Git tag for the given version.
+
+Parameters:
+- version: Version string to tag.
+- cwd: Project directory containing the Git repository.
+
+##### describeVersionTag()
+
+(cwd: string) => string
+
+Try version-like tag patterns, fall back to any tag.
+
+##### detectPrefix()
+
+(cwd: string) => string
+
+Detect whether existing tags use a `v` prefix or not.
+
+#### JsonVersionSource
+
+typeof JsonVersionSource
+
+Reads and writes version strings from JSON manifest files.
+
+Supports dotted key paths for nested version fields and preserves the original indentation style when writing back to disk.
+
+Members:
+
+##### name
+
+string
+
+Human-readable provider name.
+
+##### manifestFile
+
+string
+
+Filename of the JSON manifest (e.g. `'package.json'`).
+
+##### versionPath
+
+string
+
+Dotted key path to the version field within the JSON document.
+
+##### exists()
+
+(cwd: string) => boolean
+
+Returns `true` when the manifest file exists in `cwd`.
+
+Parameters:
+- cwd: Project directory to check.
+
+Returns: Whether the manifest file exists.
+
+##### getVersion()
+
+(cwd: string) => string
+
+Reads the version string from the JSON manifest.
+
+Parameters:
+- cwd: Project directory containing the manifest.
+
+Returns: The version string extracted from the manifest.
+
+##### setVersion()
+
+(version: string, cwd: string) => void
+
+Writes a version string to the JSON manifest, preserving indentation.
+
+Parameters:
+- version: Version string to write.
+- cwd: Project directory containing the manifest.
+
+#### RegexVersionSource
+
+typeof RegexVersionSource
+
+Reads and writes version strings using regex extraction from source files.
+
+Capture group 1 of the provided regex must match the version string. Uses position-based replacement to avoid wrong-match corruption when writing back to disk.
+
+Members:
+
+##### name
+
+string
+
+Human-readable provider name.
+
+##### manifestFile
+
+string
+
+Filename of the source manifest (e.g. `'setup.py'`).
+
+##### versionRegex
+
+RegExp
+
+Compiled regex used to locate the version string.
+
+##### exists()
+
+(cwd: string) => boolean
+
+Returns `true` when the manifest file exists in `cwd`.
+
+Parameters:
+- cwd: Project directory to check.
+
+Returns: Whether the manifest file exists.
+
+##### getVersion()
+
+(cwd: string) => string
+
+Reads the version string from the source manifest using regex extraction.
+
+Parameters:
+- cwd: Project directory containing the manifest.
+
+Returns: The version string captured by group 1 of the regex.
+
+##### setVersion()
+
+(version: string, cwd: string) => void
+
+Writes a version string to the source manifest using position-based replacement.
+
+Parameters:
+- version: Version string to write.
+- cwd: Project directory containing the manifest.
+
+#### TomlVersionSource
+
+typeof TomlVersionSource
+
+Reads and writes version strings from TOML manifest files.
+
+Uses targeted regex replacement for writes to preserve file formatting, comments, and whitespace. Supports standard section headers, dotted keys, and inline table syntax.
+
+Members:
+
+##### name
+
+string
+
+Human-readable provider name.
+
+##### manifestFile
+
+string
+
+Filename of the TOML manifest (e.g. `'Cargo.toml'`).
+
+##### versionPath
+
+string
+
+Dotted key path to the version field within the TOML document.
+
+##### exists()
+
+(cwd: string) => boolean
+
+Returns `true` when the manifest file exists in `cwd`.
+
+Parameters:
+- cwd: Project directory to check.
+
+Returns: Whether the manifest file exists.
+
+##### getVersion()
+
+(cwd: string) => string
+
+Reads the version string from the TOML manifest.
+
+Parameters:
+- cwd: Project directory containing the manifest.
+
+Returns: The version string extracted from the manifest.
+
+##### setVersion()
+
+(version: string, cwd: string) => void
+
+Writes a version string to the TOML manifest, preserving formatting.
+
+Parameters:
+- version: Version string to write.
+- cwd: Project directory containing the manifest.
+
+##### getSectionKey()
+
+() => { section: string; key: string; }
+
+Splits the dotted version path into a TOML section name and key name.
+
+Returns: An object with `section` and `key` components.
+
+#### VersionFileSource
+
+typeof VersionFileSource
+
+Reads and writes version strings from a plain text VERSION file.
+
+The file is expected to contain only the version string, optionally followed by a trailing newline. Binary files and empty files are rejected with a descriptive error.
+
+Members:
+
+##### name
+
+string
+
+Human-readable provider name.
+
+##### manifestFile
+
+string
+
+Filename of the version file (e.g. `'VERSION'`).
+
+##### exists()
+
+(cwd: string) => boolean
+
+Returns `true` when the version file exists in `cwd`.
+
+Parameters:
+- cwd: Project directory to check.
+
+Returns: Whether the version file exists.
+
+##### getVersion()
+
+(cwd: string) => string
+
+Reads the version string from the plain text version file.
+
+Parameters:
+- cwd: Project directory containing the version file.
+
+Returns: The version string from the first line of the file.
+
+##### setVersion()
+
+(version: string, cwd: string) => void
+
+Writes a version string to the plain text version file.
+
+Parameters:
+- version: Version string to write.
+- cwd: Project directory containing the version file.
+
+#### YamlVersionSource
+
+typeof YamlVersionSource
+
+Reads and writes version strings from YAML manifest files.
+
+Supports dotted key paths (e.g. `'flutter.version'`) for nested values. Uses targeted regex replacement for writes to preserve comments and formatting.
+
+Members:
+
+##### name
+
+string
+
+Human-readable provider name.
+
+##### manifestFile
+
+string
+
+Filename of the YAML manifest (e.g. `'pubspec.yaml'`).
+
+##### versionKey
+
+string
+
+Dotted key path to the version field within the YAML document.
+
+##### exists()
+
+(cwd: string) => boolean
+
+Returns `true` when the manifest file exists in `cwd`.
+
+Parameters:
+- cwd: Project directory to check.
+
+Returns: Whether the manifest file exists.
+
+##### getVersion()
+
+(cwd: string) => string
+
+Reads the version string from the YAML manifest.
+
+Parameters:
+- cwd: Project directory containing the manifest.
+
+Returns: The version string extracted from the manifest.
+
+##### setVersion()
+
+(version: string, cwd: string) => void
+
+Writes a version string to the YAML manifest, preserving formatting.
+
+Parameters:
+- version: Version string to write.
+- cwd: Project directory containing the manifest.
+
+### Interfaces
+
+#### ManifestConfig
+
+ManifestConfig
+
+Configures the version source manifest.
+
+Members:
+
+##### source
+
+ManifestSourceType
+
+Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename.
+
+##### path
+
+string | undefined
+
+Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml.
+
+##### regex
+
+string | undefined
+
+Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.
+
+#### SchemeRules
+
+SchemeRules
+
+Configures scheme-level validation rules applied regardless of versioning type.
+
+Members:
+
+##### maxNumericSegments
+
+number
+
+Maximum number of numeric segments before a warning is emitted.  Convention is 3 (e.g., `YYYY.MM.MICRO`). Formats with 4+ segments (e.g., `YYYY.0M.0D.MICRO`) are valid but trigger a warning.
+
+##### allowedModifiers
+
+string[]
+
+Allowed pre-release modifier tags.  When set, version modifiers (e.g., `-alpha`, `-rc1`) are validated against this whitelist. An empty array disallows all modifiers.
+
+#### CalVerConfig
+
+CalVerConfig
+
+Configures CalVer validation rules.
+
+Members:
+
+##### format
 
 CalVerFormat
 
 Calendar format used when parsing and validating versions.
 
-#### preventFutureDates
+##### preventFutureDates
 
 boolean
 
 Rejects versions that point to a future date.
 
-### SyncPattern
+##### strictMutualExclusion
 
-any
+boolean | undefined
 
-Describes a search-and-replace pattern used during version synchronization.    0.1.0
+Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens.
+
+#### SyncPattern
+
+SyncPattern
+
+Describes a search-and-replace pattern used during version synchronization.
 
 Members:
 
-#### regex
+##### regex
 
 string
 
 Regular expression string used to locate a version value.
 
-#### template
+##### template
 
 string
 
 Replacement template applied when a match is updated.
 
-### SyncConfig
+#### SyncConfig
 
-any
+SyncConfig
 
-Configures files and patterns that should stay in sync with the canonical version.    0.1.0
+Configures files and patterns that should stay in sync with the canonical version.
 
 Members:
 
-#### files
+##### files
 
 string[]
 
 File globs or paths that should be scanned for version updates.
 
-#### patterns
+##### patterns
 
 SyncPattern[]
 
 Replacement patterns applied to matching files.
 
-### ChangelogConfig
+#### ChangelogConfig
 
-any
+ChangelogConfig
 
-Controls changelog validation behavior.    0.1.0
+Controls changelog validation behavior.
 
 Members:
 
-#### enabled
+##### enabled
 
 boolean
 
 Enables changelog validation.
 
-#### file
+##### file
 
 string
 
 Path to the changelog file to inspect.
 
-#### strict
+##### strict
 
 boolean
 
 Treats changelog problems as hard failures.
 
-#### requireEntry
+##### requireEntry
 
 boolean
 
 Requires an entry for the current version.
 
-### GitHooksConfig
+#### GitHooksConfig
 
-any
+GitHooksConfig
 
-Toggles each supported git hook integration.    0.1.0
+Toggles each supported git hook integration.
 
 Members:
 
-#### 'pre-commit'
+##### 'pre-commit'
 
 boolean
 
 Enables validation during the `pre-commit` hook.
 
-#### 'pre-push'
+##### 'pre-push'
 
 boolean
 
 Enables validation during the `pre-push` hook.
 
-#### 'post-tag'
+##### 'post-tag'
 
 boolean
 
 Enables follow-up tasks after a tag is created.
 
-### GitConfig
+#### GitConfig
 
-any
+GitConfig
 
-Configures git-related enforcement.    0.1.0
+Configures git-related enforcement.
 
 Members:
 
-#### hooks
+##### hooks
 
 GitHooksConfig
 
 Hook toggles used by the CLI and validation workflow.
 
-#### enforceHooks
+##### enforceHooks
 
 boolean
 
 Fails validation when required hooks are missing.
 
-### VersioningConfig
+#### VersioningConfig
 
-any
+VersioningConfig
 
-Configures the active versioning mode.    0.1.0
+Configures the active versioning mode.
 
 Members:
 
-#### type
+##### type
 
 VersioningType
 
 Versioning strategy used for the project.
 
-#### calver
+##### schemeRules
+
+SchemeRules | undefined
+
+Scheme-level validation rules applied regardless of versioning type.
+
+##### calver
 
 CalVerConfig | undefined
 
 CalVer-specific settings when `type` is `'calver'`.
 
-### VersionGuardConfig
+#### VersionGuardConfig
 
-any
+VersionGuardConfig
 
-Top-level configuration consumed by versionguard.    0.1.0
+Top-level configuration consumed by versionguard.
 
 Members:
 
-#### versioning
+##### versioning
 
 VersioningConfig
 
 Active versioning settings.
 
-#### sync
+##### manifest
+
+ManifestConfig
+
+Version source manifest settings.
+
+##### sync
 
 SyncConfig
 
 Synchronization settings for mirrored version strings.
 
-#### changelog
+##### changelog
 
 ChangelogConfig
 
 Changelog validation settings.
 
-#### git
+##### git
 
 GitConfig
 
 Git enforcement settings.
 
-#### ignore
+##### ignore
 
 string[]
 
 Files or patterns excluded from validation.
 
-### SemVer
+#### SemVer
 
-any
+SemVer
 
-Parsed semantic version components.    0.1.0
+Parsed semantic version components.
 
 Members:
 
-#### major
+##### major
 
 number
 
 Major version number.
 
-#### minor
+##### minor
 
 number
 
 Minor version number.
 
-#### patch
+##### patch
 
 number
 
 Patch version number.
 
-#### prerelease
+##### prerelease
 
 string[]
 
 Ordered prerelease identifiers.
 
-#### build
+##### build
 
 string[]
 
 Ordered build metadata identifiers.
 
-#### raw
+##### raw
 
 string
 
 Original version string.
 
-### CalVer
+#### CalVer
 
-any
+CalVer
 
-Parsed calendar version components.    0.1.0
+Parsed calendar version components.
 
 Members:
 
-#### year
+##### year
 
 number
 
 Four-digit year value.
 
-#### month
+##### month
 
 number
 
-Month value from 1 through 12.
+Month or week value (1-12 for months, 1-53 for weeks).
 
-#### day
+##### day
 
 number | undefined
 
 Day-of-month value when the selected format includes a day token.
 
-#### patch
+##### patch
 
 number | undefined
 
-Patch counter when the selected format includes a patch token.
+Micro/patch counter when the selected format includes a counter token.
 
-#### format
+##### modifier
+
+string | undefined
+
+Pre-release modifier string (e.g., `'alpha'`, `'rc1'`, `'dev'`).
+
+##### format
 
 CalVerFormat
 
 Source format used to interpret the raw string.
 
-#### raw
+##### raw
 
 string
 
 Original version string.
 
-### ParsedSemVer
+#### ParsedSemVer
 
-any
+ParsedSemVer
 
-Parsed semantic version result wrapper.    0.1.0
+Parsed semantic version result wrapper.
 
 Members:
 
-#### type
+##### type
 
 "semver"
 
 Discriminator for semantic version results.
 
-#### version
+##### version
 
 SemVer
 
 Parsed semantic version value.
 
-### ParsedCalVer
+#### ParsedCalVer
 
-any
+ParsedCalVer
 
-Parsed calendar version result wrapper.    0.1.0
+Parsed calendar version result wrapper.
 
 Members:
 
-#### type
+##### type
 
 "calver"
 
 Discriminator for calendar version results.
 
-#### version
+##### version
 
 CalVer
 
 Parsed calendar version value.
 
-### ValidationError
+#### ValidationError
 
-any
+ValidationError
 
-Describes a single validation problem.    0.1.0
+Describes a single validation problem.
 
 Members:
 
-#### file
+##### file
 
 string | undefined
 
 Source file associated with the error when available.
 
-#### line
+##### line
 
 number | undefined
 
 One-based source line associated with the error when available.
 
-#### message
+##### message
 
 string
 
 Human-readable validation message.
 
-#### severity
+##### severity
 
 "error" | "warning"
 
 Severity of the reported problem.
 
-### ValidationResult
+#### ValidationResult
 
-any
+ValidationResult
 
-Result returned by version parsing and validation helpers.    0.1.0
+Result returned by version parsing and validation helpers.
 
 Members:
 
-#### valid
+##### valid
 
 boolean
 
 Indicates whether validation completed without errors.
 
-#### errors
+##### errors
 
 ValidationError[]
 
 Collected validation issues.
 
-#### version
+##### version
 
 ParsedVersion | undefined
 
 Parsed version details when validation succeeds.
 
-### SyncChange
+#### SyncChange
 
-any
+SyncChange
 
-Describes a single in-file version replacement.    0.1.0
+Describes a single in-file version replacement.
 
 Members:
 
-#### line
+##### line
 
 number
 
 One-based line number where the replacement occurred.
 
-#### oldValue
+##### oldValue
 
 string
 
 Previously matched value.
 
-#### newValue
+##### newValue
 
 string
 
 Replacement value written to the file.
 
-### SyncResult
+#### SyncResult
 
-any
+SyncResult
 
-Reports the result of synchronizing a single file.    0.1.0
+Reports the result of synchronizing a single file.
 
 Members:
 
-#### file
+##### file
 
 string
 
 File that was inspected or updated.
 
-#### updated
+##### updated
 
 boolean
 
 Indicates whether the file content changed.
 
-#### changes
+##### changes
 
 SyncChange[]
 
 Detailed replacements applied within the file.
 
-### VersionMismatch
+#### VersionMismatch
 
-any
+VersionMismatch
 
-Reports a discovered version mismatch.    0.1.0
+Reports a discovered version mismatch.
 
 Members:
 
-#### file
+##### file
 
 string
 
 File containing the mismatched value.
 
-#### line
+##### line
 
 number
 
 One-based line number of the mismatch.
 
-#### found
+##### found
 
 string
 
 Version string found in the file.
 
-### FullValidationResult
+#### FullValidationResult
 
-any
+FullValidationResult
 
-Combined result from a full project validation run.    0.1.0
+Combined result from a full project validation run.
 
 Members:
 
-#### valid
+##### valid
 
 boolean
 
 Indicates whether all checks passed.
 
-#### version
+##### version
 
 string
 
 Canonical version string used for validation.
 
-#### versionValid
+##### versionValid
 
 boolean
 
 Indicates whether the root version string is valid.
 
-#### syncValid
+##### syncValid
 
 boolean
 
 Indicates whether synchronized files are in sync.
 
-#### changelogValid
+##### changelogValid
 
 boolean
 
 Indicates whether changelog checks passed.
 
-#### errors
+##### errors
 
 string[]
 
 Human-readable validation failures collected during the run.
 
-### DoctorReport
+#### DoctorReport
 
-any
+DoctorReport
 
-Reports whether a project is ready to pass VersionGuard checks.     0.1.0
+Reports whether a project is ready to pass VersionGuard checks.
 
 Members:
 
-#### ready
+##### ready
 
 boolean
 
 Indicates whether all doctor checks passed.
 
-#### version
+##### version
 
 string
 
-Package version resolved from `package.json`.
+Package version resolved from the configured manifest source.
 
-#### versionValid
+##### versionValid
 
 boolean
 
 Indicates whether the package version matches the configured scheme.
 
-#### syncValid
+##### syncValid
 
 boolean
 
 Indicates whether synced files match the package version.
 
-#### changelogValid
+##### changelogValid
 
 boolean
 
 Indicates whether changelog validation passed.
 
-#### gitRepository
+##### gitRepository
 
 boolean
 
 Indicates whether the current working directory is inside a Git repository.
 
-#### hooksInstalled
+##### hooksInstalled
 
 boolean
 
 Indicates whether VersionGuard-managed Git hooks are installed.
 
-#### worktreeClean
+##### worktreeClean
 
 boolean
 
 Indicates whether `git status --porcelain` reports a clean worktree.
 
-#### errors
+##### errors
 
 string[]
 
 Human-readable validation and readiness errors.
 
-### ParsedCalVerFormat
+#### ParsedCalVerFormat
 
-any
+ParsedCalVerFormat
 
-Parsed token layout for a supported CalVer format string.    0.1.0
+Parsed token layout for a supported CalVer format string.
 
 Members:
 
-#### year
+##### year
 
-"YYYY" | "YY"
+"YYYY" | "YY" | "0Y"
 
 Year token captured from the format string.
 
-#### month
+##### month
 
-"MM" | "M" | "0M"
+"MM" | "M" | "0M" | undefined
 
-Month token captured from the format string.
+Month token captured from the format string when present.
 
-#### day
+##### week
+
+"WW" | "0W" | undefined
+
+Week token captured from the format string when present.
+
+##### day
 
 "DD" | "D" | "0D" | undefined
 
 Day token captured from the format string when present.
 
-#### patch
+##### counter
 
-"PATCH" | undefined
+"MICRO" | "PATCH" | undefined
 
-Patch token captured from the format string when present.
+Counter token captured from the format string when present. Both `MICRO` and `PATCH` map to the same numeric counter.
 
-### ChangelogValidationResult
+#### ChangelogValidationResult
 
-any
+ChangelogValidationResult
 
-Describes the outcome of validating a changelog file.    0.1.0
+Describes the outcome of validating a changelog file.
 
 Members:
 
-#### valid
+##### valid
 
 boolean
 
 Indicates whether the changelog satisfies all requested checks.
 
-#### errors
+##### errors
 
 string[]
 
 Human-readable validation errors.
 
-#### hasEntryForVersion
+##### hasEntryForVersion
 
 boolean
 
 Indicates whether the changelog contains an entry for the requested version.
 
-### Suggestion
+#### Suggestion
 
-any
+Suggestion
 
-Feedback entry point exports for suggestion and guidance helpers.     0.1.0
+Feedback entry point exports for suggestion and guidance helpers.
 
 Members:
 
-#### message
+##### message
 
 string
 
 Human-readable guidance for the user.
 
-#### fix
+##### fix
 
 string | undefined
 
 Command or action text that can be used to address the issue.
 
-#### autoFixable
+##### autoFixable
 
 boolean
 
 Indicates whether VersionGuard can apply the suggestion automatically.
 
-### FeedbackResult
+#### FeedbackResult
 
-any
+FeedbackResult
 
-Aggregates validation errors with suggested next steps.    0.1.0
+Aggregates validation errors with suggested next steps.
 
 Members:
 
-#### valid
+##### valid
 
 boolean
 
 Indicates whether the inspected version state is valid.
 
-#### errors
+##### errors
 
 ValidationError[]
 
 Validation errors collected during the check.
 
-#### suggestions
+##### suggestions
 
 Suggestion[]
 
 Suggested next steps for resolving the reported issues.
 
-#### canAutoFix
+##### canAutoFix
 
 boolean
 
 Indicates whether at least one suggestion can be auto-applied.
 
-### PackageJson
+#### VersionSourceProvider
 
-any
+VersionSourceProvider
 
-Minimal shape of a `package.json` document used by VersionGuard.    0.1.0
+Abstraction for reading and writing a version string from any manifest format.
 
 Members:
 
-#### name
+##### name
+
+string
+
+Human-readable provider name (e.g. `'package.json'`, `'Cargo.toml'`).
+
+##### manifestFile
+
+string
+
+Default manifest filename this provider handles.
+
+##### exists()
+
+(cwd: string) => boolean
+
+Returns `true` when the manifest file exists in `cwd`.
+
+##### getVersion()
+
+(cwd: string) => string
+
+Reads the version string from the manifest. Throws if missing or unreadable.
+
+##### setVersion()
+
+(version: string, cwd: string) => void
+
+Writes a version string back to the manifest. Throws if the file does not exist.
+
+#### PackageJsonObject
+
+PackageJsonObject
+
+Recursive object type used for arbitrary JSON-compatible package values.
+
+#### PackageJson
+
+PackageJson
+
+Minimal shape of a `package.json` document used by VersionGuard.
+
+Members:
+
+##### name
 
 string | undefined
 
 Package name.
 
-#### version
+##### version
 
 string | undefined
 
 Package version string.
 
-### FixResult
+#### FixResult
 
-any
+FixResult
 
-Fix entry point exports for auto-remediation helpers.     0.1.0
+Fix entry point exports for auto-remediation helpers.
 
 Members:
 
-#### fixed
+##### fixed
 
 boolean
 
 Indicates whether the operation changed repository state.
 
-#### message
+##### message
 
 string
 
 Human-readable description of the fix attempt.
 
-#### file
+##### file
 
 string | undefined
 
 Absolute path to the file that was updated, when applicable.
 
-### TagInfo
+#### GuardWarning
 
-any
+GuardWarning
 
-Tag entry point exports for release-tag management helpers.     0.1.0
+Describes a single guard finding.
 
 Members:
 
-#### name
+##### code
+
+string
+
+Machine-readable code for filtering and automation.
+
+##### severity
+
+"error" | "warning"
+
+Severity: errors block releases, warnings inform.
+
+##### message
+
+string
+
+Human-readable description of the issue.
+
+##### fix
+
+string | undefined
+
+Suggested remediation command when available.
+
+#### GuardReport
+
+GuardReport
+
+Result of a full guard check pass.
+
+Members:
+
+##### safe
+
+boolean
+
+True when no errors were found. Warnings alone do not fail.
+
+##### warnings
+
+GuardWarning[]
+
+All findings from the guard check.
+
+#### HelpTopic
+
+HelpTopic
+
+Embedded help topics for the CLI help system.
+
+Content is compiled into the binary at build time. Structured for MVI progressive disclosure: - Level 0: Topic list (versionguard help) - Level 1: Topic summary (versionguard help calver) - Level 2: Full API context (versionguard help --llm)
+
+Members:
+
+##### name
+
+string
+
+Short name used as CLI argument.
+
+##### summary
+
+string
+
+One-line summary shown in topic list.
+
+##### content
+
+string
+
+Full help text for the topic.
+
+#### ProjectRootResult
+
+ProjectRootResult
+
+Result of project root detection.
+
+Members:
+
+##### found
+
+boolean
+
+Whether a project root was found.
+
+##### root
+
+string
+
+The resolved project root directory, or the original cwd if not found.
+
+##### marker
+
+string | undefined
+
+Which marker file was found.
+
+##### hasConfig
+
+boolean
+
+Whether the directory has a VersionGuard config.
+
+##### hasGit
+
+boolean
+
+Whether the directory is inside a git repository.
+
+##### hasManifest
+
+boolean
+
+Whether a version manifest file exists.
+
+#### TagInfo
+
+TagInfo
+
+Tag entry point exports for release-tag management helpers.
+
+Members:
+
+##### name
 
 string
 
 Full git tag name, including any prefix such as `v`.
 
-#### version
+##### version
 
 string
 
 Normalized version string derived from the tag name.
 
-#### message
+##### message
 
 string | undefined
 
 Annotated tag message when one is available.
 
-#### date
+##### date
 
 Date
 
 Timestamp associated with the tag lookup result.
 
-## Types
+#### InitOptions
 
-### VersioningType
+InitOptions
 
-any
+Options for headless (non-interactive) initialization.
 
-Supported versioning strategies.    0.1.0
+Members:
 
-### CalVerFormat
+##### cwd
 
-any
+string
 
-Supported calendar version string layouts.    0.1.0
+Working directory path.
 
-### ParsedVersion
+##### type
 
-any
+"semver" | "calver" | undefined
 
-Union of supported parsed version payloads.    0.1.0
+Versioning type (semver or calver).
+
+##### format
+
+string | undefined
+
+CalVer format string.
+
+##### manifest
+
+string | undefined
+
+Manifest source type.
+
+##### hooks
+
+boolean | undefined
+
+Whether to install git hooks.
+
+##### changelog
+
+boolean | undefined
+
+Whether to enable changelog validation.
+
+##### yes
+
+boolean | undefined
+
+Accept defaults without prompting.
+
+##### force
+
+boolean | undefined
+
+Overwrite existing config.
+
+### Types
+
+#### VersioningType
+
+VersioningType
+
+Supported versioning strategies.
+
+#### ManifestSourceType
+
+ManifestSourceType
+
+Supported manifest source types for version extraction.
+
+#### CalVerToken
+
+CalVerToken
+
+Valid CalVer token names for building format strings.
+
+#### CalVerFormat
+
+CalVerFormat
+
+A CalVer format string composed of dot-separated tokens.
+
+Any dot-separated combination of valid `CalVerToken` values is accepted. Common examples: `'YYYY.MM.MICRO'`, `'YY.0M.MICRO'`, `'YYYY.0M.0D'`, `'YYYY.MM.DD.MICRO'`.  `MICRO` and `PATCH` are interchangeable — both represent a 0-based incrementing counter. The CalVer specification (calver.org) uses `MICRO`; `PATCH` is accepted as a SemVer-familiar alias.
+
+#### ParsedVersion
+
+ParsedVersion
+
+Union of supported parsed version payloads.
+
+#### PackageJsonValue
+
+PackageJsonValue
+
+JSON-compatible scalar, array, or object value used by package metadata.
+
+#### PackageJsonArray
+
+PackageJsonArray
+
+Recursive array type used for arbitrary JSON-compatible package values.
+
+### Variables
+
+#### TOPICS
+
+HelpTopic[]

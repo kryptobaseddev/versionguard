@@ -1,0 +1,1009 @@
+{
+  "$schema": "https://forge-ts.dev/schemas/ckm/v1.json",
+  "version": "1.0.0",
+  "project": "@codluv/versionguard",
+  "generated": "2026-03-26T15:45:30.788Z",
+  "concepts": [
+    {
+      "id": "concept-ManifestConfig",
+      "name": "ManifestConfig",
+      "what": "Configures the version source manifest.",
+      "properties": [
+        {
+          "name": "source",
+          "type": "ManifestSourceType",
+          "description": "Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename."
+        },
+        {
+          "name": "path",
+          "type": "string | undefined",
+          "description": "Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml."
+        },
+        {
+          "name": "regex",
+          "type": "string | undefined",
+          "description": "Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string."
+        }
+      ]
+    },
+    {
+      "id": "concept-CalVerConfig",
+      "name": "CalVerConfig",
+      "what": "Configures CalVer validation rules.",
+      "properties": [
+        {
+          "name": "format",
+          "type": "CalVerFormat",
+          "description": "Calendar format used when parsing and validating versions."
+        },
+        {
+          "name": "preventFutureDates",
+          "type": "boolean",
+          "description": "Rejects versions that point to a future date."
+        },
+        {
+          "name": "strictMutualExclusion",
+          "type": "boolean | undefined",
+          "description": "Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens."
+        }
+      ]
+    },
+    {
+      "id": "concept-SyncConfig",
+      "name": "SyncConfig",
+      "what": "Configures files and patterns that should stay in sync with the canonical version.",
+      "properties": [
+        {
+          "name": "files",
+          "type": "string[]",
+          "description": "File globs or paths that should be scanned for version updates."
+        },
+        {
+          "name": "patterns",
+          "type": "SyncPattern[]",
+          "description": "Replacement patterns applied to matching files."
+        }
+      ]
+    },
+    {
+      "id": "concept-ChangelogConfig",
+      "name": "ChangelogConfig",
+      "what": "Controls changelog validation behavior.",
+      "properties": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enables changelog validation."
+        },
+        {
+          "name": "file",
+          "type": "string",
+          "description": "Path to the changelog file to inspect."
+        },
+        {
+          "name": "strict",
+          "type": "boolean",
+          "description": "Treats changelog problems as hard failures."
+        },
+        {
+          "name": "requireEntry",
+          "type": "boolean",
+          "description": "Requires an entry for the current version."
+        }
+      ]
+    },
+    {
+      "id": "concept-GitHooksConfig",
+      "name": "GitHooksConfig",
+      "what": "Toggles each supported git hook integration.",
+      "properties": [
+        {
+          "name": "'pre-commit'",
+          "type": "boolean",
+          "description": "Enables validation during the `pre-commit` hook."
+        },
+        {
+          "name": "'pre-push'",
+          "type": "boolean",
+          "description": "Enables validation during the `pre-push` hook."
+        },
+        {
+          "name": "'post-tag'",
+          "type": "boolean",
+          "description": "Enables follow-up tasks after a tag is created."
+        }
+      ]
+    },
+    {
+      "id": "concept-GitConfig",
+      "name": "GitConfig",
+      "what": "Configures git-related enforcement.",
+      "properties": [
+        {
+          "name": "hooks",
+          "type": "GitHooksConfig",
+          "description": "Hook toggles used by the CLI and validation workflow."
+        },
+        {
+          "name": "enforceHooks",
+          "type": "boolean",
+          "description": "Fails validation when required hooks are missing."
+        }
+      ]
+    },
+    {
+      "id": "concept-VersioningConfig",
+      "name": "VersioningConfig",
+      "what": "Configures the active versioning mode.",
+      "properties": [
+        {
+          "name": "type",
+          "type": "VersioningType",
+          "description": "Versioning strategy used for the project."
+        },
+        {
+          "name": "schemeRules",
+          "type": "SchemeRules | undefined",
+          "description": "Scheme-level validation rules applied regardless of versioning type."
+        },
+        {
+          "name": "calver",
+          "type": "CalVerConfig | undefined",
+          "description": "CalVer-specific settings when `type` is `'calver'`."
+        }
+      ]
+    },
+    {
+      "id": "concept-VersionGuardConfig",
+      "name": "VersionGuardConfig",
+      "what": "Top-level configuration consumed by versionguard.",
+      "properties": [
+        {
+          "name": "versioning",
+          "type": "VersioningConfig",
+          "description": "Active versioning settings."
+        },
+        {
+          "name": "manifest",
+          "type": "ManifestConfig",
+          "description": "Version source manifest settings."
+        },
+        {
+          "name": "sync",
+          "type": "SyncConfig",
+          "description": "Synchronization settings for mirrored version strings."
+        },
+        {
+          "name": "changelog",
+          "type": "ChangelogConfig",
+          "description": "Changelog validation settings."
+        },
+        {
+          "name": "git",
+          "type": "GitConfig",
+          "description": "Git enforcement settings."
+        },
+        {
+          "name": "ignore",
+          "type": "string[]",
+          "description": "Files or patterns excluded from validation."
+        }
+      ]
+    },
+    {
+      "id": "concept-ValidationResult",
+      "name": "ValidationResult",
+      "what": "Result returned by version parsing and validation helpers.",
+      "properties": [
+        {
+          "name": "valid",
+          "type": "boolean",
+          "description": "Indicates whether validation completed without errors."
+        },
+        {
+          "name": "errors",
+          "type": "ValidationError[]",
+          "description": "Collected validation issues."
+        },
+        {
+          "name": "version",
+          "type": "ParsedVersion | undefined",
+          "description": "Parsed version details when validation succeeds."
+        }
+      ]
+    },
+    {
+      "id": "concept-SyncResult",
+      "name": "SyncResult",
+      "what": "Reports the result of synchronizing a single file.",
+      "properties": [
+        {
+          "name": "file",
+          "type": "string",
+          "description": "File that was inspected or updated."
+        },
+        {
+          "name": "updated",
+          "type": "boolean",
+          "description": "Indicates whether the file content changed."
+        },
+        {
+          "name": "changes",
+          "type": "SyncChange[]",
+          "description": "Detailed replacements applied within the file."
+        }
+      ]
+    },
+    {
+      "id": "concept-FullValidationResult",
+      "name": "FullValidationResult",
+      "what": "Combined result from a full project validation run.",
+      "properties": [
+        {
+          "name": "valid",
+          "type": "boolean",
+          "description": "Indicates whether all checks passed."
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "description": "Canonical version string used for validation."
+        },
+        {
+          "name": "versionValid",
+          "type": "boolean",
+          "description": "Indicates whether the root version string is valid."
+        },
+        {
+          "name": "syncValid",
+          "type": "boolean",
+          "description": "Indicates whether synchronized files are in sync."
+        },
+        {
+          "name": "changelogValid",
+          "type": "boolean",
+          "description": "Indicates whether changelog checks passed."
+        },
+        {
+          "name": "errors",
+          "type": "string[]",
+          "description": "Human-readable validation failures collected during the run."
+        }
+      ]
+    },
+    {
+      "id": "concept-ChangelogValidationResult",
+      "name": "ChangelogValidationResult",
+      "what": "Describes the outcome of validating a changelog file.",
+      "properties": [
+        {
+          "name": "valid",
+          "type": "boolean",
+          "description": "Indicates whether the changelog satisfies all requested checks."
+        },
+        {
+          "name": "errors",
+          "type": "string[]",
+          "description": "Human-readable validation errors."
+        },
+        {
+          "name": "hasEntryForVersion",
+          "type": "boolean",
+          "description": "Indicates whether the changelog contains an entry for the requested version."
+        }
+      ]
+    },
+    {
+      "id": "concept-FeedbackResult",
+      "name": "FeedbackResult",
+      "what": "Aggregates validation errors with suggested next steps.",
+      "properties": [
+        {
+          "name": "valid",
+          "type": "boolean",
+          "description": "Indicates whether the inspected version state is valid."
+        },
+        {
+          "name": "errors",
+          "type": "ValidationError[]",
+          "description": "Validation errors collected during the check."
+        },
+        {
+          "name": "suggestions",
+          "type": "Suggestion[]",
+          "description": "Suggested next steps for resolving the reported issues."
+        },
+        {
+          "name": "canAutoFix",
+          "type": "boolean",
+          "description": "Indicates whether at least one suggestion can be auto-applied."
+        }
+      ]
+    },
+    {
+      "id": "concept-FixResult",
+      "name": "FixResult",
+      "what": "Fix entry point exports for auto-remediation helpers.",
+      "properties": [
+        {
+          "name": "fixed",
+          "type": "boolean",
+          "description": "Indicates whether the operation changed repository state."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Human-readable description of the fix attempt."
+        },
+        {
+          "name": "file",
+          "type": "string | undefined",
+          "description": "Absolute path to the file that was updated, when applicable."
+        }
+      ]
+    },
+    {
+      "id": "concept-ProjectRootResult",
+      "name": "ProjectRootResult",
+      "what": "Result of project root detection.",
+      "properties": [
+        {
+          "name": "found",
+          "type": "boolean",
+          "description": "Whether a project root was found."
+        },
+        {
+          "name": "root",
+          "type": "string",
+          "description": "The resolved project root directory, or the original cwd if not found."
+        },
+        {
+          "name": "marker",
+          "type": "string | undefined",
+          "description": "Which marker file was found."
+        },
+        {
+          "name": "hasConfig",
+          "type": "boolean",
+          "description": "Whether the directory has a VersionGuard config."
+        },
+        {
+          "name": "hasGit",
+          "type": "boolean",
+          "description": "Whether the directory is inside a git repository."
+        },
+        {
+          "name": "hasManifest",
+          "type": "boolean",
+          "description": "Whether a version manifest file exists."
+        }
+      ]
+    },
+    {
+      "id": "concept-InitOptions",
+      "name": "InitOptions",
+      "what": "Options for headless (non-interactive) initialization.",
+      "properties": [
+        {
+          "name": "cwd",
+          "type": "string",
+          "description": "Working directory path."
+        },
+        {
+          "name": "type",
+          "type": "\"semver\" | \"calver\" | undefined",
+          "description": "Versioning type (semver or calver)."
+        },
+        {
+          "name": "format",
+          "type": "string | undefined",
+          "description": "CalVer format string."
+        },
+        {
+          "name": "manifest",
+          "type": "string | undefined",
+          "description": "Manifest source type."
+        },
+        {
+          "name": "hooks",
+          "type": "boolean | undefined",
+          "description": "Whether to install git hooks."
+        },
+        {
+          "name": "changelog",
+          "type": "boolean | undefined",
+          "description": "Whether to enable changelog validation."
+        },
+        {
+          "name": "yes",
+          "type": "boolean | undefined",
+          "description": "Accept defaults without prompting."
+        },
+        {
+          "name": "force",
+          "type": "boolean | undefined",
+          "description": "Overwrite existing config."
+        }
+      ]
+    }
+  ],
+  "operations": [
+    {
+      "id": "op-validate",
+      "name": "validate",
+      "what": "Validates a CalVer string against formatting and date rules.",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "unknown",
+          "required": true,
+          "description": "Version string to validate."
+        },
+        {
+          "name": "calverFormat",
+          "type": "unknown",
+          "required": true,
+          "description": "Format expected for the version string."
+        },
+        {
+          "name": "preventFutureDates",
+          "type": "unknown",
+          "required": true,
+          "description": "Whether future dates should be reported as errors."
+        },
+        {
+          "name": "schemeRules",
+          "type": "unknown",
+          "required": true,
+          "description": "Optional scheme rules for modifier validation and segment count warnings."
+        }
+      ],
+      "outputs": {
+        "text": "A validation result containing any discovered errors and the parsed version on success."
+      }
+    },
+    {
+      "id": "op-validateChangelog",
+      "name": "validateChangelog",
+      "what": "Validates a changelog file for release readiness.",
+      "inputs": [
+        {
+          "name": "changelogPath",
+          "type": "unknown",
+          "required": true,
+          "description": "Path to the changelog file."
+        },
+        {
+          "name": "version",
+          "type": "unknown",
+          "required": true,
+          "description": "Version that must be present in the changelog."
+        },
+        {
+          "name": "strict",
+          "type": "unknown",
+          "required": true,
+          "description": "Whether to require compare links and dated release headings."
+        },
+        {
+          "name": "requireEntry",
+          "type": "unknown",
+          "required": true,
+          "description": "Whether the requested version must already have an entry."
+        }
+      ],
+      "outputs": {
+        "text": "The result of validating the changelog file."
+      }
+    },
+    {
+      "id": "op-checkHardcodedVersions",
+      "name": "checkHardcodedVersions",
+      "what": "Checks configured files for hardcoded version mismatches.",
+      "inputs": [
+        {
+          "name": "expectedVersion",
+          "type": "unknown",
+          "required": true,
+          "description": "Version all matching entries should use."
+        },
+        {
+          "name": "config",
+          "type": "unknown",
+          "required": true,
+          "description": "Sync configuration describing files and replacement patterns."
+        },
+        {
+          "name": "ignorePatterns",
+          "type": "unknown",
+          "required": true,
+          "description": "Glob patterns to exclude while scanning."
+        },
+        {
+          "name": "cwd",
+          "type": "unknown",
+          "required": true,
+          "description": "Project directory used to resolve file globs."
+        }
+      ],
+      "outputs": {
+        "text": "A list of detected version mismatches."
+      }
+    },
+    {
+      "id": "op-generateHookScript",
+      "name": "generateHookScript",
+      "what": "Generates the shell script content for a Git hook.",
+      "inputs": [
+        {
+          "name": "hookName",
+          "type": "unknown",
+          "required": true,
+          "description": "Name of the Git hook to generate."
+        }
+      ],
+      "outputs": {
+        "text": "Executable shell script contents for the hook."
+      }
+    },
+    {
+      "id": "op-checkHooksPathOverride",
+      "name": "checkHooksPathOverride",
+      "what": "Checks whether git hooks have been redirected away from the repository.",
+      "inputs": [
+        {
+          "name": "cwd",
+          "type": "unknown",
+          "required": true,
+          "description": "Repository directory to inspect."
+        }
+      ],
+      "outputs": {
+        "text": "A guard warning when a hooksPath override is detected."
+      }
+    },
+    {
+      "id": "op-checkHuskyBypass",
+      "name": "checkHuskyBypass",
+      "what": "Checks whether the HUSKY environment variable is disabling hooks.",
+      "inputs": [],
+      "outputs": {
+        "text": "A guard warning when the HUSKY bypass is detected."
+      }
+    },
+    {
+      "id": "op-checkHookIntegrity",
+      "name": "checkHookIntegrity",
+      "what": "Verifies that installed hook scripts match the expected content.",
+      "inputs": [
+        {
+          "name": "config",
+          "type": "unknown",
+          "required": true,
+          "description": "VersionGuard configuration that defines which hooks should exist."
+        },
+        {
+          "name": "cwd",
+          "type": "unknown",
+          "required": true,
+          "description": "Repository directory to inspect."
+        }
+      ],
+      "outputs": {
+        "text": "Guard warnings for each hook that has been tampered with."
+      }
+    },
+    {
+      "id": "op-checkEnforceHooksPolicy",
+      "name": "checkEnforceHooksPolicy",
+      "what": "Checks whether hooks are configured as required but not enforced.",
+      "inputs": [
+        {
+          "name": "config",
+          "type": "unknown",
+          "required": true,
+          "description": "VersionGuard configuration to inspect."
+        }
+      ],
+      "outputs": {
+        "text": "A guard warning when hooks are enabled but not enforced."
+      }
+    },
+    {
+      "id": "op-runGuardChecks",
+      "name": "runGuardChecks",
+      "what": "Runs all guard checks and returns a consolidated report.",
+      "inputs": [
+        {
+          "name": "config",
+          "type": "unknown",
+          "required": true,
+          "description": "VersionGuard configuration."
+        },
+        {
+          "name": "cwd",
+          "type": "unknown",
+          "required": true,
+          "description": "Repository directory to inspect."
+        }
+      ],
+      "outputs": {
+        "text": "A guard report with all findings."
+      }
+    },
+    {
+      "id": "op-initConfig",
+      "name": "initConfig",
+      "what": "Initializes a new VersionGuard config file in a project.",
+      "inputs": [
+        {
+          "name": "cwd",
+          "type": "unknown",
+          "required": true,
+          "description": "Project directory where the config should be created."
+        }
+      ],
+      "outputs": {
+        "text": "The path to the created config file."
+      }
+    },
+    {
+      "id": "op-createTag",
+      "name": "createTag",
+      "what": "Creates a release tag and optionally fixes version state first.",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "unknown",
+          "required": true,
+          "description": "Version to embed in the new tag name."
+        },
+        {
+          "name": "message",
+          "type": "unknown",
+          "required": true,
+          "description": "Custom annotated tag message."
+        },
+        {
+          "name": "autoFix",
+          "type": "unknown",
+          "required": true,
+          "description": "Whether to auto-fix version mismatches before tagging."
+        },
+        {
+          "name": "config",
+          "type": "unknown",
+          "required": true,
+          "description": "Loaded VersionGuard configuration used for validation and fixes."
+        },
+        {
+          "name": "cwd",
+          "type": "unknown",
+          "required": true,
+          "description": "Repository directory where git commands should run."
+        }
+      ],
+      "outputs": {
+        "text": "The tagging outcome and any actions performed along the way."
+      }
+    },
+    {
+      "id": "op-validateTagForPush",
+      "name": "validateTagForPush",
+      "what": "Validates that a local tag is safe to push to the default remote.",
+      "inputs": [
+        {
+          "name": "tagName",
+          "type": "unknown",
+          "required": true,
+          "description": "Name of the tag to validate."
+        },
+        {
+          "name": "cwd",
+          "type": "unknown",
+          "required": true,
+          "description": "Repository directory where git commands should run."
+        }
+      ],
+      "outputs": {
+        "text": "A validation result with an optional suggested fix command."
+      }
+    },
+    {
+      "id": "op-validateVersion",
+      "name": "validateVersion",
+      "what": "Validates a version string against the active versioning strategy.",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "unknown",
+          "required": true,
+          "description": "Version string to validate."
+        },
+        {
+          "name": "config",
+          "type": "unknown",
+          "required": true,
+          "description": "VersionGuard configuration that selects the validation rules."
+        }
+      ],
+      "outputs": {
+        "text": "The validation result for the provided version."
+      }
+    },
+    {
+      "id": "op-runWizard",
+      "name": "runWizard",
+      "what": "Runs the interactive setup wizard.",
+      "inputs": [
+        {
+          "name": "cwd",
+          "type": "unknown",
+          "required": true,
+          "description": "Project directory to initialize."
+        }
+      ],
+      "outputs": {
+        "text": "The path to the created config file, or `null` if cancelled."
+      }
+    },
+    {
+      "id": "op-runHeadless",
+      "name": "runHeadless",
+      "what": "Initializes VersionGuard non-interactively using CLI flags.",
+      "inputs": [
+        {
+          "name": "options",
+          "type": "unknown",
+          "required": true,
+          "description": "Headless initialization options."
+        }
+      ],
+      "outputs": {
+        "text": "The path to the created config file."
+      }
+    },
+    {
+      "id": "op-createProgram",
+      "name": "createProgram",
+      "what": "Creates the VersionGuard CLI program definition.",
+      "inputs": [],
+      "outputs": {
+        "text": "A configured Commander program for the VersionGuard CLI."
+      }
+    },
+    {
+      "id": "op-runCli",
+      "name": "runCli",
+      "what": "Parses CLI arguments and executes the matching command.",
+      "inputs": [
+        {
+          "name": "argv",
+          "type": "unknown",
+          "required": true,
+          "description": "Full argument vector to parse."
+        }
+      ]
+    },
+    {
+      "id": "op-createTempProject",
+      "name": "createTempProject",
+      "what": "Creates a temporary project directory with a minimal `package.json` fixture.",
+      "inputs": [],
+      "outputs": {
+        "text": "The absolute path to the temporary project directory."
+      }
+    },
+    {
+      "id": "op-initGitRepo",
+      "name": "initGitRepo",
+      "what": "Initializes a git repository in a fixture directory with a first commit.",
+      "inputs": [
+        {
+          "name": "cwd",
+          "type": "unknown",
+          "required": true,
+          "description": "Absolute path to the fixture repository."
+        }
+      ]
+    },
+    {
+      "id": "op-createBareRemote",
+      "name": "createBareRemote",
+      "what": "Creates a bare git repository to use as a remote in integration tests.",
+      "inputs": [],
+      "outputs": {
+        "text": "The absolute path to the new bare repository."
+      }
+    }
+  ],
+  "constraints": [],
+  "workflows": [],
+  "configSchema": [
+    {
+      "key": "ManifestConfig.source",
+      "type": "ManifestSourceType",
+      "description": "Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename.",
+      "default": "'auto'"
+    },
+    {
+      "key": "ManifestConfig.path",
+      "type": "string | undefined",
+      "description": "Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml.",
+      "default": "undefined (uses the provider's built-in default)"
+    },
+    {
+      "key": "ManifestConfig.regex",
+      "type": "string | undefined",
+      "description": "Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.",
+      "default": "undefined"
+    },
+    {
+      "key": "CalVerConfig.format",
+      "type": "CalVerFormat",
+      "description": "Calendar format used when parsing and validating versions."
+    },
+    {
+      "key": "CalVerConfig.preventFutureDates",
+      "type": "boolean",
+      "description": "Rejects versions that point to a future date.",
+      "default": "true"
+    },
+    {
+      "key": "CalVerConfig.strictMutualExclusion",
+      "type": "boolean | undefined",
+      "description": "Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens.",
+      "default": "true"
+    },
+    {
+      "key": "SyncConfig.files",
+      "type": "string[]",
+      "description": "File globs or paths that should be scanned for version updates."
+    },
+    {
+      "key": "SyncConfig.patterns",
+      "type": "SyncPattern[]",
+      "description": "Replacement patterns applied to matching files."
+    },
+    {
+      "key": "ChangelogConfig.enabled",
+      "type": "boolean",
+      "description": "Enables changelog validation.",
+      "default": "false"
+    },
+    {
+      "key": "ChangelogConfig.file",
+      "type": "string",
+      "description": "Path to the changelog file to inspect."
+    },
+    {
+      "key": "ChangelogConfig.strict",
+      "type": "boolean",
+      "description": "Treats changelog problems as hard failures.",
+      "default": "false"
+    },
+    {
+      "key": "ChangelogConfig.requireEntry",
+      "type": "boolean",
+      "description": "Requires an entry for the current version.",
+      "default": "false"
+    },
+    {
+      "key": "GitHooksConfig.'pre-commit'",
+      "type": "boolean",
+      "description": "Enables validation during the `pre-commit` hook.",
+      "default": "false"
+    },
+    {
+      "key": "GitHooksConfig.'pre-push'",
+      "type": "boolean",
+      "description": "Enables validation during the `pre-push` hook.",
+      "default": "false"
+    },
+    {
+      "key": "GitHooksConfig.'post-tag'",
+      "type": "boolean",
+      "description": "Enables follow-up tasks after a tag is created.",
+      "default": "false"
+    },
+    {
+      "key": "GitConfig.hooks",
+      "type": "GitHooksConfig",
+      "description": "Hook toggles used by the CLI and validation workflow."
+    },
+    {
+      "key": "GitConfig.enforceHooks",
+      "type": "boolean",
+      "description": "Fails validation when required hooks are missing.",
+      "default": "false"
+    },
+    {
+      "key": "VersioningConfig.type",
+      "type": "VersioningType",
+      "description": "Versioning strategy used for the project."
+    },
+    {
+      "key": "VersioningConfig.schemeRules",
+      "type": "SchemeRules | undefined",
+      "description": "Scheme-level validation rules applied regardless of versioning type.",
+      "default": "`{ maxNumericSegments: 3, allowedModifiers: ['dev', 'alpha', 'beta', 'rc'] }`"
+    },
+    {
+      "key": "VersioningConfig.calver",
+      "type": "CalVerConfig | undefined",
+      "description": "CalVer-specific settings when `type` is `'calver'`.",
+      "default": "undefined"
+    },
+    {
+      "key": "VersionGuardConfig.versioning",
+      "type": "VersioningConfig",
+      "description": "Active versioning settings."
+    },
+    {
+      "key": "VersionGuardConfig.manifest",
+      "type": "ManifestConfig",
+      "description": "Version source manifest settings.",
+      "default": "`{ source: 'auto' }`"
+    },
+    {
+      "key": "VersionGuardConfig.sync",
+      "type": "SyncConfig",
+      "description": "Synchronization settings for mirrored version strings."
+    },
+    {
+      "key": "VersionGuardConfig.changelog",
+      "type": "ChangelogConfig",
+      "description": "Changelog validation settings."
+    },
+    {
+      "key": "VersionGuardConfig.git",
+      "type": "GitConfig",
+      "description": "Git enforcement settings."
+    },
+    {
+      "key": "VersionGuardConfig.ignore",
+      "type": "string[]",
+      "description": "Files or patterns excluded from validation."
+    },
+    {
+      "key": "InitOptions.cwd",
+      "type": "string",
+      "description": "Working directory path."
+    },
+    {
+      "key": "InitOptions.type",
+      "type": "\"semver\" | \"calver\" | undefined",
+      "description": "Versioning type (semver or calver)."
+    },
+    {
+      "key": "InitOptions.format",
+      "type": "string | undefined",
+      "description": "CalVer format string."
+    },
+    {
+      "key": "InitOptions.manifest",
+      "type": "string | undefined",
+      "description": "Manifest source type."
+    },
+    {
+      "key": "InitOptions.hooks",
+      "type": "boolean | undefined",
+      "description": "Whether to install git hooks."
+    },
+    {
+      "key": "InitOptions.changelog",
+      "type": "boolean | undefined",
+      "description": "Whether to enable changelog validation."
+    },
+    {
+      "key": "InitOptions.yes",
+      "type": "boolean | undefined",
+      "description": "Accept defaults without prompting."
+    },
+    {
+      "key": "InitOptions.force",
+      "type": "boolean | undefined",
+      "description": "Overwrite existing config."
+    }
+  ]
+}

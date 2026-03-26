@@ -20,13 +20,21 @@ import type { VersionGuardConfig } from './types';
  * @since 0.3.0
  */
 export interface InitOptions {
+  /** Working directory path. */
   cwd: string;
+  /** Versioning type (semver or calver). */
   type?: 'semver' | 'calver';
+  /** CalVer format string. */
   format?: string;
+  /** Manifest source type. */
   manifest?: string;
+  /** Whether to install git hooks. */
   hooks?: boolean;
+  /** Whether to enable changelog validation. */
   changelog?: boolean;
+  /** Accept defaults without prompting. */
   yes?: boolean;
+  /** Overwrite existing config. */
   force?: boolean;
 }
 
@@ -39,6 +47,11 @@ export interface InitOptions {
  *
  * @param cwd - Project directory to initialize.
  * @returns The path to the created config file, or `null` if cancelled.
+ *
+ * @example
+ * ```ts
+ * const configPath = await runWizard(process.cwd());
+ * ```
  *
  * @public
  * @since 0.3.0
@@ -133,6 +146,11 @@ export async function runWizard(cwd: string): Promise<string | null> {
  *
  * @param options - Headless initialization options.
  * @returns The path to the created config file.
+ *
+ * @example
+ * ```ts
+ * const configPath = runHeadless({ cwd: process.cwd(), type: 'calver', format: 'YYYY.M.MICRO' });
+ * ```
  *
  * @public
  * @since 0.3.0

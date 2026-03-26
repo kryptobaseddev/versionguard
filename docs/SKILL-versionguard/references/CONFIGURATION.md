@@ -1,17 +1,42 @@
-# versionguard — Configuration Reference
+# @codluv/versionguard — Configuration Reference
+
+## `ManifestConfig`
+
+Configures the version source manifest.
+
+```typescript
+import type { ManifestConfig } from "@codluv/versionguard";
+
+const config: Partial<ManifestConfig> = {
+  // Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename.
+  source: { /* ... */ },
+  // Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml.
+  path: "...",
+  // Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.
+  regex: "...",
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `source` | `ManifestSourceType` | Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename. |
+| `path` | `string | undefined` | Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml. |
+| `regex` | `string | undefined` | Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string. |
 
 ## `CalVerConfig`
 
-Configures CalVer validation rules.    0.1.0
+Configures CalVer validation rules.
 
 ```typescript
-import type { CalVerConfig } from "versionguard";
+import type { CalVerConfig } from "@codluv/versionguard";
 
 const config: Partial<CalVerConfig> = {
   // Calendar format used when parsing and validating versions.
   format: { /* ... */ },
   // Rejects versions that point to a future date.
   preventFutureDates: true,
+  // Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens.
+  strictMutualExclusion: true,
 };
 ```
 
@@ -19,13 +44,14 @@ const config: Partial<CalVerConfig> = {
 |----------|------|-------------|
 | `format` | `CalVerFormat` | Calendar format used when parsing and validating versions. |
 | `preventFutureDates` | `boolean` | Rejects versions that point to a future date. |
+| `strictMutualExclusion` | `boolean | undefined` | Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens. |
 
 ## `SyncConfig`
 
-Configures files and patterns that should stay in sync with the canonical version.    0.1.0
+Configures files and patterns that should stay in sync with the canonical version.
 
 ```typescript
-import type { SyncConfig } from "versionguard";
+import type { SyncConfig } from "@codluv/versionguard";
 
 const config: Partial<SyncConfig> = {
   // File globs or paths that should be scanned for version updates.
@@ -42,10 +68,10 @@ const config: Partial<SyncConfig> = {
 
 ## `ChangelogConfig`
 
-Controls changelog validation behavior.    0.1.0
+Controls changelog validation behavior.
 
 ```typescript
-import type { ChangelogConfig } from "versionguard";
+import type { ChangelogConfig } from "@codluv/versionguard";
 
 const config: Partial<ChangelogConfig> = {
   // Enables changelog validation.
@@ -68,10 +94,10 @@ const config: Partial<ChangelogConfig> = {
 
 ## `GitHooksConfig`
 
-Toggles each supported git hook integration.    0.1.0
+Toggles each supported git hook integration.
 
 ```typescript
-import type { GitHooksConfig } from "versionguard";
+import type { GitHooksConfig } from "@codluv/versionguard";
 
 const config: Partial<GitHooksConfig> = {
   // Enables validation during the `pre-commit` hook.
@@ -91,10 +117,10 @@ const config: Partial<GitHooksConfig> = {
 
 ## `GitConfig`
 
-Configures git-related enforcement.    0.1.0
+Configures git-related enforcement.
 
 ```typescript
-import type { GitConfig } from "versionguard";
+import type { GitConfig } from "@codluv/versionguard";
 
 const config: Partial<GitConfig> = {
   // Hook toggles used by the CLI and validation workflow.
@@ -111,14 +137,16 @@ const config: Partial<GitConfig> = {
 
 ## `VersioningConfig`
 
-Configures the active versioning mode.    0.1.0
+Configures the active versioning mode.
 
 ```typescript
-import type { VersioningConfig } from "versionguard";
+import type { VersioningConfig } from "@codluv/versionguard";
 
 const config: Partial<VersioningConfig> = {
   // Versioning strategy used for the project.
   type: { /* ... */ },
+  // Scheme-level validation rules applied regardless of versioning type.
+  schemeRules: { /* ... */ },
   // CalVer-specific settings when `type` is `'calver'`.
   calver: { /* ... */ },
 };
@@ -127,18 +155,21 @@ const config: Partial<VersioningConfig> = {
 | Property | Type | Description |
 |----------|------|-------------|
 | `type` | `VersioningType` | Versioning strategy used for the project. |
+| `schemeRules` | `SchemeRules | undefined` | Scheme-level validation rules applied regardless of versioning type. |
 | `calver` | `CalVerConfig | undefined` | CalVer-specific settings when `type` is `'calver'`. |
 
 ## `VersionGuardConfig`
 
-Top-level configuration consumed by versionguard.    0.1.0
+Top-level configuration consumed by versionguard.
 
 ```typescript
-import type { VersionGuardConfig } from "versionguard";
+import type { VersionGuardConfig } from "@codluv/versionguard";
 
 const config: Partial<VersionGuardConfig> = {
   // Active versioning settings.
   versioning: { /* ... */ },
+  // Version source manifest settings.
+  manifest: { /* ... */ },
   // Synchronization settings for mirrored version strings.
   sync: { /* ... */ },
   // Changelog validation settings.
@@ -153,6 +184,7 @@ const config: Partial<VersionGuardConfig> = {
 | Property | Type | Description |
 |----------|------|-------------|
 | `versioning` | `VersioningConfig` | Active versioning settings. |
+| `manifest` | `ManifestConfig` | Version source manifest settings. |
 | `sync` | `SyncConfig` | Synchronization settings for mirrored version strings. |
 | `changelog` | `ChangelogConfig` | Changelog validation settings. |
 | `git` | `GitConfig` | Git enforcement settings. |

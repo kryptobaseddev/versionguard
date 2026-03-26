@@ -23,7 +23,7 @@ When you consume the package, these map to the main `versionguard` entrypoint an
 
 ## How It Works
 
-versionguard processes your TypeScript source with a single AST traversal, extracting TSDoc comments and type information to generate documentation.
+@codluv/versionguard processes your TypeScript source with a single AST traversal, extracting TSDoc comments and type information to generate documentation.
 
 {/* FORGE:AUTO-END how-it-works */}
 
@@ -31,34 +31,47 @@ versionguard processes your TypeScript source with a single AST traversal, extra
 
 ## Key Abstractions
 
-- **`VersioningType`** — Supported versioning strategies.    0.1.0
-- **`CalVerFormat`** — Supported calendar version string layouts.    0.1.0
-- **`CalVerConfig`** — Configures CalVer validation rules.    0.1.0
-- **`SyncPattern`** — Describes a search-and-replace pattern used during version synchronization.    0.1.0
-- **`SyncConfig`** — Configures files and patterns that should stay in sync with the canonical version.    0.1.0
-- **`ChangelogConfig`** — Controls changelog validation behavior.    0.1.0
-- **`GitHooksConfig`** — Toggles each supported git hook integration.    0.1.0
-- **`GitConfig`** — Configures git-related enforcement.    0.1.0
-- **`VersioningConfig`** — Configures the active versioning mode.    0.1.0
-- **`VersionGuardConfig`** — Top-level configuration consumed by versionguard.    0.1.0
-- **`SemVer`** — Parsed semantic version components.    0.1.0
-- **`CalVer`** — Parsed calendar version components.    0.1.0
-- **`ParsedSemVer`** — Parsed semantic version result wrapper.    0.1.0
-- **`ParsedCalVer`** — Parsed calendar version result wrapper.    0.1.0
-- **`ParsedVersion`** — Union of supported parsed version payloads.    0.1.0
-- **`ValidationError`** — Describes a single validation problem.    0.1.0
-- **`ValidationResult`** — Result returned by version parsing and validation helpers.    0.1.0
-- **`SyncChange`** — Describes a single in-file version replacement.    0.1.0
-- **`SyncResult`** — Reports the result of synchronizing a single file.    0.1.0
-- **`VersionMismatch`** — Reports a discovered version mismatch.    0.1.0
-- **`FullValidationResult`** — Combined result from a full project validation run.    0.1.0
-- **`DoctorReport`** — Reports whether a project is ready to pass VersionGuard checks.     0.1.0
-- **`ParsedCalVerFormat`** — Parsed token layout for a supported CalVer format string.    0.1.0
-- **`ChangelogValidationResult`** — Describes the outcome of validating a changelog file.    0.1.0
-- **`Suggestion`** — Feedback entry point exports for suggestion and guidance helpers.     0.1.0
-- **`FeedbackResult`** — Aggregates validation errors with suggested next steps.    0.1.0
-- **`PackageJson`** — Minimal shape of a `package.json` document used by VersionGuard.    0.1.0
-- **`FixResult`** — Fix entry point exports for auto-remediation helpers.     0.1.0
-- **`TagInfo`** — Tag entry point exports for release-tag management helpers.     0.1.0
+- **`VersioningType`** — Supported versioning strategies.
+- **`ManifestSourceType`** — Supported manifest source types for version extraction.
+- **`ManifestConfig`** — Configures the version source manifest.
+- **`CalVerToken`** — Valid CalVer token names for building format strings.
+- **`CalVerFormat`** — A CalVer format string composed of dot-separated tokens.
+- **`SchemeRules`** — Configures scheme-level validation rules applied regardless of versioning type.
+- **`CalVerConfig`** — Configures CalVer validation rules.
+- **`SyncPattern`** — Describes a search-and-replace pattern used during version synchronization.
+- **`SyncConfig`** — Configures files and patterns that should stay in sync with the canonical version.
+- **`ChangelogConfig`** — Controls changelog validation behavior.
+- **`GitHooksConfig`** — Toggles each supported git hook integration.
+- **`GitConfig`** — Configures git-related enforcement.
+- **`VersioningConfig`** — Configures the active versioning mode.
+- **`VersionGuardConfig`** — Top-level configuration consumed by versionguard.
+- **`SemVer`** — Parsed semantic version components.
+- **`CalVer`** — Parsed calendar version components.
+- **`ParsedSemVer`** — Parsed semantic version result wrapper.
+- **`ParsedCalVer`** — Parsed calendar version result wrapper.
+- **`ParsedVersion`** — Union of supported parsed version payloads.
+- **`ValidationError`** — Describes a single validation problem.
+- **`ValidationResult`** — Result returned by version parsing and validation helpers.
+- **`SyncChange`** — Describes a single in-file version replacement.
+- **`SyncResult`** — Reports the result of synchronizing a single file.
+- **`VersionMismatch`** — Reports a discovered version mismatch.
+- **`FullValidationResult`** — Combined result from a full project validation run.
+- **`DoctorReport`** — Reports whether a project is ready to pass VersionGuard checks.
+- **`ParsedCalVerFormat`** — Parsed token layout for a supported CalVer format string.
+- **`ChangelogValidationResult`** — Describes the outcome of validating a changelog file.
+- **`Suggestion`** — Feedback entry point exports for suggestion and guidance helpers.
+- **`FeedbackResult`** — Aggregates validation errors with suggested next steps.
+- **`VersionSourceProvider`** — Abstraction for reading and writing a version string from any manifest format.
+- **`PackageJsonValue`** — JSON-compatible scalar, array, or object value used by package metadata.
+- **`PackageJsonArray`** — Recursive array type used for arbitrary JSON-compatible package values.
+- **`PackageJsonObject`** — Recursive object type used for arbitrary JSON-compatible package values.
+- **`PackageJson`** — Minimal shape of a `package.json` document used by VersionGuard.
+- **`FixResult`** — Fix entry point exports for auto-remediation helpers.
+- **`GuardWarning`** — Describes a single guard finding.
+- **`GuardReport`** — Result of a full guard check pass.
+- **`HelpTopic`** — Embedded help topics for the CLI help system.
+- **`ProjectRootResult`** — Result of project root detection.
+- **`TagInfo`** — Tag entry point exports for release-tag management helpers.
+- **`InitOptions`** — Options for headless (non-interactive) initialization.
 
 {/* FORGE:AUTO-END key-abstractions */}

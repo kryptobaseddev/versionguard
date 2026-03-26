@@ -337,6 +337,7 @@ export function parse(version: string, calverFormat: CalVerFormat): CalVer | nul
  * @param version - Version string to validate.
  * @param calverFormat - Format expected for the version string.
  * @param preventFutureDates - Whether future dates should be reported as errors.
+ * @param schemeRules - Optional scheme rules for modifier validation and segment count warnings.
  * @returns A validation result containing any discovered errors and the parsed version on success.
  *
  * @example

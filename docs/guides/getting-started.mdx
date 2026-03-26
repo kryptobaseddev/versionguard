@@ -12,10 +12,10 @@ Key entry-point functions to get started with the library.
 
 ### getVersionFeedback(version, config, previousVersion)
 
-Generates actionable feedback for a version string.    0.1.0
+Generates actionable feedback for a version string.
 
 ```typescript
-(version: string, config: VersionGuardConfig, previousVersion?: string | undefined) => FeedbackResult
+(version: string, config: VersionGuardConfig, previousVersion?: string) => FeedbackResult
 ```
 
 **Example**
@@ -27,7 +27,7 @@ console.log(feedbackResult.valid);
 
 ### getSyncFeedback(file, foundVersion, expectedVersion)
 
-Generates suggestions for version sync mismatches in a file.    0.1.0
+Generates suggestions for version sync mismatches in a file.
 
 ```typescript
 (file: string, foundVersion: string, expectedVersion: string) => Suggestion[]
@@ -42,10 +42,10 @@ console.log(suggestions[0]?.message);
 
 ### getChangelogFeedback(hasEntry, version, latestChangelogVersion)
 
-Generates suggestions for changelog-related validation issues.    0.1.0
+Generates suggestions for changelog-related validation issues.
 
 ```typescript
-(hasEntry: boolean, version: string, latestChangelogVersion?: string | undefined) => Suggestion[]
+(hasEntry: boolean, version: string, latestChangelogVersion?: string) => Suggestion[]
 ```
 
 **Example**
@@ -57,7 +57,7 @@ console.log(suggestions.length > 0);
 
 ### getTagFeedback(tagVersion, packageVersion, hasUnsyncedFiles)
 
-Generates suggestions for git tag mismatches.    0.1.0
+Generates suggestions for git tag mismatches.
 
 ```typescript
 (tagVersion: string, packageVersion: string, hasUnsyncedFiles: boolean) => Suggestion[]
@@ -70,24 +70,28 @@ const suggestions = getTagFeedback('v1.2.2', '1.2.3', true);
 console.log(suggestions.map((item) => item.message));
 ```
 
-### fixPackageVersion(targetVersion, cwd)
+### fixPackageVersion(targetVersion, cwd, manifest)
 
-Updates the `package.json` version field when needed.    0.1.0
+Updates the `package.json` version field when needed.
 
 ```typescript
-(targetVersion: string, cwd?: string) => FixResult
+(targetVersion: string, cwd?: string, manifest?: ManifestConfig) => FixResult
 ```
 
 **Example**
 
 ```typescript
+// Fix using legacy package.json fallback
 const result = fixPackageVersion('1.2.3', process.cwd());
 console.log(result.fixed);
+
+// Fix using a configured manifest source
+const result2 = fixPackageVersion('1.2.3', process.cwd(), { source: 'Cargo.toml' });
 ```
 
 ### fixSyncIssues(config, cwd)
 
-Synchronizes configured files to the package version.    0.1.0
+Synchronizes configured files to the package version.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => FixResult[]
@@ -102,7 +106,7 @@ console.log(results.length);
 
 ### fixChangelog(version, config, cwd)
 
-Ensures the changelog contains an entry for a version.    0.1.0
+Ensures the changelog contains an entry for a version.
 
 ```typescript
 (version: string, config: VersionGuardConfig, cwd?: string) => FixResult
@@ -117,10 +121,10 @@ console.log(result.message);
 
 ### fixAll(config, targetVersion, cwd)
 
-Runs all configured auto-fix operations.    0.1.0
+Runs all configured auto-fix operations.
 
 ```typescript
-(config: VersionGuardConfig, targetVersion?: string | undefined, cwd?: string) => FixResult[]
+(config: VersionGuardConfig, targetVersion?: string, cwd?: string) => FixResult[]
 ```
 
 **Example**
@@ -132,10 +136,10 @@ console.log(results.some((result) => result.fixed));
 
 ### suggestNextVersion(currentVersion, config, changeType)
 
-Suggests candidate next versions for a release.    0.1.0
+Suggests candidate next versions for a release.
 
 ```typescript
-(currentVersion: string, config: VersionGuardConfig, changeType?: "major" | "minor" | "patch" | "auto" | undefined) => { version: string; reason: string; }[]
+(currentVersion: string, config: VersionGuardConfig, changeType?: "major" | "minor" | "patch" | "auto") => { version: string; reason: string; }[]
 ```
 
 **Example**
@@ -145,9 +149,41 @@ const suggestions = suggestNextVersion('1.2.3', config, 'minor');
 console.log(suggestions[0]?.version);
 ```
 
+### getTopicIndex()
+
+Returns the topic index listing.
+
+```typescript
+() => string
+```
+
+### getTopicContent(topicName)
+
+Returns help content for a specific topic.
+
+```typescript
+(topicName: string) => string | null
+```
+
+### getLlmContext()
+
+Returns the full API context for LLM consumption.
+
+```typescript
+() => string
+```
+
+### getHelpJson()
+
+Returns the topic index as a JSON structure for machine parsing.
+
+```typescript
+(topicName?: string) => object
+```
+
 ### getLatestTag(cwd)
 
-Returns the most recent reachable git tag for a repository.    0.1.0
+Returns the most recent reachable git tag for a repository.
 
 ```typescript
 (cwd?: string) => TagInfo | null
@@ -165,7 +201,7 @@ if (latestTag) {
 
 ### getAllTags(cwd)
 
-Lists all tags in a repository.    0.1.0
+Lists all tags in a repository.
 
 ```typescript
 (cwd?: string) => TagInfo[]
@@ -180,10 +216,10 @@ console.log(tags.map((tag) => tag.name));
 
 ### createTag(version, message, autoFix, config, cwd)
 
-Creates a release tag and optionally fixes version state first.    0.1.0
+Creates a release tag and optionally fixes version state first.
 
 ```typescript
-(version: string, message?: string | undefined, autoFix?: boolean, config?: VersionGuardConfig | undefined, cwd?: string) => { success: boolean; message: string; actions: string[]; }
+(version: string, message?: string, autoFix?: boolean, config?: VersionGuardConfig, cwd?: string) => { success: boolean; message: string; actions: string[]; }
 ```
 
 **Example**
@@ -198,7 +234,7 @@ if (!result.success) {
 
 ### handlePostTag(config, cwd)
 
-Runs post-tag validation and sync checks.    0.1.0
+Runs post-tag validation and sync checks.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => { success: boolean; message: string; actions: string[]; }
@@ -213,10 +249,10 @@ console.log(result.success);
 
 ### validateTagForPush(tagName, cwd)
 
-Validates that a local tag is safe to push to the default remote.    0.1.0
+Validates that a local tag is safe to push to the default remote.
 
 ```typescript
-(tagName: string, cwd?: string) => { valid: boolean; message: string; fix?: string | undefined; }
+(tagName: string, cwd?: string) => { valid: boolean; message: string; fix?: string; }
 ```
 
 **Example**
@@ -228,7 +264,7 @@ console.log(result.valid);
 
 ### suggestTagMessage(version, cwd)
 
-Suggests an annotated tag message from changelog content.    0.1.0
+Suggests an annotated tag message from changelog content.
 
 ```typescript
 (version: string, cwd?: string) => string
@@ -243,7 +279,7 @@ console.log(message);
 
 ### validateVersion(version, config)
 
-Validates a version string against the active versioning strategy.    0.1.0
+Validates a version string against the active versioning strategy.
 
 ```typescript
 (version: string, config: VersionGuardConfig) => ValidationResult
@@ -259,7 +295,7 @@ const result = validateVersion('1.2.3', getDefaultConfig());
 
 ### validate(config, cwd)
 
-Validates the current project state against the supplied configuration.    0.1.0
+Validates the current project state against the supplied configuration.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => FullValidationResult
@@ -275,7 +311,7 @@ const result = validate(getDefaultConfig(), process.cwd());
 
 ### doctor(config, cwd)
 
-Runs an extended readiness check for a project.    0.1.0
+Runs an extended readiness check for a project.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => DoctorReport
@@ -291,7 +327,7 @@ const report = doctor(getDefaultConfig(), process.cwd());
 
 ### sync(config, cwd)
 
-Synchronizes configured files to the current package version.    0.1.0
+Synchronizes configured files to the current package version.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => void
@@ -307,10 +343,10 @@ sync(getDefaultConfig(), process.cwd());
 
 ### canBump(currentVersion, newVersion, config)
 
-Determines whether a project can move from one version to another.    0.1.0
+Determines whether a project can move from one version to another.
 
 ```typescript
-(currentVersion: string, newVersion: string, config: VersionGuardConfig) => { canBump: boolean; error?: string | undefined; }
+(currentVersion: string, newVersion: string, config: VersionGuardConfig) => { canBump: boolean; error?: string; }
 ```
 
 **Example**

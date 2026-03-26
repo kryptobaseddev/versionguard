@@ -1,9 +1,9 @@
 ---
 title: Configuration
-description: Configuration reference for versionguard
+description: Configuration reference for @codluv/versionguard
 ---
 
-Configuration reference for **versionguard**.
+Configuration reference for **@codluv/versionguard**.
 
 ## forge-ts.config.ts
 
@@ -18,11 +18,12 @@ export default defineConfig({
 });
 ```
 
-## `CalVerConfig`
+## `ManifestConfig`
 
-Configures CalVer validation rules.    0.1.0
+Configures the version source manifest.
 
-| Property             | Type           | Required | Description                                                |
-| -------------------- | -------------- | -------- | ---------------------------------------------------------- |
-| `format`             | `CalVerFormat` | Yes      | Calendar format used when parsing and validating versions. |
-| `preventFutureDates` | `boolean`      | Yes      | Rejects versions that point to a future date.              |
+| Property | Type                  | Required | Description                                                                                                                                                                         |
+| -------- | --------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `source` | `ManifestSourceType`  | Yes      | Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename.                                                                          |
+| `path`   | `string \| undefined` | No       | Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml. |
+| `regex`  | `string \| undefined` | No       | Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.                                                                  |

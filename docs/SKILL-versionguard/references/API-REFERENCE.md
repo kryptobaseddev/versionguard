@@ -1,11 +1,55 @@
-# versionguard — API Reference
+# @codluv/versionguard — API Reference
 
 ## Table of Contents
 
 - [Functions](#functions)
 - [Types](#types)
+- [Classes](#classes)
+- [Constants](#constants)
 
 ## Functions
+
+### `getCalVerConfig`
+
+Extracts the CalVer config from a VersionGuard config, throwing if missing.
+
+```typescript
+(config: VersionGuardConfig) => CalVerConfig
+```
+
+**Parameters:**
+
+- `config` — The full VersionGuard configuration object.
+
+**Returns:** The validated CalVer configuration.
+
+```ts
+import { getCalVerConfig } from './types';
+
+const calver = getCalVerConfig(config);
+console.log(calver.format); // 'YYYY.MM.DD'
+```
+
+### `isValidCalVerFormat`
+
+Validates that a CalVer format string is composed of valid tokens and follows structural rules.
+
+```typescript
+(formatStr: string) => formatStr is CalVerFormat
+```
+
+**Parameters:**
+
+- `formatStr` — Format string to validate.
+
+**Returns:** `true` when the format is valid.
+
+```ts
+import { isValidCalVerFormat } from 'versionguard';
+
+isValidCalVerFormat('YYYY.MM.MICRO'); // true
+isValidCalVerFormat('INVALID');        // false
+```
 
 ### `parseFormat`
 
@@ -24,8 +68,8 @@ Breaks a CalVer format string into its component tokens.
 ```ts
 import { parseFormat } from 'versionguard';
 
-parseFormat('YYYY.MM.PATCH');
-// => { year: 'YYYY', month: 'MM', patch: 'PATCH' }
+parseFormat('YYYY.MM.MICRO');
+// => { year: 'YYYY', month: 'MM', counter: 'MICRO' }
 ```
 
 ### `getRegexForFormat`
@@ -67,7 +111,7 @@ Parses a CalVer string using the supplied format.
 ```ts
 import { parse } from 'versionguard';
 
-parse('2026.03.21', 'YYYY.0M.0D')?.month;
+parse('2026.3.0', 'YYYY.M.MICRO')?.month;
 // => 3
 ```
 
@@ -76,7 +120,7 @@ parse('2026.03.21', 'YYYY.0M.0D')?.month;
 Validates a CalVer string against formatting and date rules.
 
 ```typescript
-(version: string, calverFormat: CalVerFormat, preventFutureDates?: boolean) => ValidationResult
+(version: string, calverFormat: CalVerFormat, preventFutureDates?: boolean, schemeRules?: SchemeRules) => ValidationResult
 ```
 
 **Parameters:**
@@ -84,13 +128,14 @@ Validates a CalVer string against formatting and date rules.
 - `version` — Version string to validate.
 - `calverFormat` — Format expected for the version string.
 - `preventFutureDates` — Whether future dates should be reported as errors.
+- `schemeRules` — Optional scheme rules for modifier validation and segment count warnings.
 
 **Returns:** A validation result containing any discovered errors and the parsed version on success.
 
 ```ts
 import { validate } from 'versionguard';
 
-validate('2026.03.21', 'YYYY.0M.0D', false).valid;
+validate('2026.3.0', 'YYYY.M.MICRO', false).valid;
 // => true
 ```
 
@@ -135,7 +180,7 @@ Creates the current CalVer string for a format.
 ```ts
 import { getCurrentVersion } from 'versionguard';
 
-getCurrentVersion('YYYY.MM.PATCH', new Date('2026-03-21T00:00:00Z'));
+getCurrentVersion('YYYY.M.MICRO', new Date('2026-03-21T00:00:00Z'));
 // => '2026.3.0'
 ```
 
@@ -158,7 +203,7 @@ Compares two CalVer strings using a shared format.
 ```ts
 import { compare } from 'versionguard';
 
-compare('2026.03.2', '2026.03.1', 'YYYY.MM.PATCH');
+compare('2026.3.2', '2026.3.1', 'YYYY.M.MICRO');
 // => 1
 ```
 
@@ -180,7 +225,7 @@ Increments a CalVer string.
 ```ts
 import { increment } from 'versionguard';
 
-increment('2026.03.1', 'YYYY.MM.PATCH');
+increment('2026.3.1', 'YYYY.M.MICRO');
 // => '2026.3.2'
 ```
 
@@ -202,13 +247,13 @@ Returns the most likely next CalVer candidates.
 ```ts
 import { getNextVersions } from 'versionguard';
 
-getNextVersions('2026.03.1', 'YYYY.MM.PATCH').length;
+getNextVersions('2026.3.1', 'YYYY.M.MICRO').length;
 // => 2
 ```
 
 ### `validateChangelog`
 
-Validates a changelog file for release readiness.    0.1.0
+Validates a changelog file for release readiness.
 
 ```typescript
 (changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean) => ChangelogValidationResult
@@ -231,7 +276,7 @@ const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true);
 
 ### `getLatestVersion`
 
-Gets the most recent released version from a changelog.    0.1.0
+Gets the most recent released version from a changelog.
 
 ```typescript
 (changelogPath: string) => string | null
@@ -251,7 +296,7 @@ const latest = getLatestVersion('CHANGELOG.md');
 
 ### `addVersionEntry`
 
-Inserts a new version entry beneath the `[Unreleased]` section.    0.1.0
+Inserts a new version entry beneath the `[Unreleased]` section.
 
 ```typescript
 (changelogPath: string, version: string, date?: string) => void
@@ -267,6 +312,49 @@ Inserts a new version entry beneath the `[Unreleased]` section.    0.1.0
 import { addVersionEntry } from 'versionguard';
 
 addVersionEntry('CHANGELOG.md', '1.2.0', '2026-03-21');
+```
+
+### `isChangesetMangled`
+
+Detects whether a changelog has been mangled by Changesets.
+
+```typescript
+(changelogPath: string) => boolean
+```
+
+**Parameters:**
+
+- `changelogPath` — Path to the changelog file.
+
+**Returns:** `true` when the changelog appears to be mangled by Changesets.
+
+```ts
+import { isChangesetMangled } from 'versionguard';
+
+if (isChangesetMangled('CHANGELOG.md')) {
+  fixChangesetMangling('CHANGELOG.md');
+}
+```
+
+### `fixChangesetMangling`
+
+Fixes a Changesets-mangled changelog into proper Keep a Changelog format.
+
+```typescript
+(changelogPath: string, date?: string) => boolean
+```
+
+**Parameters:**
+
+- `changelogPath` — Path to the changelog file to fix.
+- `date` — Release date in `YYYY-MM-DD` format.
+
+**Returns:** `true` when the file was modified, `false` when no fix was needed.
+
+```ts
+import { fixChangesetMangling } from 'versionguard';
+
+const fixed = fixChangesetMangling('CHANGELOG.md');
 ```
 
 ### `parse`
@@ -404,7 +492,7 @@ eq('1.2.3', '1.2.3');
 Increments a semantic version string by release type.
 
 ```typescript
-(version: string, release: "major" | "minor" | "patch", prerelease?: string | undefined) => string
+(version: string, release: "major" | "minor" | "patch", prerelease?: string) => string
 ```
 
 **Parameters:**
@@ -447,10 +535,10 @@ format(version);
 
 ### `getVersionFeedback`
 
-Generates actionable feedback for a version string.    0.1.0
+Generates actionable feedback for a version string.
 
 ```typescript
-(version: string, config: VersionGuardConfig, previousVersion?: string | undefined) => FeedbackResult
+(version: string, config: VersionGuardConfig, previousVersion?: string) => FeedbackResult
 ```
 
 **Parameters:**
@@ -468,7 +556,7 @@ console.log(feedbackResult.valid);
 
 ### `getSyncFeedback`
 
-Generates suggestions for version sync mismatches in a file.    0.1.0
+Generates suggestions for version sync mismatches in a file.
 
 ```typescript
 (file: string, foundVersion: string, expectedVersion: string) => Suggestion[]
@@ -489,10 +577,10 @@ console.log(suggestions[0]?.message);
 
 ### `getChangelogFeedback`
 
-Generates suggestions for changelog-related validation issues.    0.1.0
+Generates suggestions for changelog-related validation issues.
 
 ```typescript
-(hasEntry: boolean, version: string, latestChangelogVersion?: string | undefined) => Suggestion[]
+(hasEntry: boolean, version: string, latestChangelogVersion?: string) => Suggestion[]
 ```
 
 **Parameters:**
@@ -510,7 +598,7 @@ console.log(suggestions.length > 0);
 
 ### `getTagFeedback`
 
-Generates suggestions for git tag mismatches.    0.1.0
+Generates suggestions for git tag mismatches.
 
 ```typescript
 (tagVersion: string, packageVersion: string, hasUnsyncedFiles: boolean) => Suggestion[]
@@ -529,9 +617,115 @@ const suggestions = getTagFeedback('v1.2.2', '1.2.3', true);
 console.log(suggestions.map((item) => item.message));
 ```
 
+### `getNestedValue`
+
+Traverses a nested object using a dotted key path.
+
+```typescript
+(obj: Record<string, unknown>, dotPath: string) => unknown
+```
+
+**Parameters:**
+
+- `obj` — Object to traverse.
+- `dotPath` — Dot-separated key path (e.g. `'package.version'`).
+
+**Returns:** The value at the path, or `undefined` if any segment is missing.
+
+```ts
+import { getNestedValue } from './utils';
+
+const obj = { package: { version: '1.0.0' } };
+const version = getNestedValue(obj, 'package.version'); // '1.0.0'
+```
+
+### `setNestedValue`
+
+Sets a value at a dotted key path, throwing if intermediate segments are missing.
+
+```typescript
+(obj: Record<string, unknown>, dotPath: string, value: unknown) => void
+```
+
+**Parameters:**
+
+- `obj` — Object to mutate.
+- `dotPath` — Dot-separated key path.
+- `value` — Value to set at the final key.
+
+```ts
+import { setNestedValue } from './utils';
+
+const obj = { package: { version: '1.0.0' } };
+setNestedValue(obj, 'package.version', '2.0.0');
+```
+
+### `escapeRegExp`
+
+Escapes special regex characters in a string for safe use in `new RegExp()`.
+
+```typescript
+(value: string) => string
+```
+
+**Parameters:**
+
+- `value` — Raw string to escape.
+
+**Returns:** The escaped string safe for embedding in a `RegExp` constructor.
+
+```ts
+import { escapeRegExp } from './utils';
+
+const escaped = escapeRegExp('file.txt'); // 'file\\.txt'
+```
+
+### `resolveVersionSource`
+
+Resolves the version source provider for a project.
+
+```typescript
+(config: ManifestConfig, cwd?: string) => VersionSourceProvider
+```
+
+**Parameters:**
+
+- `config` — Manifest configuration from `.versionguard.yml`.
+- `cwd` — Project directory to scan.
+
+**Returns:** The resolved version source provider.
+
+```ts
+import { resolveVersionSource } from './resolve';
+
+const provider = resolveVersionSource({ source: 'auto' }, process.cwd());
+const version = provider.getVersion(process.cwd());
+```
+
+### `detectManifests`
+
+Detects all manifest files present in a project directory.
+
+```typescript
+(cwd?: string) => ManifestSourceType[]
+```
+
+**Parameters:**
+
+- `cwd` — Project directory to scan.
+
+**Returns:** Array of detected manifest source types.
+
+```ts
+import { detectManifests } from './resolve';
+
+const manifests = detectManifests(process.cwd());
+// ['package.json', 'Cargo.toml']
+```
+
 ### `getPackageJsonPath`
 
-Gets the `package.json` path for a project directory.    0.1.0
+Gets the `package.json` path for a project directory.
 
 ```typescript
 (cwd?: string) => string
@@ -551,7 +745,7 @@ const packagePath = getPackageJsonPath(process.cwd());
 
 ### `readPackageJson`
 
-Reads and parses a project's `package.json` file.    0.1.0
+Reads and parses a project's `package.json` file.
 
 ```typescript
 (cwd?: string) => PackageJson
@@ -571,7 +765,7 @@ const pkg = readPackageJson(process.cwd());
 
 ### `writePackageJson`
 
-Writes a `package.json` document back to disk.    0.1.0
+Writes a `package.json` document back to disk.
 
 ```typescript
 (pkg: PackageJson, cwd?: string) => void
@@ -591,46 +785,78 @@ writePackageJson(pkg, process.cwd());
 
 ### `getPackageVersion`
 
-Gets the version string from `package.json`.    0.1.0
+Gets the version string from the project manifest.  When a `manifest` config is provided, uses the configured version source provider (auto-detection or explicit). Falls back to `package.json` for backwards compatibility when no config is provided.
 
 ```typescript
-(cwd?: string) => string
+(cwd?: string, manifest?: ManifestConfig) => string
 ```
 
 **Parameters:**
 
-- `cwd` — Project directory containing `package.json`.
+- `cwd` — Project directory containing the manifest.
+- `manifest` — Optional manifest configuration for language-agnostic support.
 
-**Returns:** The package version string.
+**Returns:** The project version string.
 
 ```ts
 import { getPackageVersion } from 'versionguard';
 
+// Read from package.json (legacy fallback)
 const version = getPackageVersion(process.cwd());
+
+// Read from a configured manifest source
+const versionAlt = getPackageVersion(process.cwd(), { source: 'Cargo.toml' });
 ```
 
 ### `setPackageVersion`
 
-Sets the version field in `package.json`.    0.1.0
+Sets the version field in the project manifest.  When a `manifest` config is provided, uses the configured version source provider. Falls back to `package.json` for backwards compatibility when no config is provided.
 
 ```typescript
-(version: string, cwd?: string) => void
+(version: string, cwd?: string, manifest?: ManifestConfig) => void
 ```
 
 **Parameters:**
 
 - `version` — Version string to persist.
-- `cwd` — Project directory containing `package.json`.
+- `cwd` — Project directory containing the manifest.
+- `manifest` — Optional manifest configuration for language-agnostic support.
 
 ```ts
 import { setPackageVersion } from 'versionguard';
 
+// Write to package.json (legacy fallback)
 setPackageVersion('1.2.3', process.cwd());
+
+// Write to a configured manifest source
+setPackageVersion('1.2.3', process.cwd(), { source: 'Cargo.toml' });
+```
+
+### `getVersionSource`
+
+Resolves the version source provider for a project.
+
+```typescript
+(manifest: ManifestConfig, cwd?: string) => VersionSourceProvider
+```
+
+**Parameters:**
+
+- `manifest` — Manifest configuration.
+- `cwd` — Project directory.
+
+**Returns:** The resolved provider instance.
+
+```ts
+import { getVersionSource } from 'versionguard';
+
+const source = getVersionSource({ source: 'package.json' }, process.cwd());
+const version = source.getVersion(process.cwd());
 ```
 
 ### `syncVersion`
 
-Synchronizes configured files to a single version string.    0.1.0
+Synchronizes configured files to a single version string.
 
 ```typescript
 (version: string, config: SyncConfig, cwd?: string) => SyncResult[]
@@ -652,7 +878,7 @@ const results = syncVersion('1.2.3', getDefaultConfig().sync, process.cwd());
 
 ### `syncFile`
 
-Synchronizes a single file to a target version.    0.1.0
+Synchronizes a single file to a target version.
 
 ```typescript
 (filePath: string, version: string, patterns: SyncPattern[]) => SyncResult
@@ -674,7 +900,7 @@ const result = syncFile('README.md', '1.2.3', getDefaultConfig().sync.patterns);
 
 ### `checkHardcodedVersions`
 
-Checks configured files for hardcoded version mismatches.    0.1.0
+Checks configured files for hardcoded version mismatches.
 
 ```typescript
 (expectedVersion: string, config: SyncConfig, ignorePatterns: string[], cwd?: string) => VersionMismatch[]
@@ -702,27 +928,32 @@ const mismatches = checkHardcodedVersions(
 
 ### `fixPackageVersion`
 
-Updates the `package.json` version field when needed.    0.1.0
+Updates the `package.json` version field when needed.
 
 ```typescript
-(targetVersion: string, cwd?: string) => FixResult
+(targetVersion: string, cwd?: string, manifest?: ManifestConfig) => FixResult
 ```
 
 **Parameters:**
 
 - `targetVersion` — Version that should be written to `package.json`.
 - `cwd` — Repository directory containing `package.json`.
+- `manifest` — Optional manifest configuration for language-agnostic support.
 
 **Returns:** The result of the package version fix attempt.
 
 ```typescript
+// Fix using legacy package.json fallback
 const result = fixPackageVersion('1.2.3', process.cwd());
 console.log(result.fixed);
+
+// Fix using a configured manifest source
+const result2 = fixPackageVersion('1.2.3', process.cwd(), { source: 'Cargo.toml' });
 ```
 
 ### `fixSyncIssues`
 
-Synchronizes configured files to the package version.    0.1.0
+Synchronizes configured files to the package version.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => FixResult[]
@@ -742,7 +973,7 @@ console.log(results.length);
 
 ### `fixChangelog`
 
-Ensures the changelog contains an entry for a version.    0.1.0
+Ensures the changelog contains an entry for a version.
 
 ```typescript
 (version: string, config: VersionGuardConfig, cwd?: string) => FixResult
@@ -763,10 +994,10 @@ console.log(result.message);
 
 ### `fixAll`
 
-Runs all configured auto-fix operations.    0.1.0
+Runs all configured auto-fix operations.
 
 ```typescript
-(config: VersionGuardConfig, targetVersion?: string | undefined, cwd?: string) => FixResult[]
+(config: VersionGuardConfig, targetVersion?: string, cwd?: string) => FixResult[]
 ```
 
 **Parameters:**
@@ -784,10 +1015,10 @@ console.log(results.some((result) => result.fixed));
 
 ### `suggestNextVersion`
 
-Suggests candidate next versions for a release.    0.1.0
+Suggests candidate next versions for a release.
 
 ```typescript
-(currentVersion: string, config: VersionGuardConfig, changeType?: "major" | "minor" | "patch" | "auto" | undefined) => { version: string; reason: string; }[]
+(currentVersion: string, config: VersionGuardConfig, changeType?: "major" | "minor" | "patch" | "auto") => { version: string; reason: string; }[]
 ```
 
 **Parameters:**
@@ -805,7 +1036,7 @@ console.log(suggestions[0]?.version);
 
 ### `installHooks`
 
-Installs VersionGuard-managed Git hooks in a repository.    0.1.0
+Installs VersionGuard-managed Git hooks in a repository.
 
 ```typescript
 (config: GitConfig, cwd?: string) => void
@@ -824,7 +1055,7 @@ installHooks(getDefaultConfig().git, process.cwd());
 
 ### `uninstallHooks`
 
-Removes VersionGuard-managed Git hooks from a repository.    0.1.0
+Removes VersionGuard-managed Git hooks from a repository.
 
 ```typescript
 (cwd?: string) => void
@@ -842,7 +1073,7 @@ uninstallHooks(process.cwd());
 
 ### `findGitDir`
 
-Finds the nearest `.git` directory by walking up from a starting directory.    0.1.0
+Finds the nearest `.git` directory by walking up from a starting directory.
 
 ```typescript
 (cwd: string) => string | null
@@ -862,7 +1093,7 @@ const gitDir = findGitDir(process.cwd());
 
 ### `areHooksInstalled`
 
-Checks whether all VersionGuard-managed hooks are installed.    0.1.0
+Checks whether all VersionGuard-managed hooks are installed.
 
 ```typescript
 (cwd?: string) => boolean
@@ -882,10 +1113,10 @@ const installed = areHooksInstalled(process.cwd());
 
 ### `generateHookScript`
 
-Generates the shell script content for a Git hook.    0.1.0
+Generates the shell script content for a Git hook.
 
 ```typescript
-(hookName: "pre-commit" | "pre-push" | "post-tag") => string
+(hookName: (typeof HOOK_NAMES)[number]) => string
 ```
 
 **Parameters:**
@@ -900,9 +1131,156 @@ import { generateHookScript } from 'versionguard';
 const script = generateHookScript('pre-commit');
 ```
 
+### `checkHooksPathOverride`
+
+Checks whether git hooks have been redirected away from the repository.
+
+```typescript
+(cwd: string) => GuardWarning | null
+```
+
+**Parameters:**
+
+- `cwd` — Repository directory to inspect.
+
+**Returns:** A guard warning when a hooksPath override is detected.
+
+```ts
+import { checkHooksPathOverride } from './guard';
+
+const warning = checkHooksPathOverride(process.cwd());
+if (warning) console.warn(warning.message);
+```
+
+### `checkHuskyBypass`
+
+Checks whether the HUSKY environment variable is disabling hooks.
+
+```typescript
+() => GuardWarning | null
+```
+
+**Returns:** A guard warning when the HUSKY bypass is detected.
+
+```ts
+import { checkHuskyBypass } from './guard';
+
+const warning = checkHuskyBypass();
+if (warning) console.warn(warning.message);
+```
+
+### `checkHookIntegrity`
+
+Verifies that installed hook scripts match the expected content.
+
+```typescript
+(config: VersionGuardConfig, cwd: string) => GuardWarning[]
+```
+
+**Parameters:**
+
+- `config` — VersionGuard configuration that defines which hooks should exist.
+- `cwd` — Repository directory to inspect.
+
+**Returns:** Guard warnings for each hook that has been tampered with.
+
+```ts
+import { checkHookIntegrity } from './guard';
+
+const warnings = checkHookIntegrity(config, process.cwd());
+for (const w of warnings) console.warn(w.code, w.message);
+```
+
+### `checkEnforceHooksPolicy`
+
+Checks whether hooks are configured as required but not enforced.
+
+```typescript
+(config: VersionGuardConfig) => GuardWarning | null
+```
+
+**Parameters:**
+
+- `config` — VersionGuard configuration to inspect.
+
+**Returns:** A guard warning when hooks are enabled but not enforced.
+
+```ts
+import { checkEnforceHooksPolicy } from './guard';
+
+const warning = checkEnforceHooksPolicy(config);
+if (warning) console.warn(warning.message);
+```
+
+### `runGuardChecks`
+
+Runs all guard checks and returns a consolidated report.
+
+```typescript
+(config: VersionGuardConfig, cwd: string) => GuardReport
+```
+
+**Parameters:**
+
+- `config` — VersionGuard configuration.
+- `cwd` — Repository directory to inspect.
+
+**Returns:** A guard report with all findings.
+
+```ts
+import { runGuardChecks } from './guard';
+
+const report = runGuardChecks(config, process.cwd());
+if (!report.safe) console.error('Guard check failed:', report.warnings);
+```
+
+### `getTopicIndex`
+
+Returns the topic index listing.
+
+```typescript
+() => string
+```
+
+**Returns:** Formatted topic list for terminal display.
+
+### `getTopicContent`
+
+Returns help content for a specific topic.
+
+```typescript
+(topicName: string) => string | null
+```
+
+**Parameters:**
+
+- `topicName` — Topic name to look up.
+
+**Returns:** The topic content, or null if not found.
+
+### `getLlmContext`
+
+Returns the full API context for LLM consumption.
+
+```typescript
+() => string
+```
+
+**Returns:** The llms.txt content string.
+
+### `getHelpJson`
+
+Returns the topic index as a JSON structure for machine parsing.
+
+```typescript
+(topicName?: string) => object
+```
+
+**Returns:** JSON-serializable help structure.
+
 ### `getDefaultConfig`
 
-Returns a deep-cloned copy of the built-in VersionGuard configuration.    0.1.0
+Returns a deep-cloned copy of the built-in VersionGuard configuration.
 
 ```typescript
 () => VersionGuardConfig
@@ -918,7 +1296,7 @@ const config = getDefaultConfig();
 
 ### `findConfig`
 
-Finds the first supported VersionGuard config file in a directory.    0.1.0
+Finds the first supported VersionGuard config file in a directory.
 
 ```typescript
 (cwd?: string) => string | null
@@ -938,7 +1316,7 @@ const configPath = findConfig(process.cwd());
 
 ### `loadConfig`
 
-Loads a VersionGuard config file from disk.    0.1.0
+Loads a VersionGuard config file from disk.
 
 ```typescript
 (configPath: string) => VersionGuardConfig
@@ -958,7 +1336,7 @@ const config = loadConfig('.versionguard.yml');
 
 ### `getConfig`
 
-Resolves the active VersionGuard configuration for a project.    0.1.0
+Resolves the active VersionGuard configuration for a project.
 
 ```typescript
 (cwd?: string) => VersionGuardConfig
@@ -978,7 +1356,7 @@ const config = getConfig(process.cwd());
 
 ### `initConfig`
 
-Initializes a new VersionGuard config file in a project.    0.1.0
+Initializes a new VersionGuard config file in a project.
 
 ```typescript
 (cwd?: string) => string
@@ -996,9 +1374,54 @@ import { initConfig } from 'versionguard';
 const configPath = initConfig(process.cwd());
 ```
 
+### `findProjectRoot`
+
+Walks up from `startDir` to find the nearest project root.
+
+```typescript
+(startDir: string) => ProjectRootResult
+```
+
+**Parameters:**
+
+- `startDir` — Directory to start searching from.
+
+**Returns:** Detection result with the project root path and what was found.
+
+```ts
+import { findProjectRoot } from 'versionguard';
+
+const result = findProjectRoot(process.cwd());
+if (!result.found) {
+  console.log('Not in a project directory');
+}
+```
+
+### `formatNotProjectError`
+
+Formats a helpful error message when a command can't find a project.
+
+```typescript
+(cwd: string, command: string) => string
+```
+
+**Parameters:**
+
+- `cwd` — The directory that was checked.
+- `command` — The command that was attempted.
+
+**Returns:** A formatted, helpful error message.
+
+```ts
+import { formatNotProjectError } from 'versionguard';
+
+const msg = formatNotProjectError('/tmp/empty', 'validate');
+console.error(msg);
+```
+
 ### `getLatestTag`
 
-Returns the most recent reachable git tag for a repository.    0.1.0
+Returns the most recent reachable git tag for a repository.
 
 ```typescript
 (cwd?: string) => TagInfo | null
@@ -1020,7 +1443,7 @@ if (latestTag) {
 
 ### `getAllTags`
 
-Lists all tags in a repository.    0.1.0
+Lists all tags in a repository.
 
 ```typescript
 (cwd?: string) => TagInfo[]
@@ -1039,10 +1462,10 @@ console.log(tags.map((tag) => tag.name));
 
 ### `createTag`
 
-Creates a release tag and optionally fixes version state first.    0.1.0
+Creates a release tag and optionally fixes version state first.
 
 ```typescript
-(version: string, message?: string | undefined, autoFix?: boolean, config?: VersionGuardConfig | undefined, cwd?: string) => { success: boolean; message: string; actions: string[]; }
+(version: string, message?: string, autoFix?: boolean, config?: VersionGuardConfig, cwd?: string) => { success: boolean; message: string; actions: string[]; }
 ```
 
 **Parameters:**
@@ -1065,7 +1488,7 @@ if (!result.success) {
 
 ### `handlePostTag`
 
-Runs post-tag validation and sync checks.    0.1.0
+Runs post-tag validation and sync checks.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => { success: boolean; message: string; actions: string[]; }
@@ -1085,10 +1508,10 @@ console.log(result.success);
 
 ### `validateTagForPush`
 
-Validates that a local tag is safe to push to the default remote.    0.1.0
+Validates that a local tag is safe to push to the default remote.
 
 ```typescript
-(tagName: string, cwd?: string) => { valid: boolean; message: string; fix?: string | undefined; }
+(tagName: string, cwd?: string) => { valid: boolean; message: string; fix?: string; }
 ```
 
 **Parameters:**
@@ -1105,7 +1528,7 @@ console.log(result.valid);
 
 ### `suggestTagMessage`
 
-Suggests an annotated tag message from changelog content.    0.1.0
+Suggests an annotated tag message from changelog content.
 
 ```typescript
 (version: string, cwd?: string) => string
@@ -1125,7 +1548,7 @@ console.log(message);
 
 ### `validateVersion`
 
-Validates a version string against the active versioning strategy.    0.1.0
+Validates a version string against the active versioning strategy.
 
 ```typescript
 (version: string, config: VersionGuardConfig) => ValidationResult
@@ -1146,7 +1569,7 @@ const result = validateVersion('1.2.3', getDefaultConfig());
 
 ### `validate`
 
-Validates the current project state against the supplied configuration.    0.1.0
+Validates the current project state against the supplied configuration.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => FullValidationResult
@@ -1167,7 +1590,7 @@ const result = validate(getDefaultConfig(), process.cwd());
 
 ### `doctor`
 
-Runs an extended readiness check for a project.    0.1.0
+Runs an extended readiness check for a project.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => DoctorReport
@@ -1188,7 +1611,7 @@ const report = doctor(getDefaultConfig(), process.cwd());
 
 ### `sync`
 
-Synchronizes configured files to the current package version.    0.1.0
+Synchronizes configured files to the current package version.
 
 ```typescript
 (config: VersionGuardConfig, cwd?: string) => void
@@ -1207,10 +1630,10 @@ sync(getDefaultConfig(), process.cwd());
 
 ### `canBump`
 
-Determines whether a project can move from one version to another.    0.1.0
+Determines whether a project can move from one version to another.
 
 ```typescript
-(currentVersion: string, newVersion: string, config: VersionGuardConfig) => { canBump: boolean; error?: string | undefined; }
+(currentVersion: string, newVersion: string, config: VersionGuardConfig) => { canBump: boolean; error?: string; }
 ```
 
 **Parameters:**
@@ -1227,9 +1650,45 @@ import { canBump, getDefaultConfig } from 'versionguard';
 const result = canBump('1.2.3', '1.3.0', getDefaultConfig());
 ```
 
+### `runWizard`
+
+Runs the interactive setup wizard.
+
+```typescript
+(cwd: string) => Promise<string | null>
+```
+
+**Parameters:**
+
+- `cwd` — Project directory to initialize.
+
+**Returns:** The path to the created config file, or `null` if cancelled.
+
+```ts
+const configPath = await runWizard(process.cwd());
+```
+
+### `runHeadless`
+
+Initializes VersionGuard non-interactively using CLI flags.
+
+```typescript
+(options: InitOptions) => string
+```
+
+**Parameters:**
+
+- `options` — Headless initialization options.
+
+**Returns:** The path to the created config file.
+
+```ts
+const configPath = runHeadless({ cwd: process.cwd(), type: 'calver', format: 'YYYY.M.MICRO' });
+```
+
 ### `createProgram`
 
-Creates the VersionGuard CLI program definition.    0.1.0
+Creates the VersionGuard CLI program definition.
 
 ```typescript
 () => Command
@@ -1244,7 +1703,7 @@ console.log(program.name());
 
 ### `runCli`
 
-Parses CLI arguments and executes the matching command.    0.1.0
+Parses CLI arguments and executes the matching command.
 
 ```typescript
 (argv?: string[]) => Promise<void>
@@ -1261,7 +1720,7 @@ await runCli(argv);
 
 ### `shouldRunCli`
 
-Determines whether the current module is the invoked CLI entry point.    0.1.0
+Determines whether the current module is the invoked CLI entry point.
 
 ```typescript
 (argv?: string[], metaUrl?: string) => boolean
@@ -1381,39 +1840,83 @@ commitAll(cwd, 'test: update fixture');
 
 ### `VersioningType`
 
-Supported versioning strategies.    0.1.0
+Supported versioning strategies.
 
 ```typescript
-any
+VersioningType
+```
+
+### `ManifestSourceType`
+
+Supported manifest source types for version extraction.
+
+```typescript
+ManifestSourceType
+```
+
+### `ManifestConfig`
+
+Configures the version source manifest.
+
+```typescript
+ManifestConfig
+```
+
+**Members:**
+
+- `source` — Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename.
+- `path` — Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml.
+- `regex` — Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.
+
+### `CalVerToken`
+
+Valid CalVer token names for building format strings.
+
+```typescript
+CalVerToken
 ```
 
 ### `CalVerFormat`
 
-Supported calendar version string layouts.    0.1.0
+A CalVer format string composed of dot-separated tokens.
 
 ```typescript
-any
+CalVerFormat
 ```
+
+### `SchemeRules`
+
+Configures scheme-level validation rules applied regardless of versioning type.
+
+```typescript
+SchemeRules
+```
+
+**Members:**
+
+- `maxNumericSegments` — Maximum number of numeric segments before a warning is emitted.  Convention is 3 (e.g., `YYYY.MM.MICRO`). Formats with 4+ segments (e.g., `YYYY.0M.0D.MICRO`) are valid but trigger a warning.
+- `allowedModifiers` — Allowed pre-release modifier tags.  When set, version modifiers (e.g., `-alpha`, `-rc1`) are validated against this whitelist. An empty array disallows all modifiers.
 
 ### `CalVerConfig`
 
-Configures CalVer validation rules.    0.1.0
+Configures CalVer validation rules.
 
 ```typescript
-any
+CalVerConfig
 ```
 
 **Members:**
 
 - `format` — Calendar format used when parsing and validating versions.
 - `preventFutureDates` — Rejects versions that point to a future date.
+- `strictMutualExclusion` — Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens.
 
 ### `SyncPattern`
 
-Describes a search-and-replace pattern used during version synchronization.    0.1.0
+Describes a search-and-replace pattern used during version synchronization.
 
 ```typescript
-any
+SyncPattern
 ```
 
 **Members:**
@@ -1423,10 +1926,10 @@ any
 
 ### `SyncConfig`
 
-Configures files and patterns that should stay in sync with the canonical version.    0.1.0
+Configures files and patterns that should stay in sync with the canonical version.
 
 ```typescript
-any
+SyncConfig
 ```
 
 **Members:**
@@ -1436,10 +1939,10 @@ any
 
 ### `ChangelogConfig`
 
-Controls changelog validation behavior.    0.1.0
+Controls changelog validation behavior.
 
 ```typescript
-any
+ChangelogConfig
 ```
 
 **Members:**
@@ -1451,10 +1954,10 @@ any
 
 ### `GitHooksConfig`
 
-Toggles each supported git hook integration.    0.1.0
+Toggles each supported git hook integration.
 
 ```typescript
-any
+GitHooksConfig
 ```
 
 **Members:**
@@ -1465,10 +1968,10 @@ any
 
 ### `GitConfig`
 
-Configures git-related enforcement.    0.1.0
+Configures git-related enforcement.
 
 ```typescript
-any
+GitConfig
 ```
 
 **Members:**
@@ -1478,28 +1981,30 @@ any
 
 ### `VersioningConfig`
 
-Configures the active versioning mode.    0.1.0
+Configures the active versioning mode.
 
 ```typescript
-any
+VersioningConfig
 ```
 
 **Members:**
 
 - `type` — Versioning strategy used for the project.
+- `schemeRules` — Scheme-level validation rules applied regardless of versioning type.
 - `calver` — CalVer-specific settings when `type` is `'calver'`.
 
 ### `VersionGuardConfig`
 
-Top-level configuration consumed by versionguard.    0.1.0
+Top-level configuration consumed by versionguard.
 
 ```typescript
-any
+VersionGuardConfig
 ```
 
 **Members:**
 
 - `versioning` — Active versioning settings.
+- `manifest` — Version source manifest settings.
 - `sync` — Synchronization settings for mirrored version strings.
 - `changelog` — Changelog validation settings.
 - `git` — Git enforcement settings.
@@ -1507,10 +2012,10 @@ any
 
 ### `SemVer`
 
-Parsed semantic version components.    0.1.0
+Parsed semantic version components.
 
 ```typescript
-any
+SemVer
 ```
 
 **Members:**
@@ -1524,27 +2029,28 @@ any
 
 ### `CalVer`
 
-Parsed calendar version components.    0.1.0
+Parsed calendar version components.
 
 ```typescript
-any
+CalVer
 ```
 
 **Members:**
 
 - `year` — Four-digit year value.
-- `month` — Month value from 1 through 12.
+- `month` — Month or week value (1-12 for months, 1-53 for weeks).
 - `day` — Day-of-month value when the selected format includes a day token.
-- `patch` — Patch counter when the selected format includes a patch token.
+- `patch` — Micro/patch counter when the selected format includes a counter token.
+- `modifier` — Pre-release modifier string (e.g., `'alpha'`, `'rc1'`, `'dev'`).
 - `format` — Source format used to interpret the raw string.
 - `raw` — Original version string.
 
 ### `ParsedSemVer`
 
-Parsed semantic version result wrapper.    0.1.0
+Parsed semantic version result wrapper.
 
 ```typescript
-any
+ParsedSemVer
 ```
 
 **Members:**
@@ -1554,10 +2060,10 @@ any
 
 ### `ParsedCalVer`
 
-Parsed calendar version result wrapper.    0.1.0
+Parsed calendar version result wrapper.
 
 ```typescript
-any
+ParsedCalVer
 ```
 
 **Members:**
@@ -1567,18 +2073,18 @@ any
 
 ### `ParsedVersion`
 
-Union of supported parsed version payloads.    0.1.0
+Union of supported parsed version payloads.
 
 ```typescript
-any
+ParsedVersion
 ```
 
 ### `ValidationError`
 
-Describes a single validation problem.    0.1.0
+Describes a single validation problem.
 
 ```typescript
-any
+ValidationError
 ```
 
 **Members:**
@@ -1590,10 +2096,10 @@ any
 
 ### `ValidationResult`
 
-Result returned by version parsing and validation helpers.    0.1.0
+Result returned by version parsing and validation helpers.
 
 ```typescript
-any
+ValidationResult
 ```
 
 **Members:**
@@ -1604,10 +2110,10 @@ any
 
 ### `SyncChange`
 
-Describes a single in-file version replacement.    0.1.0
+Describes a single in-file version replacement.
 
 ```typescript
-any
+SyncChange
 ```
 
 **Members:**
@@ -1618,10 +2124,10 @@ any
 
 ### `SyncResult`
 
-Reports the result of synchronizing a single file.    0.1.0
+Reports the result of synchronizing a single file.
 
 ```typescript
-any
+SyncResult
 ```
 
 **Members:**
@@ -1632,10 +2138,10 @@ any
 
 ### `VersionMismatch`
 
-Reports a discovered version mismatch.    0.1.0
+Reports a discovered version mismatch.
 
 ```typescript
-any
+VersionMismatch
 ```
 
 **Members:**
@@ -1646,10 +2152,10 @@ any
 
 ### `FullValidationResult`
 
-Combined result from a full project validation run.    0.1.0
+Combined result from a full project validation run.
 
 ```typescript
-any
+FullValidationResult
 ```
 
 **Members:**
@@ -1663,16 +2169,16 @@ any
 
 ### `DoctorReport`
 
-Reports whether a project is ready to pass VersionGuard checks.     0.1.0
+Reports whether a project is ready to pass VersionGuard checks.
 
 ```typescript
-any
+DoctorReport
 ```
 
 **Members:**
 
 - `ready` — Indicates whether all doctor checks passed.
-- `version` — Package version resolved from `package.json`.
+- `version` — Package version resolved from the configured manifest source.
 - `versionValid` — Indicates whether the package version matches the configured scheme.
 - `syncValid` — Indicates whether synced files match the package version.
 - `changelogValid` — Indicates whether changelog validation passed.
@@ -1683,25 +2189,26 @@ any
 
 ### `ParsedCalVerFormat`
 
-Parsed token layout for a supported CalVer format string.    0.1.0
+Parsed token layout for a supported CalVer format string.
 
 ```typescript
-any
+ParsedCalVerFormat
 ```
 
 **Members:**
 
 - `year` — Year token captured from the format string.
-- `month` — Month token captured from the format string.
+- `month` — Month token captured from the format string when present.
+- `week` — Week token captured from the format string when present.
 - `day` — Day token captured from the format string when present.
-- `patch` — Patch token captured from the format string when present.
+- `counter` — Counter token captured from the format string when present. Both `MICRO` and `PATCH` map to the same numeric counter.
 
 ### `ChangelogValidationResult`
 
-Describes the outcome of validating a changelog file.    0.1.0
+Describes the outcome of validating a changelog file.
 
 ```typescript
-any
+ChangelogValidationResult
 ```
 
 **Members:**
@@ -1712,10 +2219,10 @@ any
 
 ### `Suggestion`
 
-Feedback entry point exports for suggestion and guidance helpers.     0.1.0
+Feedback entry point exports for suggestion and guidance helpers.
 
 ```typescript
-any
+Suggestion
 ```
 
 **Members:**
@@ -1726,10 +2233,10 @@ any
 
 ### `FeedbackResult`
 
-Aggregates validation errors with suggested next steps.    0.1.0
+Aggregates validation errors with suggested next steps.
 
 ```typescript
-any
+FeedbackResult
 ```
 
 **Members:**
@@ -1739,12 +2246,52 @@ any
 - `suggestions` — Suggested next steps for resolving the reported issues.
 - `canAutoFix` — Indicates whether at least one suggestion can be auto-applied.
 
-### `PackageJson`
+### `VersionSourceProvider`
 
-Minimal shape of a `package.json` document used by VersionGuard.    0.1.0
+Abstraction for reading and writing a version string from any manifest format.
 
 ```typescript
-any
+VersionSourceProvider
+```
+
+**Members:**
+
+- `name` — Human-readable provider name (e.g. `'package.json'`, `'Cargo.toml'`).
+- `manifestFile` — Default manifest filename this provider handles.
+- `exists` — Returns `true` when the manifest file exists in `cwd`.
+- `getVersion` — Reads the version string from the manifest. Throws if missing or unreadable.
+- `setVersion` — Writes a version string back to the manifest. Throws if the file does not exist.
+
+### `PackageJsonValue`
+
+JSON-compatible scalar, array, or object value used by package metadata.
+
+```typescript
+PackageJsonValue
+```
+
+### `PackageJsonArray`
+
+Recursive array type used for arbitrary JSON-compatible package values.
+
+```typescript
+PackageJsonArray
+```
+
+### `PackageJsonObject`
+
+Recursive object type used for arbitrary JSON-compatible package values.
+
+```typescript
+PackageJsonObject
+```
+
+### `PackageJson`
+
+Minimal shape of a `package.json` document used by VersionGuard.
+
+```typescript
+PackageJson
 ```
 
 **Members:**
@@ -1754,10 +2301,10 @@ any
 
 ### `FixResult`
 
-Fix entry point exports for auto-remediation helpers.     0.1.0
+Fix entry point exports for auto-remediation helpers.
 
 ```typescript
-any
+FixResult
 ```
 
 **Members:**
@@ -1766,12 +2313,71 @@ any
 - `message` — Human-readable description of the fix attempt.
 - `file` — Absolute path to the file that was updated, when applicable.
 
-### `TagInfo`
+### `GuardWarning`
 
-Tag entry point exports for release-tag management helpers.     0.1.0
+Describes a single guard finding.
 
 ```typescript
-any
+GuardWarning
+```
+
+**Members:**
+
+- `code` — Machine-readable code for filtering and automation.
+- `severity` — Severity: errors block releases, warnings inform.
+- `message` — Human-readable description of the issue.
+- `fix` — Suggested remediation command when available.
+
+### `GuardReport`
+
+Result of a full guard check pass.
+
+```typescript
+GuardReport
+```
+
+**Members:**
+
+- `safe` — True when no errors were found. Warnings alone do not fail.
+- `warnings` — All findings from the guard check.
+
+### `HelpTopic`
+
+Embedded help topics for the CLI help system.
+
+```typescript
+HelpTopic
+```
+
+**Members:**
+
+- `name` — Short name used as CLI argument.
+- `summary` — One-line summary shown in topic list.
+- `content` — Full help text for the topic.
+
+### `ProjectRootResult`
+
+Result of project root detection.
+
+```typescript
+ProjectRootResult
+```
+
+**Members:**
+
+- `found` — Whether a project root was found.
+- `root` — The resolved project root directory, or the original cwd if not found.
+- `marker` — Which marker file was found.
+- `hasConfig` — Whether the directory has a VersionGuard config.
+- `hasGit` — Whether the directory is inside a git repository.
+- `hasManifest` — Whether a version manifest file exists.
+
+### `TagInfo`
+
+Tag entry point exports for release-tag management helpers.
+
+```typescript
+TagInfo
 ```
 
 **Members:**
@@ -1780,3 +2386,135 @@ any
 - `version` — Normalized version string derived from the tag name.
 - `message` — Annotated tag message when one is available.
 - `date` — Timestamp associated with the tag lookup result.
+
+### `InitOptions`
+
+Options for headless (non-interactive) initialization.
+
+```typescript
+InitOptions
+```
+
+**Members:**
+
+- `cwd` — Working directory path.
+- `type` — Versioning type (semver or calver).
+- `format` — CalVer format string.
+- `manifest` — Manifest source type.
+- `hooks` — Whether to install git hooks.
+- `changelog` — Whether to enable changelog validation.
+- `yes` — Accept defaults without prompting.
+- `force` — Overwrite existing config.
+
+## Classes
+
+### `GitTagSource`
+
+Reads version from the latest Git tag. Writing creates a new annotated tag.
+
+```typescript
+typeof GitTagSource
+```
+
+**Members:**
+
+- `name` — Human-readable provider name.
+- `manifestFile` — Empty string since git-tag has no manifest file.
+- `exists` — Returns `true` when `cwd` is inside a Git repository.
+- `getVersion` — Reads the version string from the latest Git tag.
+- `setVersion` — Creates a new annotated Git tag for the given version.
+- `describeVersionTag` — Try version-like tag patterns, fall back to any tag.
+- `detectPrefix` — Detect whether existing tags use a `v` prefix or not.
+
+### `JsonVersionSource`
+
+Reads and writes version strings from JSON manifest files.
+
+```typescript
+typeof JsonVersionSource
+```
+
+**Members:**
+
+- `name` — Human-readable provider name.
+- `manifestFile` — Filename of the JSON manifest (e.g. `'package.json'`).
+- `versionPath` — Dotted key path to the version field within the JSON document.
+- `exists` — Returns `true` when the manifest file exists in `cwd`.
+- `getVersion` — Reads the version string from the JSON manifest.
+- `setVersion` — Writes a version string to the JSON manifest, preserving indentation.
+
+### `RegexVersionSource`
+
+Reads and writes version strings using regex extraction from source files.
+
+```typescript
+typeof RegexVersionSource
+```
+
+**Members:**
+
+- `name` — Human-readable provider name.
+- `manifestFile` — Filename of the source manifest (e.g. `'setup.py'`).
+- `versionRegex` — Compiled regex used to locate the version string.
+- `exists` — Returns `true` when the manifest file exists in `cwd`.
+- `getVersion` — Reads the version string from the source manifest using regex extraction.
+- `setVersion` — Writes a version string to the source manifest using position-based replacement.
+
+### `TomlVersionSource`
+
+Reads and writes version strings from TOML manifest files.
+
+```typescript
+typeof TomlVersionSource
+```
+
+**Members:**
+
+- `name` — Human-readable provider name.
+- `manifestFile` — Filename of the TOML manifest (e.g. `'Cargo.toml'`).
+- `versionPath` — Dotted key path to the version field within the TOML document.
+- `exists` — Returns `true` when the manifest file exists in `cwd`.
+- `getVersion` — Reads the version string from the TOML manifest.
+- `setVersion` — Writes a version string to the TOML manifest, preserving formatting.
+- `getSectionKey` — Splits the dotted version path into a TOML section name and key name.
+
+### `VersionFileSource`
+
+Reads and writes version strings from a plain text VERSION file.
+
+```typescript
+typeof VersionFileSource
+```
+
+**Members:**
+
+- `name` — Human-readable provider name.
+- `manifestFile` — Filename of the version file (e.g. `'VERSION'`).
+- `exists` — Returns `true` when the version file exists in `cwd`.
+- `getVersion` — Reads the version string from the plain text version file.
+- `setVersion` — Writes a version string to the plain text version file.
+
+### `YamlVersionSource`
+
+Reads and writes version strings from YAML manifest files.
+
+```typescript
+typeof YamlVersionSource
+```
+
+**Members:**
+
+- `name` — Human-readable provider name.
+- `manifestFile` — Filename of the YAML manifest (e.g. `'pubspec.yaml'`).
+- `versionKey` — Dotted key path to the version field within the YAML document.
+- `exists` — Returns `true` when the manifest file exists in `cwd`.
+- `getVersion` — Reads the version string from the YAML manifest.
+- `setVersion` — Writes a version string to the YAML manifest, preserving formatting.
+
+## Constants
+
+### `TOPICS`
+
+```typescript
+HelpTopic[]
+```

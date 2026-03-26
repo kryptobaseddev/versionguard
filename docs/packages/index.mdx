@@ -5,139 +5,196 @@ description: . package overview
 
 ## Functions & Classes
 
-| Symbol                                                                     | Kind     | Description                                                                      |
-| -------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
-| [`parseFormat()`](/packages/./api/index#parseformat)                       | function | Breaks a CalVer format string into its component tokens.                         |
-| [`getRegexForFormat()`](/packages/./api/index#getregexforformat)           | function | Builds a regular expression that matches a supported CalVer format.              |
-| [`parse()`](/packages/./api/index#parse)                                   | function | Parses a CalVer string using the supplied format.                                |
-| [`validate()`](/packages/./api/index#validate)                             | function | Validates a CalVer string against formatting and date rules.                     |
-| [`format()`](/packages/./api/index#format)                                 | function | Formats a parsed CalVer object back into a version string.                       |
-| [`getCurrentVersion()`](/packages/./api/index#getcurrentversion)           | function | Creates the current CalVer string for a format.                                  |
-| [`compare()`](/packages/./api/index#compare)                               | function | Compares two CalVer strings using a shared format.                               |
-| [`increment()`](/packages/./api/index#increment)                           | function | Increments a CalVer string.                                                      |
-| [`getNextVersions()`](/packages/./api/index#getnextversions)               | function | Returns the most likely next CalVer candidates.                                  |
-| [`validateChangelog()`](/packages/./api/index#validatechangelog)           | function | Validates a changelog file for release readiness.    0.1.0                       |
-| [`getLatestVersion()`](/packages/./api/index#getlatestversion)             | function | Gets the most recent released version from a changelog.    0.1.0                 |
-| [`addVersionEntry()`](/packages/./api/index#addversionentry)               | function | Inserts a new version entry beneath the `[Unreleased]` section.    0.1.0         |
-| [`parse()`](/packages/./api/index#parse)                                   | function | Parses a semantic version string.                                                |
-| [`validate()`](/packages/./api/index#validate)                             | function | Validates that a string is a supported semantic version.                         |
-| [`compare()`](/packages/./api/index#compare)                               | function | Compares two semantic version strings.                                           |
-| [`gt()`](/packages/./api/index#gt)                                         | function | Checks whether one semantic version is greater than another.                     |
-| [`lt()`](/packages/./api/index#lt)                                         | function | Checks whether one semantic version is less than another.                        |
-| [`eq()`](/packages/./api/index#eq)                                         | function | Checks whether two semantic versions are equal in precedence.                    |
-| [`increment()`](/packages/./api/index#increment)                           | function | Increments a semantic version string by release type.                            |
-| [`format()`](/packages/./api/index#format)                                 | function | Formats a parsed semantic version object.                                        |
-| [`getVersionFeedback()`](/packages/./api/index#getversionfeedback)         | function | Generates actionable feedback for a version string.    0.1.0                     |
-| [`getSyncFeedback()`](/packages/./api/index#getsyncfeedback)               | function | Generates suggestions for version sync mismatches in a file.    0.1.0            |
-| [`getChangelogFeedback()`](/packages/./api/index#getchangelogfeedback)     | function | Generates suggestions for changelog-related validation issues.    0.1.0          |
-| [`getTagFeedback()`](/packages/./api/index#gettagfeedback)                 | function | Generates suggestions for git tag mismatches.    0.1.0                           |
-| [`getPackageJsonPath()`](/packages/./api/index#getpackagejsonpath)         | function | Gets the `package.json` path for a project directory.    0.1.0                   |
-| [`readPackageJson()`](/packages/./api/index#readpackagejson)               | function | Reads and parses a project's `package.json` file.    0.1.0                       |
-| [`writePackageJson()`](/packages/./api/index#writepackagejson)             | function | Writes a `package.json` document back to disk.    0.1.0                          |
-| [`getPackageVersion()`](/packages/./api/index#getpackageversion)           | function | Gets the version string from `package.json`.    0.1.0                            |
-| [`setPackageVersion()`](/packages/./api/index#setpackageversion)           | function | Sets the version field in `package.json`.    0.1.0                               |
-| [`syncVersion()`](/packages/./api/index#syncversion)                       | function | Synchronizes configured files to a single version string.    0.1.0               |
-| [`syncFile()`](/packages/./api/index#syncfile)                             | function | Synchronizes a single file to a target version.    0.1.0                         |
-| [`checkHardcodedVersions()`](/packages/./api/index#checkhardcodedversions) | function | Checks configured files for hardcoded version mismatches.    0.1.0               |
-| [`fixPackageVersion()`](/packages/./api/index#fixpackageversion)           | function | Updates the `package.json` version field when needed.    0.1.0                   |
-| [`fixSyncIssues()`](/packages/./api/index#fixsyncissues)                   | function | Synchronizes configured files to the package version.    0.1.0                   |
-| [`fixChangelog()`](/packages/./api/index#fixchangelog)                     | function | Ensures the changelog contains an entry for a version.    0.1.0                  |
-| [`fixAll()`](/packages/./api/index#fixall)                                 | function | Runs all configured auto-fix operations.    0.1.0                                |
-| [`suggestNextVersion()`](/packages/./api/index#suggestnextversion)         | function | Suggests candidate next versions for a release.    0.1.0                         |
-| [`installHooks()`](/packages/./api/index#installhooks)                     | function | Installs VersionGuard-managed Git hooks in a repository.    0.1.0                |
-| [`uninstallHooks()`](/packages/./api/index#uninstallhooks)                 | function | Removes VersionGuard-managed Git hooks from a repository.    0.1.0               |
-| [`findGitDir()`](/packages/./api/index#findgitdir)                         | function | Finds the nearest `.git` directory by walking up from a starting directory....   |
-| [`areHooksInstalled()`](/packages/./api/index#arehooksinstalled)           | function | Checks whether all VersionGuard-managed hooks are installed.    0.1.0            |
-| [`generateHookScript()`](/packages/./api/index#generatehookscript)         | function | Generates the shell script content for a Git hook.    0.1.0                      |
-| [`getDefaultConfig()`](/packages/./api/index#getdefaultconfig)             | function | Returns a deep-cloned copy of the built-in VersionGuard configuration.    0.1.0  |
-| [`findConfig()`](/packages/./api/index#findconfig)                         | function | Finds the first supported VersionGuard config file in a directory.    0.1.0      |
-| [`loadConfig()`](/packages/./api/index#loadconfig)                         | function | Loads a VersionGuard config file from disk.    0.1.0                             |
-| [`getConfig()`](/packages/./api/index#getconfig)                           | function | Resolves the active VersionGuard configuration for a project.    0.1.0           |
-| [`initConfig()`](/packages/./api/index#initconfig)                         | function | Initializes a new VersionGuard config file in a project.    0.1.0                |
-| [`getLatestTag()`](/packages/./api/index#getlatesttag)                     | function | Returns the most recent reachable git tag for a repository.    0.1.0             |
-| [`getAllTags()`](/packages/./api/index#getalltags)                         | function | Lists all tags in a repository.    0.1.0                                         |
-| [`createTag()`](/packages/./api/index#createtag)                           | function | Creates a release tag and optionally fixes version state first.    0.1.0         |
-| [`handlePostTag()`](/packages/./api/index#handleposttag)                   | function | Runs post-tag validation and sync checks.    0.1.0                               |
-| [`validateTagForPush()`](/packages/./api/index#validatetagforpush)         | function | Validates that a local tag is safe to push to the default remote.    0.1.0       |
-| [`suggestTagMessage()`](/packages/./api/index#suggesttagmessage)           | function | Suggests an annotated tag message from changelog content.    0.1.0               |
-| [`validateVersion()`](/packages/./api/index#validateversion)               | function | Validates a version string against the active versioning strategy.    0.1.0      |
-| [`validate()`](/packages/./api/index#validate)                             | function | Validates the current project state against the supplied configuration.    0.1.0 |
-| [`doctor()`](/packages/./api/index#doctor)                                 | function | Runs an extended readiness check for a project.    0.1.0                         |
-| [`sync()`](/packages/./api/index#sync)                                     | function | Synchronizes configured files to the current package version.    0.1.0           |
-| [`canBump()`](/packages/./api/index#canbump)                               | function | Determines whether a project can move from one version to another.    0.1.0      |
-| [`createProgram()`](/packages/./api/index#createprogram)                   | function | Creates the VersionGuard CLI program definition.    0.1.0                        |
-| [`runCli()`](/packages/./api/index#runcli)                                 | function | Parses CLI arguments and executes the matching command.    0.1.0                 |
-| [`shouldRunCli()`](/packages/./api/index#shouldruncli)                     | function | Determines whether the current module is the invoked CLI entry point.    0.1.0   |
-| [`createTempProject()`](/packages/./api/index#createtempproject)           | function | Creates a temporary project directory with a minimal `package.json` fixture.     |
-| [`initGitRepo()`](/packages/./api/index#initgitrepo)                       | function | Initializes a git repository in a fixture directory with a first commit.         |
-| [`writeTextFile()`](/packages/./api/index#writetextfile)                   | function | Writes a text fixture file relative to a temporary project directory.            |
-| [`createBareRemote()`](/packages/./api/index#createbareremote)             | function | Creates a bare git repository to use as a remote in integration tests.           |
-| [`addGitRemote()`](/packages/./api/index#addgitremote)                     | function | Adds a local bare repository as the `origin` remote for a fixture repo.          |
-| [`commitAll()`](/packages/./api/index#commitall)                           | function | Stages all changes and creates a commit in a fixture repository.                 |
+| Symbol                                                                       | Kind     | Description                                                                      |
+| ---------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| [`getCalVerConfig()`](/packages/./api/index#getcalverconfig)                 | function | Extracts the CalVer config from a VersionGuard config, throwing if missing.      |
+| [`isValidCalVerFormat()`](/packages/./api/index#isvalidcalverformat)         | function | Validates that a CalVer format string is composed of valid tokens and follows... |
+| [`parseFormat()`](/packages/./api/index#parseformat)                         | function | Breaks a CalVer format string into its component tokens.                         |
+| [`getRegexForFormat()`](/packages/./api/index#getregexforformat)             | function | Builds a regular expression that matches a supported CalVer format.              |
+| [`parse()`](/packages/./api/index#parse)                                     | function | Parses a CalVer string using the supplied format.                                |
+| [`validate()`](/packages/./api/index#validate)                               | function | Validates a CalVer string against formatting and date rules.                     |
+| [`format()`](/packages/./api/index#format)                                   | function | Formats a parsed CalVer object back into a version string.                       |
+| [`getCurrentVersion()`](/packages/./api/index#getcurrentversion)             | function | Creates the current CalVer string for a format.                                  |
+| [`compare()`](/packages/./api/index#compare)                                 | function | Compares two CalVer strings using a shared format.                               |
+| [`increment()`](/packages/./api/index#increment)                             | function | Increments a CalVer string.                                                      |
+| [`getNextVersions()`](/packages/./api/index#getnextversions)                 | function | Returns the most likely next CalVer candidates.                                  |
+| [`validateChangelog()`](/packages/./api/index#validatechangelog)             | function | Validates a changelog file for release readiness.                                |
+| [`getLatestVersion()`](/packages/./api/index#getlatestversion)               | function | Gets the most recent released version from a changelog.                          |
+| [`addVersionEntry()`](/packages/./api/index#addversionentry)                 | function | Inserts a new version entry beneath the `[Unreleased]` section.                  |
+| [`isChangesetMangled()`](/packages/./api/index#ischangesetmangled)           | function | Detects whether a changelog has been mangled by Changesets.                      |
+| [`fixChangesetMangling()`](/packages/./api/index#fixchangesetmangling)       | function | Fixes a Changesets-mangled changelog into proper Keep a Changelog format.        |
+| [`parse()`](/packages/./api/index#parse)                                     | function | Parses a semantic version string.                                                |
+| [`validate()`](/packages/./api/index#validate)                               | function | Validates that a string is a supported semantic version.                         |
+| [`compare()`](/packages/./api/index#compare)                                 | function | Compares two semantic version strings.                                           |
+| [`gt()`](/packages/./api/index#gt)                                           | function | Checks whether one semantic version is greater than another.                     |
+| [`lt()`](/packages/./api/index#lt)                                           | function | Checks whether one semantic version is less than another.                        |
+| [`eq()`](/packages/./api/index#eq)                                           | function | Checks whether two semantic versions are equal in precedence.                    |
+| [`increment()`](/packages/./api/index#increment)                             | function | Increments a semantic version string by release type.                            |
+| [`format()`](/packages/./api/index#format)                                   | function | Formats a parsed semantic version object.                                        |
+| [`getVersionFeedback()`](/packages/./api/index#getversionfeedback)           | function | Generates actionable feedback for a version string.                              |
+| [`getSyncFeedback()`](/packages/./api/index#getsyncfeedback)                 | function | Generates suggestions for version sync mismatches in a file.                     |
+| [`getChangelogFeedback()`](/packages/./api/index#getchangelogfeedback)       | function | Generates suggestions for changelog-related validation issues.                   |
+| [`getTagFeedback()`](/packages/./api/index#gettagfeedback)                   | function | Generates suggestions for git tag mismatches.                                    |
+| [`GitTagSource`](/packages/./api/index#gittagsource)                         | class    | Reads version from the latest Git tag. Writing creates a new annotated tag.      |
+| [`getNestedValue()`](/packages/./api/index#getnestedvalue)                   | function | Traverses a nested object using a dotted key path.                               |
+| [`setNestedValue()`](/packages/./api/index#setnestedvalue)                   | function | Sets a value at a dotted key path, throwing if intermediate segments are miss... |
+| [`escapeRegExp()`](/packages/./api/index#escaperegexp)                       | function | Escapes special regex characters in a string for safe use in `new RegExp()`.     |
+| [`JsonVersionSource`](/packages/./api/index#jsonversionsource)               | class    | Reads and writes version strings from JSON manifest files.                       |
+| [`RegexVersionSource`](/packages/./api/index#regexversionsource)             | class    | Reads and writes version strings using regex extraction from source files.       |
+| [`TomlVersionSource`](/packages/./api/index#tomlversionsource)               | class    | Reads and writes version strings from TOML manifest files.                       |
+| [`VersionFileSource`](/packages/./api/index#versionfilesource)               | class    | Reads and writes version strings from a plain text VERSION file.                 |
+| [`YamlVersionSource`](/packages/./api/index#yamlversionsource)               | class    | Reads and writes version strings from YAML manifest files.                       |
+| [`resolveVersionSource()`](/packages/./api/index#resolveversionsource)       | function | Resolves the version source provider for a project.                              |
+| [`detectManifests()`](/packages/./api/index#detectmanifests)                 | function | Detects all manifest files present in a project directory.                       |
+| [`getPackageJsonPath()`](/packages/./api/index#getpackagejsonpath)           | function | Gets the `package.json` path for a project directory.                            |
+| [`readPackageJson()`](/packages/./api/index#readpackagejson)                 | function | Reads and parses a project's `package.json` file.                                |
+| [`writePackageJson()`](/packages/./api/index#writepackagejson)               | function | Writes a `package.json` document back to disk.                                   |
+| [`getPackageVersion()`](/packages/./api/index#getpackageversion)             | function | Gets the version string from the project manifest.  When a `manifest` config...  |
+| [`setPackageVersion()`](/packages/./api/index#setpackageversion)             | function | Sets the version field in the project manifest.  When a `manifest` config is...  |
+| [`getVersionSource()`](/packages/./api/index#getversionsource)               | function | Resolves the version source provider for a project.                              |
+| [`syncVersion()`](/packages/./api/index#syncversion)                         | function | Synchronizes configured files to a single version string.                        |
+| [`syncFile()`](/packages/./api/index#syncfile)                               | function | Synchronizes a single file to a target version.                                  |
+| [`checkHardcodedVersions()`](/packages/./api/index#checkhardcodedversions)   | function | Checks configured files for hardcoded version mismatches.                        |
+| [`fixPackageVersion()`](/packages/./api/index#fixpackageversion)             | function | Updates the `package.json` version field when needed.                            |
+| [`fixSyncIssues()`](/packages/./api/index#fixsyncissues)                     | function | Synchronizes configured files to the package version.                            |
+| [`fixChangelog()`](/packages/./api/index#fixchangelog)                       | function | Ensures the changelog contains an entry for a version.                           |
+| [`fixAll()`](/packages/./api/index#fixall)                                   | function | Runs all configured auto-fix operations.                                         |
+| [`suggestNextVersion()`](/packages/./api/index#suggestnextversion)           | function | Suggests candidate next versions for a release.                                  |
+| [`installHooks()`](/packages/./api/index#installhooks)                       | function | Installs VersionGuard-managed Git hooks in a repository.                         |
+| [`uninstallHooks()`](/packages/./api/index#uninstallhooks)                   | function | Removes VersionGuard-managed Git hooks from a repository.                        |
+| [`findGitDir()`](/packages/./api/index#findgitdir)                           | function | Finds the nearest `.git` directory by walking up from a starting directory.      |
+| [`areHooksInstalled()`](/packages/./api/index#arehooksinstalled)             | function | Checks whether all VersionGuard-managed hooks are installed.                     |
+| [`generateHookScript()`](/packages/./api/index#generatehookscript)           | function | Generates the shell script content for a Git hook.                               |
+| [`checkHooksPathOverride()`](/packages/./api/index#checkhookspathoverride)   | function | Checks whether git hooks have been redirected away from the repository.          |
+| [`checkHuskyBypass()`](/packages/./api/index#checkhuskybypass)               | function | Checks whether the HUSKY environment variable is disabling hooks.                |
+| [`checkHookIntegrity()`](/packages/./api/index#checkhookintegrity)           | function | Verifies that installed hook scripts match the expected content.                 |
+| [`checkEnforceHooksPolicy()`](/packages/./api/index#checkenforcehookspolicy) | function | Checks whether hooks are configured as required but not enforced.                |
+| [`runGuardChecks()`](/packages/./api/index#runguardchecks)                   | function | Runs all guard checks and returns a consolidated report.                         |
+| [`getTopicIndex()`](/packages/./api/index#gettopicindex)                     | function | Returns the topic index listing.                                                 |
+| [`getTopicContent()`](/packages/./api/index#gettopiccontent)                 | function | Returns help content for a specific topic.                                       |
+| [`getLlmContext()`](/packages/./api/index#getllmcontext)                     | function | Returns the full API context for LLM consumption.                                |
+| [`getHelpJson()`](/packages/./api/index#gethelpjson)                         | function | Returns the topic index as a JSON structure for machine parsing.                 |
+| [`getDefaultConfig()`](/packages/./api/index#getdefaultconfig)               | function | Returns a deep-cloned copy of the built-in VersionGuard configuration.           |
+| [`findConfig()`](/packages/./api/index#findconfig)                           | function | Finds the first supported VersionGuard config file in a directory.               |
+| [`loadConfig()`](/packages/./api/index#loadconfig)                           | function | Loads a VersionGuard config file from disk.                                      |
+| [`getConfig()`](/packages/./api/index#getconfig)                             | function | Resolves the active VersionGuard configuration for a project.                    |
+| [`initConfig()`](/packages/./api/index#initconfig)                           | function | Initializes a new VersionGuard config file in a project.                         |
+| [`findProjectRoot()`](/packages/./api/index#findprojectroot)                 | function | Walks up from `startDir` to find the nearest project root.                       |
+| [`formatNotProjectError()`](/packages/./api/index#formatnotprojecterror)     | function | Formats a helpful error message when a command can't find a project.             |
+| [`getLatestTag()`](/packages/./api/index#getlatesttag)                       | function | Returns the most recent reachable git tag for a repository.                      |
+| [`getAllTags()`](/packages/./api/index#getalltags)                           | function | Lists all tags in a repository.                                                  |
+| [`createTag()`](/packages/./api/index#createtag)                             | function | Creates a release tag and optionally fixes version state first.                  |
+| [`handlePostTag()`](/packages/./api/index#handleposttag)                     | function | Runs post-tag validation and sync checks.                                        |
+| [`validateTagForPush()`](/packages/./api/index#validatetagforpush)           | function | Validates that a local tag is safe to push to the default remote.                |
+| [`suggestTagMessage()`](/packages/./api/index#suggesttagmessage)             | function | Suggests an annotated tag message from changelog content.                        |
+| [`validateVersion()`](/packages/./api/index#validateversion)                 | function | Validates a version string against the active versioning strategy.               |
+| [`validate()`](/packages/./api/index#validate)                               | function | Validates the current project state against the supplied configuration.          |
+| [`doctor()`](/packages/./api/index#doctor)                                   | function | Runs an extended readiness check for a project.                                  |
+| [`sync()`](/packages/./api/index#sync)                                       | function | Synchronizes configured files to the current package version.                    |
+| [`canBump()`](/packages/./api/index#canbump)                                 | function | Determines whether a project can move from one version to another.               |
+| [`runWizard()`](/packages/./api/index#runwizard)                             | function | Runs the interactive setup wizard.                                               |
+| [`runHeadless()`](/packages/./api/index#runheadless)                         | function | Initializes VersionGuard non-interactively using CLI flags.                      |
+| [`createProgram()`](/packages/./api/index#createprogram)                     | function | Creates the VersionGuard CLI program definition.                                 |
+| [`runCli()`](/packages/./api/index#runcli)                                   | function | Parses CLI arguments and executes the matching command.                          |
+| [`shouldRunCli()`](/packages/./api/index#shouldruncli)                       | function | Determines whether the current module is the invoked CLI entry point.            |
+| [`createTempProject()`](/packages/./api/index#createtempproject)             | function | Creates a temporary project directory with a minimal `package.json` fixture.     |
+| [`initGitRepo()`](/packages/./api/index#initgitrepo)                         | function | Initializes a git repository in a fixture directory with a first commit.         |
+| [`writeTextFile()`](/packages/./api/index#writetextfile)                     | function | Writes a text fixture file relative to a temporary project directory.            |
+| [`createBareRemote()`](/packages/./api/index#createbareremote)               | function | Creates a bare git repository to use as a remote in integration tests.           |
+| [`addGitRemote()`](/packages/./api/index#addgitremote)                       | function | Adds a local bare repository as the `origin` remote for a fixture repo.          |
+| [`commitAll()`](/packages/./api/index#commitall)                             | function | Stages all changes and creates a commit in a fixture repository.                 |
 
 ## Types & Interfaces
 
 | Symbol                                                                         | Kind      | Description                                                                      |
 | ------------------------------------------------------------------------------ | --------- | -------------------------------------------------------------------------------- |
-| [`VersioningType`](/packages/./api/index#versioningtype)                       | type      | Supported versioning strategies.    0.1.0                                        |
-| [`CalVerFormat`](/packages/./api/index#calverformat)                           | type      | Supported calendar version string layouts.    0.1.0                              |
-| [`CalVerConfig`](/packages/./api/index#calverconfig)                           | interface | Configures CalVer validation rules.    0.1.0                                     |
-| [`SyncPattern`](/packages/./api/index#syncpattern)                             | interface | Describes a search-and-replace pattern used during version synchronization....   |
+| [`VersioningType`](/packages/./api/index#versioningtype)                       | type      | Supported versioning strategies.                                                 |
+| [`ManifestSourceType`](/packages/./api/index#manifestsourcetype)               | type      | Supported manifest source types for version extraction.                          |
+| [`ManifestConfig`](/packages/./api/index#manifestconfig)                       | interface | Configures the version source manifest.                                          |
+| [`CalVerToken`](/packages/./api/index#calvertoken)                             | type      | Valid CalVer token names for building format strings.                            |
+| [`CalVerFormat`](/packages/./api/index#calverformat)                           | type      | A CalVer format string composed of dot-separated tokens.                         |
+| [`SchemeRules`](/packages/./api/index#schemerules)                             | interface | Configures scheme-level validation rules applied regardless of versioning type.  |
+| [`CalVerConfig`](/packages/./api/index#calverconfig)                           | interface | Configures CalVer validation rules.                                              |
+| [`SyncPattern`](/packages/./api/index#syncpattern)                             | interface | Describes a search-and-replace pattern used during version synchronization.      |
 | [`SyncConfig`](/packages/./api/index#syncconfig)                               | interface | Configures files and patterns that should stay in sync with the canonical ver... |
-| [`ChangelogConfig`](/packages/./api/index#changelogconfig)                     | interface | Controls changelog validation behavior.    0.1.0                                 |
-| [`GitHooksConfig`](/packages/./api/index#githooksconfig)                       | interface | Toggles each supported git hook integration.    0.1.0                            |
-| [`GitConfig`](/packages/./api/index#gitconfig)                                 | interface | Configures git-related enforcement.    0.1.0                                     |
-| [`VersioningConfig`](/packages/./api/index#versioningconfig)                   | interface | Configures the active versioning mode.    0.1.0                                  |
-| [`VersionGuardConfig`](/packages/./api/index#versionguardconfig)               | interface | Top-level configuration consumed by versionguard.    0.1.0                       |
-| [`SemVer`](/packages/./api/index#semver)                                       | interface | Parsed semantic version components.    0.1.0                                     |
-| [`CalVer`](/packages/./api/index#calver)                                       | interface | Parsed calendar version components.    0.1.0                                     |
-| [`ParsedSemVer`](/packages/./api/index#parsedsemver)                           | interface | Parsed semantic version result wrapper.    0.1.0                                 |
-| [`ParsedCalVer`](/packages/./api/index#parsedcalver)                           | interface | Parsed calendar version result wrapper.    0.1.0                                 |
-| [`ParsedVersion`](/packages/./api/index#parsedversion)                         | type      | Union of supported parsed version payloads.    0.1.0                             |
-| [`ValidationError`](/packages/./api/index#validationerror)                     | interface | Describes a single validation problem.    0.1.0                                  |
-| [`ValidationResult`](/packages/./api/index#validationresult)                   | interface | Result returned by version parsing and validation helpers.    0.1.0              |
-| [`SyncChange`](/packages/./api/index#syncchange)                               | interface | Describes a single in-file version replacement.    0.1.0                         |
-| [`SyncResult`](/packages/./api/index#syncresult)                               | interface | Reports the result of synchronizing a single file.    0.1.0                      |
-| [`VersionMismatch`](/packages/./api/index#versionmismatch)                     | interface | Reports a discovered version mismatch.    0.1.0                                  |
-| [`FullValidationResult`](/packages/./api/index#fullvalidationresult)           | interface | Combined result from a full project validation run.    0.1.0                     |
-| [`DoctorReport`](/packages/./api/index#doctorreport)                           | interface | Reports whether a project is ready to pass VersionGuard checks.     0.1.0        |
-| [`ParsedCalVerFormat`](/packages/./api/index#parsedcalverformat)               | interface | Parsed token layout for a supported CalVer format string.    0.1.0               |
-| [`ChangelogValidationResult`](/packages/./api/index#changelogvalidationresult) | interface | Describes the outcome of validating a changelog file.    0.1.0                   |
-| [`Suggestion`](/packages/./api/index#suggestion)                               | interface | Feedback entry point exports for suggestion and guidance helpers.     0.1.0      |
-| [`FeedbackResult`](/packages/./api/index#feedbackresult)                       | interface | Aggregates validation errors with suggested next steps.    0.1.0                 |
-| [`PackageJson`](/packages/./api/index#packagejson)                             | interface | Minimal shape of a `package.json` document used by VersionGuard.    0.1.0        |
-| [`FixResult`](/packages/./api/index#fixresult)                                 | interface | Fix entry point exports for auto-remediation helpers.     0.1.0                  |
-| [`TagInfo`](/packages/./api/index#taginfo)                                     | interface | Tag entry point exports for release-tag management helpers.     0.1.0            |
+| [`ChangelogConfig`](/packages/./api/index#changelogconfig)                     | interface | Controls changelog validation behavior.                                          |
+| [`GitHooksConfig`](/packages/./api/index#githooksconfig)                       | interface | Toggles each supported git hook integration.                                     |
+| [`GitConfig`](/packages/./api/index#gitconfig)                                 | interface | Configures git-related enforcement.                                              |
+| [`VersioningConfig`](/packages/./api/index#versioningconfig)                   | interface | Configures the active versioning mode.                                           |
+| [`VersionGuardConfig`](/packages/./api/index#versionguardconfig)               | interface | Top-level configuration consumed by versionguard.                                |
+| [`SemVer`](/packages/./api/index#semver)                                       | interface | Parsed semantic version components.                                              |
+| [`CalVer`](/packages/./api/index#calver)                                       | interface | Parsed calendar version components.                                              |
+| [`ParsedSemVer`](/packages/./api/index#parsedsemver)                           | interface | Parsed semantic version result wrapper.                                          |
+| [`ParsedCalVer`](/packages/./api/index#parsedcalver)                           | interface | Parsed calendar version result wrapper.                                          |
+| [`ParsedVersion`](/packages/./api/index#parsedversion)                         | type      | Union of supported parsed version payloads.                                      |
+| [`ValidationError`](/packages/./api/index#validationerror)                     | interface | Describes a single validation problem.                                           |
+| [`ValidationResult`](/packages/./api/index#validationresult)                   | interface | Result returned by version parsing and validation helpers.                       |
+| [`SyncChange`](/packages/./api/index#syncchange)                               | interface | Describes a single in-file version replacement.                                  |
+| [`SyncResult`](/packages/./api/index#syncresult)                               | interface | Reports the result of synchronizing a single file.                               |
+| [`VersionMismatch`](/packages/./api/index#versionmismatch)                     | interface | Reports a discovered version mismatch.                                           |
+| [`FullValidationResult`](/packages/./api/index#fullvalidationresult)           | interface | Combined result from a full project validation run.                              |
+| [`DoctorReport`](/packages/./api/index#doctorreport)                           | interface | Reports whether a project is ready to pass VersionGuard checks.                  |
+| [`ParsedCalVerFormat`](/packages/./api/index#parsedcalverformat)               | interface | Parsed token layout for a supported CalVer format string.                        |
+| [`ChangelogValidationResult`](/packages/./api/index#changelogvalidationresult) | interface | Describes the outcome of validating a changelog file.                            |
+| [`Suggestion`](/packages/./api/index#suggestion)                               | interface | Feedback entry point exports for suggestion and guidance helpers.                |
+| [`FeedbackResult`](/packages/./api/index#feedbackresult)                       | interface | Aggregates validation errors with suggested next steps.                          |
+| [`VersionSourceProvider`](/packages/./api/index#versionsourceprovider)         | interface | Abstraction for reading and writing a version string from any manifest format.   |
+| [`PackageJsonValue`](/packages/./api/index#packagejsonvalue)                   | type      | JSON-compatible scalar, array, or object value used by package metadata.         |
+| [`PackageJsonArray`](/packages/./api/index#packagejsonarray)                   | type      | Recursive array type used for arbitrary JSON-compatible package values.          |
+| [`PackageJsonObject`](/packages/./api/index#packagejsonobject)                 | interface | Recursive object type used for arbitrary JSON-compatible package values.         |
+| [`PackageJson`](/packages/./api/index#packagejson)                             | interface | Minimal shape of a `package.json` document used by VersionGuard.                 |
+| [`FixResult`](/packages/./api/index#fixresult)                                 | interface | Fix entry point exports for auto-remediation helpers.                            |
+| [`GuardWarning`](/packages/./api/index#guardwarning)                           | interface | Describes a single guard finding.                                                |
+| [`GuardReport`](/packages/./api/index#guardreport)                             | interface | Result of a full guard check pass.                                               |
+| [`HelpTopic`](/packages/./api/index#helptopic)                                 | interface | Embedded help topics for the CLI help system.                                    |
+| [`ProjectRootResult`](/packages/./api/index#projectrootresult)                 | interface | Result of project root detection.                                                |
+| [`TagInfo`](/packages/./api/index#taginfo)                                     | interface | Tag entry point exports for release-tag management helpers.                      |
+| [`InitOptions`](/packages/./api/index#initoptions)                             | interface | Options for headless (non-interactive) initialization.                           |
 
 ## Other Exports
 
-| Symbol                                                         | Kind | Description                                                                      |
-| -------------------------------------------------------------- | ---- | -------------------------------------------------------------------------------- |
-| [`types.ts`](/packages/./api/index#typests)                    | file |                                                                                  |
-| [`calver.ts`](/packages/./api/index#calverts)                  | file | Calendar version parsing, formatting, and comparison helpers.                    |
-| [`changelog.ts`](/packages/./api/index#changelogts)            | file |                                                                                  |
-| [`semver.ts`](/packages/./api/index#semverts)                  | file | Semantic version parsing, validation, comparison, and increment helpers.         |
-| [`index.ts`](/packages/./api/index#indexts)                    | file |                                                                                  |
-| [`project.ts`](/packages/./api/index#projectts)                | file |                                                                                  |
-| [`sync.ts`](/packages/./api/index#syncts)                      | file |                                                                                  |
-| [`index.ts`](/packages/./api/index#indexts)                    | file |                                                                                  |
-| [`hooks.ts`](/packages/./api/index#hooksts)                    | file |                                                                                  |
-| [`config.ts`](/packages/./api/index#configts)                  | file |                                                                                  |
-| [`index.ts`](/packages/./api/index#indexts)                    | file |                                                                                  |
-| [`index.ts`](/packages/./api/index#indexts)                    | file |                                                                                  |
-| [`cli.ts`](/packages/./api/index#clits)                        | file |                                                                                  |
-| [`calver.test.ts`](/packages/./api/index#calvertestts)         | file |                                                                                  |
-| [`test-utils.ts`](/packages/./api/index#test-utilsts)          | file | Test helpers for creating temporary VersionGuard fixture projects and git rep... |
-| [`changelog.test.ts`](/packages/./api/index#changelogtestts)   | file |                                                                                  |
-| [`cli.test.ts`](/packages/./api/index#clitestts)               | file |                                                                                  |
-| [`config.test.ts`](/packages/./api/index#configtestts)         | file |                                                                                  |
-| [`feedback.test.ts`](/packages/./api/index#feedbacktestts)     | file |                                                                                  |
-| [`fix.test.ts`](/packages/./api/index#fixtestts)               | file |                                                                                  |
-| [`hooks.test.ts`](/packages/./api/index#hookstestts)           | file |                                                                                  |
-| [`index.test.ts`](/packages/./api/index#indextestts)           | file |                                                                                  |
-| [`semver.test.ts`](/packages/./api/index#semvertestts)         | file |                                                                                  |
-| [`sync.test.ts`](/packages/./api/index#synctestts)             | file |                                                                                  |
-| [`tag.test.ts`](/packages/./api/index#tagtestts)               | file |                                                                                  |
-| [`package.json`](/packages/./api/index#packagejson)            | file |                                                                                  |
-| [`vite.config.ts`](/packages/./api/index#viteconfigts)         | file |                                                                                  |
-| [`forge-ts.config.ts`](/packages/./api/index#forge-tsconfigts) | file |                                                                                  |
+| Symbol                                                       | Kind     | Description                                                                      |
+| ------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------- |
+| [`types.ts`](/packages/./api/index#typests)                  | file     |                                                                                  |
+| [`calver.ts`](/packages/./api/index#calverts)                | file     | Calendar version parsing, formatting, and comparison helpers.                    |
+| [`changelog.ts`](/packages/./api/index#changelogts)          | file     |                                                                                  |
+| [`semver.ts`](/packages/./api/index#semverts)                | file     | Semantic version parsing, validation, comparison, and increment helpers.         |
+| [`index.ts`](/packages/./api/index#indexts)                  | file     |                                                                                  |
+| [`provider.ts`](/packages/./api/index#providerts)            | file     |                                                                                  |
+| [`git-tag.ts`](/packages/./api/index#git-tagts)              | file     | Git tag-based version source for Go, Swift, and similar ecosystems.              |
+| [`utils.ts`](/packages/./api/index#utilsts)                  | file     |                                                                                  |
+| [`json.ts`](/packages/./api/index#jsonts)                    | file     | JSON-based version source provider for package.json and composer.json.           |
+| [`regex.ts`](/packages/./api/index#regexts)                  | file     | Regex-based version source for source-code manifests.  Handles gemspec, mix.e... |
+| [`toml.ts`](/packages/./api/index#tomlts)                    | file     | TOML-based version source provider for Cargo.toml and pyproject.toml.            |
+| [`version-file.ts`](/packages/./api/index#version-filets)    | file     | Plain text VERSION file provider.                                                |
+| [`yaml.ts`](/packages/./api/index#yamlts)                    | file     | YAML-based version source provider for pubspec.yaml and similar manifests.       |
+| [`resolve.ts`](/packages/./api/index#resolvets)              | file     | Version source auto-detection and resolution.                                    |
+| [`project.ts`](/packages/./api/index#projectts)              | file     |                                                                                  |
+| [`sync.ts`](/packages/./api/index#syncts)                    | file     |                                                                                  |
+| [`index.ts`](/packages/./api/index#indexts)                  | file     |                                                                                  |
+| [`hooks.ts`](/packages/./api/index#hooksts)                  | file     |                                                                                  |
+| [`guard.ts`](/packages/./api/index#guardts)                  | file     |                                                                                  |
+| [`TOPICS`](/packages/./api/index#topics)                     | variable |                                                                                  |
+| [`topics.ts`](/packages/./api/index#topicsts)                | file     | Embedded help topics for the CLI help system.                                    |
+| [`index.ts`](/packages/./api/index#indexts)                  | file     |                                                                                  |
+| [`config.ts`](/packages/./api/index#configts)                | file     |                                                                                  |
+| [`project-root.ts`](/packages/./api/index#project-rootts)    | file     | Project root detection and boundary validation.                                  |
+| [`index.ts`](/packages/./api/index#indexts)                  | file     | Version source providers for language-agnostic manifest support.                 |
+| [`index.ts`](/packages/./api/index#indexts)                  | file     |                                                                                  |
+| [`index.ts`](/packages/./api/index#indexts)                  | file     | Public API for VersionGuard.                                                     |
+| [`init-wizard.ts`](/packages/./api/index#init-wizardts)      | file     | Interactive setup wizard and headless init for VersionGuard.                     |
+| [`cli.ts`](/packages/./api/index#clits)                      | file     |                                                                                  |
+| [`calver.test.ts`](/packages/./api/index#calvertestts)       | file     |                                                                                  |
+| [`test-utils.ts`](/packages/./api/index#test-utilsts)        | file     | Test helpers for creating temporary VersionGuard fixture projects and git rep... |
+| [`changelog.test.ts`](/packages/./api/index#changelogtestts) | file     |                                                                                  |
+| [`cli.test.ts`](/packages/./api/index#clitestts)             | file     |                                                                                  |
+| [`config.test.ts`](/packages/./api/index#configtestts)       | file     |                                                                                  |
+| [`feedback.test.ts`](/packages/./api/index#feedbacktestts)   | file     |                                                                                  |
+| [`fix.test.ts`](/packages/./api/index#fixtestts)             | file     |                                                                                  |
+| [`guard.test.ts`](/packages/./api/index#guardtestts)         | file     |                                                                                  |
+| [`hooks.test.ts`](/packages/./api/index#hookstestts)         | file     |                                                                                  |
+| [`index.test.ts`](/packages/./api/index#indextestts)         | file     |                                                                                  |
+| [`semver.test.ts`](/packages/./api/index#semvertestts)       | file     |                                                                                  |
+| [`sources.test.ts`](/packages/./api/index#sourcestestts)     | file     |                                                                                  |
+| [`sync.test.ts`](/packages/./api/index#synctestts)           | file     |                                                                                  |
+| [`tag.test.ts`](/packages/./api/index#tagtestts)             | file     |                                                                                  |

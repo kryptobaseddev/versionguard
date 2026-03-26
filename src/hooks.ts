@@ -52,6 +52,12 @@ export function installHooks(config: GitConfig, cwd: string = process.cwd()): vo
           // Replace existing VG block in-place (idempotent)
           const updated = replaceVgBlock(existing, vgBlock);
           fs.writeFileSync(hookPath, updated, { encoding: 'utf-8', mode: 0o755 });
+        } else if (isLegacyVgHook(existing)) {
+          // Legacy VG hook — replace entirely with new marker format
+          fs.writeFileSync(hookPath, `#!/bin/sh\n\n${vgBlock}\n`, {
+            encoding: 'utf-8',
+            mode: 0o755,
+          });
         } else {
           // Append VG block to existing hook (cooperative)
           const appended = `${existing.trimEnd()}\n\n${vgBlock}\n`;
@@ -101,21 +107,21 @@ export function uninstallHooks(cwd: string = process.cwd()): void {
     if (!content.includes('versionguard')) continue;
 
     if (content.includes(VG_BLOCK_START)) {
-      // Remove only the VG block, preserve everything else
+      // Remove the marker-delimited VG block
       const cleaned = removeVgBlock(content);
       const trimmed = cleaned.trim();
 
       if (!trimmed || trimmed === '#!/bin/sh') {
-        // Hook is now empty — remove the file
+        fs.unlinkSync(hookPath);
+      } else if (isLegacyVgHook(trimmed)) {
+        // Remaining content is a legacy VG hook — remove entirely
         fs.unlinkSync(hookPath);
       } else {
         fs.writeFileSync(hookPath, `${trimmed}\n`, { encoding: 'utf-8', mode: 0o755 });
       }
-    } else {
-      // Legacy VG hook (no markers) — only delete if VG is the sole content
-      if (content.includes('# versionguard') && !content.includes('husky')) {
-        fs.unlinkSync(hookPath);
-      }
+    } else if (isLegacyVgHook(content)) {
+      // Legacy VG hook (no markers, no other tool content) — delete
+      fs.unlinkSync(hookPath);
     }
   }
 }
@@ -227,6 +233,19 @@ ${VG_BLOCK_END}`;
  */
 export function generateHookScript(hookName: (typeof HOOK_NAMES)[number]): string {
   return `#!/bin/sh\n\n${generateHookBlock(hookName)}\n`;
+}
+
+/** Detects a legacy VG hook (pre-marker format) that has no other tool content. */
+function isLegacyVgHook(content: string): boolean {
+  // A legacy VG hook contains the versionguard validate call but has no
+  // marker delimiters and no content from other hook tools.
+  if (!content.includes('versionguard validate')) return false;
+  if (content.includes(VG_BLOCK_START)) return false;
+  // Check for other tools — but ignore "pre-commit" as a hook name in VG's own flags
+  if (content.includes('husky')) return false;
+  if (content.includes('lefthook')) return false;
+  if (content.includes('pre-commit run')) return false; // pre-commit Python framework
+  return true;
 }
 
 /** Replaces an existing VG block within a hook script. */
