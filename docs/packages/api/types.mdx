@@ -126,6 +126,14 @@ Configures git-related enforcement.
 | `hooks`        | `GitHooksConfig` | Yes      | Hook toggles used by the CLI and validation workflow. |
 | `enforceHooks` | `boolean`        | Yes      | Fails validation when required hooks are missing.     |
 
+## GitHubConfig
+
+Configures GitHub-specific integration features.
+
+| Property     | Type      | Required | Description                                                             |
+| ------------ | --------- | -------- | ----------------------------------------------------------------------- |
+| `dependabot` | `boolean` | Yes      | Generates `.github/dependabot.yml` from detected manifests during init. |
+
 ## VersioningConfig
 
 Configures the active versioning mode.
@@ -167,6 +175,7 @@ Top-level configuration consumed by versionguard.
 | `sync`       | `SyncConfig`       | Yes      | Synchronization settings for mirrored version strings. |
 | `changelog`  | `ChangelogConfig`  | Yes      | Changelog validation settings.                         |
 | `git`        | `GitConfig`        | Yes      | Git enforcement settings.                              |
+| `github`     | `GitHubConfig`     | Yes      | GitHub integration settings.                           |
 | `scan`       | `ScanConfig`       | Yes      | Repo-wide version literal scanning.                    |
 | `ignore`     | `string[]`         | Yes      | Files or patterns excluded from validation.            |
 
@@ -566,16 +575,17 @@ Tag entry point exports for release-tag management helpers.
 
 Options for headless (non-interactive) initialization.
 
-| Property             | Type                                | Required | Description                                   |
-| -------------------- | ----------------------------------- | -------- | --------------------------------------------- |
-| `cwd`                | `string`                            | Yes      | Working directory path.                       |
-| `type`               | `"semver" \| "calver" \| undefined` | No       | Versioning type (semver or calver).           |
-| `format`             | `string \| undefined`               | No       | CalVer format string.                         |
-| `allowVPrefix`       | `boolean \| undefined`              | No       | Allow v-prefix on SemVer versions.            |
-| `allowBuildMetadata` | `boolean \| undefined`              | No       | Allow build metadata on SemVer versions.      |
-| `requirePrerelease`  | `boolean \| undefined`              | No       | Require prerelease labels on SemVer versions. |
-| `manifest`           | `string \| undefined`               | No       | Manifest source type.                         |
-| `hooks`              | `boolean \| undefined`              | No       | Whether to install git hooks.                 |
-| `changelog`          | `boolean \| undefined`              | No       | Whether to enable changelog validation.       |
-| `yes`                | `boolean \| undefined`              | No       | Accept defaults without prompting.            |
-| `force`              | `boolean \| undefined`              | No       | Overwrite existing config.                    |
+| Property             | Type                                | Required | Description                                                    |
+| -------------------- | ----------------------------------- | -------- | -------------------------------------------------------------- |
+| `cwd`                | `string`                            | Yes      | Working directory path.                                        |
+| `type`               | `"semver" \| "calver" \| undefined` | No       | Versioning type (semver or calver).                            |
+| `format`             | `string \| undefined`               | No       | CalVer format string.                                          |
+| `allowVPrefix`       | `boolean \| undefined`              | No       | Allow v-prefix on SemVer versions.                             |
+| `allowBuildMetadata` | `boolean \| undefined`              | No       | Allow build metadata on SemVer versions.                       |
+| `requirePrerelease`  | `boolean \| undefined`              | No       | Require prerelease labels on SemVer versions.                  |
+| `manifest`           | `string \| undefined`               | No       | Manifest source type.                                          |
+| `github`             | `boolean \| undefined`              | No       | Whether to generate GitHub integration files (dependabot.yml). |
+| `hooks`              | `boolean \| undefined`              | No       | Whether to install git hooks.                                  |
+| `changelog`          | `boolean \| undefined`              | No       | Whether to enable changelog validation.                        |
+| `yes`                | `boolean \| undefined`              | No       | Accept defaults without prompting.                             |
+| `force`              | `boolean \| undefined`              | No       | Overwrite existing config.                                     |

@@ -2,7 +2,7 @@
   "$schema": "https://forge-ts.dev/schemas/ckm/v1.json",
   "version": "1.0.0",
   "project": "@codluv/versionguard",
-  "generated": "2026-03-26T21:16:11.940Z",
+  "generated": "2026-03-26T22:14:21.976Z",
   "concepts": [
     {
       "id": "concept-ManifestConfig",
@@ -164,6 +164,18 @@
       ]
     },
     {
+      "id": "concept-GitHubConfig",
+      "name": "GitHubConfig",
+      "what": "Configures GitHub-specific integration features.",
+      "properties": [
+        {
+          "name": "dependabot",
+          "type": "boolean",
+          "description": "Generates `.github/dependabot.yml` from detected manifests during init."
+        }
+      ]
+    },
+    {
       "id": "concept-VersioningConfig",
       "name": "VersioningConfig",
       "what": "Configures the active versioning mode.",
@@ -258,6 +270,11 @@
           "name": "git",
           "type": "GitConfig",
           "description": "Git enforcement settings."
+        },
+        {
+          "name": "github",
+          "type": "GitHubConfig",
+          "description": "GitHub integration settings."
         },
         {
           "name": "scan",
@@ -545,6 +562,11 @@
           "description": "Manifest source type."
         },
         {
+          "name": "github",
+          "type": "boolean | undefined",
+          "description": "Whether to generate GitHub integration files (dependabot.yml)."
+        },
+        {
           "name": "hooks",
           "type": "boolean | undefined",
           "description": "Whether to install git hooks."
@@ -813,6 +835,22 @@
       ],
       "outputs": {
         "text": "A guard report with all findings."
+      }
+    },
+    {
+      "id": "op-generateDependabotConfig",
+      "name": "generateDependabotConfig",
+      "what": "Generates Dependabot YAML configuration from detected manifests.",
+      "inputs": [
+        {
+          "name": "manifests",
+          "type": "unknown",
+          "required": true,
+          "description": "Detected manifest source types from the project."
+        }
+      ],
+      "outputs": {
+        "text": "The Dependabot configuration as a YAML string."
       }
     },
     {
@@ -1132,6 +1170,12 @@
       "default": "false"
     },
     {
+      "key": "GitHubConfig.dependabot",
+      "type": "boolean",
+      "description": "Generates `.github/dependabot.yml` from detected manifests during init.",
+      "default": "true"
+    },
+    {
       "key": "VersioningConfig.type",
       "type": "VersioningType",
       "description": "Versioning strategy used for the project."
@@ -1197,6 +1241,12 @@
       "key": "VersionGuardConfig.git",
       "type": "GitConfig",
       "description": "Git enforcement settings."
+    },
+    {
+      "key": "VersionGuardConfig.github",
+      "type": "GitHubConfig",
+      "description": "GitHub integration settings.",
+      "default": "`{ dependabot: true }`"
     },
     {
       "key": "VersionGuardConfig.scan",
@@ -1273,6 +1323,11 @@
       "key": "InitOptions.manifest",
       "type": "string | undefined",
       "description": "Manifest source type."
+    },
+    {
+      "key": "InitOptions.github",
+      "type": "boolean | undefined",
+      "description": "Whether to generate GitHub integration files (dependabot.yml)."
     },
     {
       "key": "InitOptions.hooks",

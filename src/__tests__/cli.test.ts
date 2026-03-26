@@ -413,6 +413,7 @@ describe('cli', () => {
       'CHANGELOG.md',
       '# Changelog\n\n## [Unreleased]\n\n## [1.2.3] - 2026-03-21\n\n### Added\n\n- Initial release\n\n[Unreleased]: https://example.com\n',
     );
+    writeTextFile(cwd, '.github/dependabot.yml', 'version: 2\nupdates: []\n');
     initGitRepo(cwd);
     installHooks(
       {

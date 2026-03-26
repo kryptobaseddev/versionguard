@@ -91,6 +91,8 @@ export function createProgram(): Command {
     .option('--no-hooks', 'Skip git hooks')
     .option('--changelog', 'Enable changelog validation (default: true)')
     .option('--no-changelog', 'Disable changelog validation')
+    .option('--github', 'Generate GitHub integration files (default: true)')
+    .option('--no-github', 'Skip GitHub integration (dependabot.yml)')
     .option('-y, --yes', 'Accept all defaults, no prompts')
     .option('--force', 'Overwrite existing config file')
     .action(
@@ -102,6 +104,7 @@ export function createProgram(): Command {
         buildMetadata?: boolean;
         requirePrerelease?: boolean;
         manifest?: string;
+        github?: boolean;
         hooks?: boolean;
         changelog?: boolean;
         yes?: boolean;
@@ -129,6 +132,7 @@ export function createProgram(): Command {
               allowBuildMetadata: options.buildMetadata,
               requirePrerelease: options.requirePrerelease,
               manifest: options.manifest,
+              github: options.github,
               hooks: options.hooks,
               changelog: options.changelog,
               yes: options.yes,

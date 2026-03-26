@@ -1,6 +1,6 @@
 # @codluv/versionguard
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
-> Version: 0.7.0
+> Version: 0.8.1
 
 ## Install
 
@@ -16,7 +16,7 @@ npm install -D @codluv/versionguard
 ## Packages
 
 ### main
-90 functions, 55 types
+93 functions, 56 types
 
 - getSemVerConfig() — Resolves the SemVer config from a VersionGuard config.
 - getCalVerConfig() — Extracts the CalVer config from a VersionGuard config, throwing if missing.
@@ -79,6 +79,9 @@ npm install -D @codluv/versionguard
 - checkHookIntegrity() — Verifies that installed hook scripts match the expected content.
 - checkEnforceHooksPolicy() — Checks whether hooks are configured as required but not enforced.
 - runGuardChecks() — Runs all guard checks and returns a consolidated report.
+- generateDependabotConfig() — Generates Dependabot YAML configuration from detected manifests.
+- writeDependabotConfig() — Writes a Dependabot configuration file to `.github/dependabot.yml`.
+- dependabotConfigExists() — Checks whether `.github/dependabot.yml` exists in the project.
 - getDefaultConfig() — Returns a deep-cloned copy of the built-in VersionGuard configuration.
 - findConfig() — Finds the first supported VersionGuard config file in a directory.
 - loadConfig() — Loads a VersionGuard config file from disk.
@@ -122,6 +125,7 @@ npm install -D @codluv/versionguard
 - ChangelogConfig — Controls changelog validation behavior.
 - GitHooksConfig — Toggles each supported git hook integration.
 - GitConfig — Configures git-related enforcement.
+- GitHubConfig — Configures GitHub-specific integration features.
 - VersioningConfig — Configures the active versioning mode.
 - ScanAllowlistEntry — An intentional version reference that should be excluded from scan results.
 - ScanConfig — Configures repo-wide scanning for hardcoded version literals.

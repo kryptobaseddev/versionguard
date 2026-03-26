@@ -10,6 +10,7 @@ import * as path from 'node:path';
 
 import * as calver from './calver';
 import { validateChangelog } from './changelog';
+import { dependabotConfigExists } from './github';
 import { areHooksInstalled, findGitDir } from './hooks';
 import { getPackageVersion } from './project';
 import * as semver from './semver';
@@ -24,6 +25,7 @@ import {
 } from './types';
 
 export * as calver from './calver';
+export * from './github';
 export {
   type ChangelogStructureOptions,
   fixChangesetMangling,
@@ -203,6 +205,10 @@ export function doctor(config: VersionGuardConfig, cwd: string = process.cwd()):
 
   if (gitRepository && !worktreeClean) {
     errors.push('Working tree is not clean');
+  }
+
+  if (gitRepository && config.github?.dependabot && !dependabotConfigExists(cwd)) {
+    errors.push('.github/dependabot.yml is missing — run `vg init` to generate it');
   }
 
   return {

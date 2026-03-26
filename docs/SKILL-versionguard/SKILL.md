@@ -1,7 +1,7 @@
 ---
 name: SKILL-versionguard
 description: >
-  Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync Use when: (1) running versionguard CLI commands, (2) calling its 90 API functions, (3) configuring @codluv/versionguard, (4) understanding its 55 type definitions, (5) working with its 6 classes, (6) user mentions "semver", "calver", "versioning", "git-hooks", "changelog", (7) user mentions "@codluv/versionguard" or asks about its API.
+  Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync Use when: (1) running versionguard CLI commands, (2) calling its 93 API functions, (3) configuring @codluv/versionguard, (4) understanding its 56 type definitions, (5) working with its 6 classes, (6) user mentions "semver", "calver", "versioning", "git-hooks", "changelog", (7) user mentions "@codluv/versionguard" or asks about its API.
 ---
 
 # @codluv/versionguard
@@ -37,7 +37,7 @@ npx versionguard --help
 | `getNextVersions()` | Returns the most likely next CalVer candidates. |
 | `validateChangelog()` | Validates a changelog file for release readiness. |
 | `getLatestVersion()` | Gets the most recent released version from a changelog. |
-| ... | 75 more — see API reference |
+| ... | 78 more — see API reference |
 
 ## Configuration
 

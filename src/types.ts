@@ -342,6 +342,22 @@ export interface GitConfig {
 }
 
 /**
+ * Configures GitHub-specific integration features.
+ *
+ * @public
+ * @since 0.9.0
+ * @forgeIgnore E020
+ */
+export interface GitHubConfig {
+  /**
+   * Generates `.github/dependabot.yml` from detected manifests during init.
+   *
+   * @defaultValue true
+   */
+  dependabot: boolean;
+}
+
+/**
  * Configures the active versioning mode.
  *
  * @public
@@ -463,6 +479,14 @@ export interface VersionGuardConfig {
    * Git enforcement settings.
    */
   git: GitConfig;
+
+  /**
+   * GitHub integration settings.
+   *
+   * @defaultValue `{ dependabot: true }`
+   * @since 0.9.0
+   */
+  github: GitHubConfig;
 
   /**
    * Repo-wide version literal scanning.

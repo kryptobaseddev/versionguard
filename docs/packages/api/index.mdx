@@ -7,104 +7,107 @@ API reference for the `.` package.
 
 ## Functions & Classes
 
-| Symbol                                                                           | Kind     | Description                                                                      |
-| -------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
-| [`getSemVerConfig()`](/packages/./api/functions#getsemverconfig)                 | function | Resolves the SemVer config from a VersionGuard config.                           |
-| [`getCalVerConfig()`](/packages/./api/functions#getcalverconfig)                 | function | Extracts the CalVer config from a VersionGuard config, throwing if missing.      |
-| [`validateModifier()`](/packages/./api/functions#validatemodifier)               | function | Validates a pre-release / modifier tag against the allowed modifiers list.       |
-| [`isValidCalVerFormat()`](/packages/./api/functions#isvalidcalverformat)         | function | Validates that a CalVer format string is composed of valid tokens and follows... |
-| [`parseFormat()`](/packages/./api/functions#parseformat)                         | function | Breaks a CalVer format string into its component tokens.                         |
-| [`getRegexForFormat()`](/packages/./api/functions#getregexforformat)             | function | Builds a regular expression that matches a supported CalVer format.              |
-| [`parse()`](/packages/./api/functions#parse)                                     | function | Parses a CalVer string using the supplied format.                                |
-| [`validate()`](/packages/./api/functions#validate)                               | function | Validates a CalVer string against formatting and date rules.                     |
-| [`format()`](/packages/./api/functions#format)                                   | function | Formats a parsed CalVer object back into a version string.                       |
-| [`getCurrentVersion()`](/packages/./api/functions#getcurrentversion)             | function | Creates the current CalVer string for a format.                                  |
-| [`compare()`](/packages/./api/functions#compare)                                 | function | Compares two CalVer strings using a shared format.                               |
-| [`increment()`](/packages/./api/functions#increment)                             | function | Increments a CalVer string.                                                      |
-| [`getNextVersions()`](/packages/./api/functions#getnextversions)                 | function | Returns the most likely next CalVer candidates.                                  |
-| [`validateChangelog()`](/packages/./api/functions#validatechangelog)             | function | Validates a changelog file for release readiness.                                |
-| [`getLatestVersion()`](/packages/./api/functions#getlatestversion)               | function | Gets the most recent released version from a changelog.                          |
-| [`addVersionEntry()`](/packages/./api/functions#addversionentry)                 | function | Inserts a new version entry beneath the `[Unreleased]` section.                  |
-| [`isChangesetMangled()`](/packages/./api/functions#ischangesetmangled)           | function | Detects whether a changelog has been mangled by Changesets.                      |
-| [`fixChangesetMangling()`](/packages/./api/functions#fixchangesetmangling)       | function | Fixes a Changesets-mangled changelog into proper Keep a Changelog format.        |
-| [`createCkmEngine()`](/packages/./api/functions#createckmengine)                 | function | Creates a CKM engine from a parsed manifest.                                     |
-| [`parse()`](/packages/./api/functions#parse)                                     | function | Parses a semantic version string.                                                |
-| [`validate()`](/packages/./api/functions#validate)                               | function | Validates that a string is a supported semantic version.                         |
-| [`compare()`](/packages/./api/functions#compare)                                 | function | Compares two semantic version strings.                                           |
-| [`gt()`](/packages/./api/functions#gt)                                           | function | Checks whether one semantic version is greater than another.                     |
-| [`lt()`](/packages/./api/functions#lt)                                           | function | Checks whether one semantic version is less than another.                        |
-| [`eq()`](/packages/./api/functions#eq)                                           | function | Checks whether two semantic versions are equal in precedence.                    |
-| [`increment()`](/packages/./api/functions#increment)                             | function | Increments a semantic version string by release type.                            |
-| [`format()`](/packages/./api/functions#format)                                   | function | Formats a parsed semantic version object.                                        |
-| [`getVersionFeedback()`](/packages/./api/functions#getversionfeedback)           | function | Generates actionable feedback for a version string.                              |
-| [`getSyncFeedback()`](/packages/./api/functions#getsyncfeedback)                 | function | Generates suggestions for version sync mismatches in a file.                     |
-| [`getChangelogFeedback()`](/packages/./api/functions#getchangelogfeedback)       | function | Generates suggestions for changelog-related validation issues.                   |
-| [`getTagFeedback()`](/packages/./api/functions#gettagfeedback)                   | function | Generates suggestions for git tag mismatches.                                    |
-| [`GitTagSource`](/packages/./api/functions#gittagsource)                         | class    | Reads version from the latest Git tag. Writing creates a new annotated tag.      |
-| [`getNestedValue()`](/packages/./api/functions#getnestedvalue)                   | function | Traverses a nested object using a dotted key path.                               |
-| [`setNestedValue()`](/packages/./api/functions#setnestedvalue)                   | function | Sets a value at a dotted key path, throwing if intermediate segments are miss... |
-| [`escapeRegExp()`](/packages/./api/functions#escaperegexp)                       | function | Escapes special regex characters in a string for safe use in `new RegExp()`.     |
-| [`JsonVersionSource`](/packages/./api/functions#jsonversionsource)               | class    | Reads and writes version strings from JSON manifest files.                       |
-| [`RegexVersionSource`](/packages/./api/functions#regexversionsource)             | class    | Reads and writes version strings using regex extraction from source files.       |
-| [`TomlVersionSource`](/packages/./api/functions#tomlversionsource)               | class    | Reads and writes version strings from TOML manifest files.                       |
-| [`VersionFileSource`](/packages/./api/functions#versionfilesource)               | class    | Reads and writes version strings from a plain text VERSION file.                 |
-| [`YamlVersionSource`](/packages/./api/functions#yamlversionsource)               | class    | Reads and writes version strings from YAML manifest files.                       |
-| [`resolveVersionSource()`](/packages/./api/functions#resolveversionsource)       | function | Resolves the version source provider for a project.                              |
-| [`detectManifests()`](/packages/./api/functions#detectmanifests)                 | function | Detects all manifest files present in a project directory.                       |
-| [`getPackageJsonPath()`](/packages/./api/functions#getpackagejsonpath)           | function | Gets the `package.json` path for a project directory.                            |
-| [`readPackageJson()`](/packages/./api/functions#readpackagejson)                 | function | Reads and parses a project's `package.json` file.                                |
-| [`writePackageJson()`](/packages/./api/functions#writepackagejson)               | function | Writes a `package.json` document back to disk.                                   |
-| [`getPackageVersion()`](/packages/./api/functions#getpackageversion)             | function | Gets the version string from the project manifest.  When a `manifest` config...  |
-| [`setPackageVersion()`](/packages/./api/functions#setpackageversion)             | function | Sets the version field in the project manifest.  When a `manifest` config is...  |
-| [`getVersionSource()`](/packages/./api/functions#getversionsource)               | function | Resolves the version source provider for a project.                              |
-| [`syncVersion()`](/packages/./api/functions#syncversion)                         | function | Synchronizes configured files to a single version string.                        |
-| [`syncFile()`](/packages/./api/functions#syncfile)                               | function | Synchronizes a single file to a target version.                                  |
-| [`checkHardcodedVersions()`](/packages/./api/functions#checkhardcodedversions)   | function | Checks configured files for hardcoded version mismatches.                        |
-| [`scanRepoForVersions()`](/packages/./api/functions#scanrepoforversions)         | function | Scans the entire repository for hardcoded version literals.                      |
-| [`fixPackageVersion()`](/packages/./api/functions#fixpackageversion)             | function | Updates the `package.json` version field when needed.                            |
-| [`fixSyncIssues()`](/packages/./api/functions#fixsyncissues)                     | function | Synchronizes configured files to the package version.                            |
-| [`fixChangelog()`](/packages/./api/functions#fixchangelog)                       | function | Ensures the changelog contains an entry for a version.                           |
-| [`fixAll()`](/packages/./api/functions#fixall)                                   | function | Runs all configured auto-fix operations.                                         |
-| [`suggestNextVersion()`](/packages/./api/functions#suggestnextversion)           | function | Suggests candidate next versions for a release.                                  |
-| [`installHooks()`](/packages/./api/functions#installhooks)                       | function | Installs VersionGuard-managed Git hooks in a repository.                         |
-| [`uninstallHooks()`](/packages/./api/functions#uninstallhooks)                   | function | Removes VersionGuard-managed Git hooks from a repository.                        |
-| [`findGitDir()`](/packages/./api/functions#findgitdir)                           | function | Finds the nearest `.git` directory by walking up from a starting directory.      |
-| [`areHooksInstalled()`](/packages/./api/functions#arehooksinstalled)             | function | Checks whether all VersionGuard-managed hooks are installed.                     |
-| [`generateHookScript()`](/packages/./api/functions#generatehookscript)           | function | Generates the shell script content for a Git hook.                               |
-| [`checkHooksPathOverride()`](/packages/./api/functions#checkhookspathoverride)   | function | Checks whether git hooks have been redirected away from the repository.          |
-| [`checkHuskyBypass()`](/packages/./api/functions#checkhuskybypass)               | function | Checks whether the HUSKY environment variable is disabling hooks.                |
-| [`checkHookIntegrity()`](/packages/./api/functions#checkhookintegrity)           | function | Verifies that installed hook scripts match the expected content.                 |
-| [`checkEnforceHooksPolicy()`](/packages/./api/functions#checkenforcehookspolicy) | function | Checks whether hooks are configured as required but not enforced.                |
-| [`runGuardChecks()`](/packages/./api/functions#runguardchecks)                   | function | Runs all guard checks and returns a consolidated report.                         |
-| [`getDefaultConfig()`](/packages/./api/functions#getdefaultconfig)               | function | Returns a deep-cloned copy of the built-in VersionGuard configuration.           |
-| [`findConfig()`](/packages/./api/functions#findconfig)                           | function | Finds the first supported VersionGuard config file in a directory.               |
-| [`loadConfig()`](/packages/./api/functions#loadconfig)                           | function | Loads a VersionGuard config file from disk.                                      |
-| [`getConfig()`](/packages/./api/functions#getconfig)                             | function | Resolves the active VersionGuard configuration for a project.                    |
-| [`initConfig()`](/packages/./api/functions#initconfig)                           | function | Initializes a new VersionGuard config file in a project.                         |
-| [`findProjectRoot()`](/packages/./api/functions#findprojectroot)                 | function | Walks up from `startDir` to find the nearest project root.                       |
-| [`formatNotProjectError()`](/packages/./api/functions#formatnotprojecterror)     | function | Formats a helpful error message when a command can't find a project.             |
-| [`getLatestTag()`](/packages/./api/functions#getlatesttag)                       | function | Returns the most recent reachable git tag for a repository.                      |
-| [`getAllTags()`](/packages/./api/functions#getalltags)                           | function | Lists all tags in a repository.                                                  |
-| [`createTag()`](/packages/./api/functions#createtag)                             | function | Creates a release tag and optionally fixes version state first.                  |
-| [`handlePostTag()`](/packages/./api/functions#handleposttag)                     | function | Runs post-tag validation and sync checks.                                        |
-| [`validateTagForPush()`](/packages/./api/functions#validatetagforpush)           | function | Validates that a local tag is safe to push to the default remote.                |
-| [`suggestTagMessage()`](/packages/./api/functions#suggesttagmessage)             | function | Suggests an annotated tag message from changelog content.                        |
-| [`validateVersion()`](/packages/./api/functions#validateversion)                 | function | Validates a version string against the active versioning strategy.               |
-| [`validate()`](/packages/./api/functions#validate)                               | function | Validates the current project state against the supplied configuration.          |
-| [`doctor()`](/packages/./api/functions#doctor)                                   | function | Runs an extended readiness check for a project.                                  |
-| [`sync()`](/packages/./api/functions#sync)                                       | function | Synchronizes configured files to the current package version.                    |
-| [`canBump()`](/packages/./api/functions#canbump)                                 | function | Determines whether a project can move from one version to another.               |
-| [`runWizard()`](/packages/./api/functions#runwizard)                             | function | Runs the interactive setup wizard.                                               |
-| [`runHeadless()`](/packages/./api/functions#runheadless)                         | function | Initializes VersionGuard non-interactively using CLI flags.                      |
-| [`createProgram()`](/packages/./api/functions#createprogram)                     | function | Creates the VersionGuard CLI program definition.                                 |
-| [`runCli()`](/packages/./api/functions#runcli)                                   | function | Parses CLI arguments and executes the matching command.                          |
-| [`shouldRunCli()`](/packages/./api/functions#shouldruncli)                       | function | Determines whether the current module is the invoked CLI entry point.            |
-| [`createTempProject()`](/packages/./api/functions#createtempproject)             | function | Creates a temporary project directory with a minimal `package.json` fixture.     |
-| [`initGitRepo()`](/packages/./api/functions#initgitrepo)                         | function | Initializes a git repository in a fixture directory with a first commit.         |
-| [`writeTextFile()`](/packages/./api/functions#writetextfile)                     | function | Writes a text fixture file relative to a temporary project directory.            |
-| [`createBareRemote()`](/packages/./api/functions#createbareremote)               | function | Creates a bare git repository to use as a remote in integration tests.           |
-| [`addGitRemote()`](/packages/./api/functions#addgitremote)                       | function | Adds a local bare repository as the `origin` remote for a fixture repo.          |
-| [`commitAll()`](/packages/./api/functions#commitall)                             | function | Stages all changes and creates a commit in a fixture repository.                 |
+| Symbol                                                                             | Kind     | Description                                                                      |
+| ---------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| [`getSemVerConfig()`](/packages/./api/functions#getsemverconfig)                   | function | Resolves the SemVer config from a VersionGuard config.                           |
+| [`getCalVerConfig()`](/packages/./api/functions#getcalverconfig)                   | function | Extracts the CalVer config from a VersionGuard config, throwing if missing.      |
+| [`validateModifier()`](/packages/./api/functions#validatemodifier)                 | function | Validates a pre-release / modifier tag against the allowed modifiers list.       |
+| [`isValidCalVerFormat()`](/packages/./api/functions#isvalidcalverformat)           | function | Validates that a CalVer format string is composed of valid tokens and follows... |
+| [`parseFormat()`](/packages/./api/functions#parseformat)                           | function | Breaks a CalVer format string into its component tokens.                         |
+| [`getRegexForFormat()`](/packages/./api/functions#getregexforformat)               | function | Builds a regular expression that matches a supported CalVer format.              |
+| [`parse()`](/packages/./api/functions#parse)                                       | function | Parses a CalVer string using the supplied format.                                |
+| [`validate()`](/packages/./api/functions#validate)                                 | function | Validates a CalVer string against formatting and date rules.                     |
+| [`format()`](/packages/./api/functions#format)                                     | function | Formats a parsed CalVer object back into a version string.                       |
+| [`getCurrentVersion()`](/packages/./api/functions#getcurrentversion)               | function | Creates the current CalVer string for a format.                                  |
+| [`compare()`](/packages/./api/functions#compare)                                   | function | Compares two CalVer strings using a shared format.                               |
+| [`increment()`](/packages/./api/functions#increment)                               | function | Increments a CalVer string.                                                      |
+| [`getNextVersions()`](/packages/./api/functions#getnextversions)                   | function | Returns the most likely next CalVer candidates.                                  |
+| [`validateChangelog()`](/packages/./api/functions#validatechangelog)               | function | Validates a changelog file for release readiness.                                |
+| [`getLatestVersion()`](/packages/./api/functions#getlatestversion)                 | function | Gets the most recent released version from a changelog.                          |
+| [`addVersionEntry()`](/packages/./api/functions#addversionentry)                   | function | Inserts a new version entry beneath the `[Unreleased]` section.                  |
+| [`isChangesetMangled()`](/packages/./api/functions#ischangesetmangled)             | function | Detects whether a changelog has been mangled by Changesets.                      |
+| [`fixChangesetMangling()`](/packages/./api/functions#fixchangesetmangling)         | function | Fixes a Changesets-mangled changelog into proper Keep a Changelog format.        |
+| [`createCkmEngine()`](/packages/./api/functions#createckmengine)                   | function | Creates a CKM engine from a parsed manifest.                                     |
+| [`parse()`](/packages/./api/functions#parse)                                       | function | Parses a semantic version string.                                                |
+| [`validate()`](/packages/./api/functions#validate)                                 | function | Validates that a string is a supported semantic version.                         |
+| [`compare()`](/packages/./api/functions#compare)                                   | function | Compares two semantic version strings.                                           |
+| [`gt()`](/packages/./api/functions#gt)                                             | function | Checks whether one semantic version is greater than another.                     |
+| [`lt()`](/packages/./api/functions#lt)                                             | function | Checks whether one semantic version is less than another.                        |
+| [`eq()`](/packages/./api/functions#eq)                                             | function | Checks whether two semantic versions are equal in precedence.                    |
+| [`increment()`](/packages/./api/functions#increment)                               | function | Increments a semantic version string by release type.                            |
+| [`format()`](/packages/./api/functions#format)                                     | function | Formats a parsed semantic version object.                                        |
+| [`getVersionFeedback()`](/packages/./api/functions#getversionfeedback)             | function | Generates actionable feedback for a version string.                              |
+| [`getSyncFeedback()`](/packages/./api/functions#getsyncfeedback)                   | function | Generates suggestions for version sync mismatches in a file.                     |
+| [`getChangelogFeedback()`](/packages/./api/functions#getchangelogfeedback)         | function | Generates suggestions for changelog-related validation issues.                   |
+| [`getTagFeedback()`](/packages/./api/functions#gettagfeedback)                     | function | Generates suggestions for git tag mismatches.                                    |
+| [`GitTagSource`](/packages/./api/functions#gittagsource)                           | class    | Reads version from the latest Git tag. Writing creates a new annotated tag.      |
+| [`getNestedValue()`](/packages/./api/functions#getnestedvalue)                     | function | Traverses a nested object using a dotted key path.                               |
+| [`setNestedValue()`](/packages/./api/functions#setnestedvalue)                     | function | Sets a value at a dotted key path, throwing if intermediate segments are miss... |
+| [`escapeRegExp()`](/packages/./api/functions#escaperegexp)                         | function | Escapes special regex characters in a string for safe use in `new RegExp()`.     |
+| [`JsonVersionSource`](/packages/./api/functions#jsonversionsource)                 | class    | Reads and writes version strings from JSON manifest files.                       |
+| [`RegexVersionSource`](/packages/./api/functions#regexversionsource)               | class    | Reads and writes version strings using regex extraction from source files.       |
+| [`TomlVersionSource`](/packages/./api/functions#tomlversionsource)                 | class    | Reads and writes version strings from TOML manifest files.                       |
+| [`VersionFileSource`](/packages/./api/functions#versionfilesource)                 | class    | Reads and writes version strings from a plain text VERSION file.                 |
+| [`YamlVersionSource`](/packages/./api/functions#yamlversionsource)                 | class    | Reads and writes version strings from YAML manifest files.                       |
+| [`resolveVersionSource()`](/packages/./api/functions#resolveversionsource)         | function | Resolves the version source provider for a project.                              |
+| [`detectManifests()`](/packages/./api/functions#detectmanifests)                   | function | Detects all manifest files present in a project directory.                       |
+| [`getPackageJsonPath()`](/packages/./api/functions#getpackagejsonpath)             | function | Gets the `package.json` path for a project directory.                            |
+| [`readPackageJson()`](/packages/./api/functions#readpackagejson)                   | function | Reads and parses a project's `package.json` file.                                |
+| [`writePackageJson()`](/packages/./api/functions#writepackagejson)                 | function | Writes a `package.json` document back to disk.                                   |
+| [`getPackageVersion()`](/packages/./api/functions#getpackageversion)               | function | Gets the version string from the project manifest.  When a `manifest` config...  |
+| [`setPackageVersion()`](/packages/./api/functions#setpackageversion)               | function | Sets the version field in the project manifest.  When a `manifest` config is...  |
+| [`getVersionSource()`](/packages/./api/functions#getversionsource)                 | function | Resolves the version source provider for a project.                              |
+| [`syncVersion()`](/packages/./api/functions#syncversion)                           | function | Synchronizes configured files to a single version string.                        |
+| [`syncFile()`](/packages/./api/functions#syncfile)                                 | function | Synchronizes a single file to a target version.                                  |
+| [`checkHardcodedVersions()`](/packages/./api/functions#checkhardcodedversions)     | function | Checks configured files for hardcoded version mismatches.                        |
+| [`scanRepoForVersions()`](/packages/./api/functions#scanrepoforversions)           | function | Scans the entire repository for hardcoded version literals.                      |
+| [`fixPackageVersion()`](/packages/./api/functions#fixpackageversion)               | function | Updates the `package.json` version field when needed.                            |
+| [`fixSyncIssues()`](/packages/./api/functions#fixsyncissues)                       | function | Synchronizes configured files to the package version.                            |
+| [`fixChangelog()`](/packages/./api/functions#fixchangelog)                         | function | Ensures the changelog contains an entry for a version.                           |
+| [`fixAll()`](/packages/./api/functions#fixall)                                     | function | Runs all configured auto-fix operations.                                         |
+| [`suggestNextVersion()`](/packages/./api/functions#suggestnextversion)             | function | Suggests candidate next versions for a release.                                  |
+| [`installHooks()`](/packages/./api/functions#installhooks)                         | function | Installs VersionGuard-managed Git hooks in a repository.                         |
+| [`uninstallHooks()`](/packages/./api/functions#uninstallhooks)                     | function | Removes VersionGuard-managed Git hooks from a repository.                        |
+| [`findGitDir()`](/packages/./api/functions#findgitdir)                             | function | Finds the nearest `.git` directory by walking up from a starting directory.      |
+| [`areHooksInstalled()`](/packages/./api/functions#arehooksinstalled)               | function | Checks whether all VersionGuard-managed hooks are installed.                     |
+| [`generateHookScript()`](/packages/./api/functions#generatehookscript)             | function | Generates the shell script content for a Git hook.                               |
+| [`checkHooksPathOverride()`](/packages/./api/functions#checkhookspathoverride)     | function | Checks whether git hooks have been redirected away from the repository.          |
+| [`checkHuskyBypass()`](/packages/./api/functions#checkhuskybypass)                 | function | Checks whether the HUSKY environment variable is disabling hooks.                |
+| [`checkHookIntegrity()`](/packages/./api/functions#checkhookintegrity)             | function | Verifies that installed hook scripts match the expected content.                 |
+| [`checkEnforceHooksPolicy()`](/packages/./api/functions#checkenforcehookspolicy)   | function | Checks whether hooks are configured as required but not enforced.                |
+| [`runGuardChecks()`](/packages/./api/functions#runguardchecks)                     | function | Runs all guard checks and returns a consolidated report.                         |
+| [`generateDependabotConfig()`](/packages/./api/functions#generatedependabotconfig) | function | Generates Dependabot YAML configuration from detected manifests.                 |
+| [`writeDependabotConfig()`](/packages/./api/functions#writedependabotconfig)       | function | Writes a Dependabot configuration file to `.github/dependabot.yml`.              |
+| [`dependabotConfigExists()`](/packages/./api/functions#dependabotconfigexists)     | function | Checks whether `.github/dependabot.yml` exists in the project.                   |
+| [`getDefaultConfig()`](/packages/./api/functions#getdefaultconfig)                 | function | Returns a deep-cloned copy of the built-in VersionGuard configuration.           |
+| [`findConfig()`](/packages/./api/functions#findconfig)                             | function | Finds the first supported VersionGuard config file in a directory.               |
+| [`loadConfig()`](/packages/./api/functions#loadconfig)                             | function | Loads a VersionGuard config file from disk.                                      |
+| [`getConfig()`](/packages/./api/functions#getconfig)                               | function | Resolves the active VersionGuard configuration for a project.                    |
+| [`initConfig()`](/packages/./api/functions#initconfig)                             | function | Initializes a new VersionGuard config file in a project.                         |
+| [`findProjectRoot()`](/packages/./api/functions#findprojectroot)                   | function | Walks up from `startDir` to find the nearest project root.                       |
+| [`formatNotProjectError()`](/packages/./api/functions#formatnotprojecterror)       | function | Formats a helpful error message when a command can't find a project.             |
+| [`getLatestTag()`](/packages/./api/functions#getlatesttag)                         | function | Returns the most recent reachable git tag for a repository.                      |
+| [`getAllTags()`](/packages/./api/functions#getalltags)                             | function | Lists all tags in a repository.                                                  |
+| [`createTag()`](/packages/./api/functions#createtag)                               | function | Creates a release tag and optionally fixes version state first.                  |
+| [`handlePostTag()`](/packages/./api/functions#handleposttag)                       | function | Runs post-tag validation and sync checks.                                        |
+| [`validateTagForPush()`](/packages/./api/functions#validatetagforpush)             | function | Validates that a local tag is safe to push to the default remote.                |
+| [`suggestTagMessage()`](/packages/./api/functions#suggesttagmessage)               | function | Suggests an annotated tag message from changelog content.                        |
+| [`validateVersion()`](/packages/./api/functions#validateversion)                   | function | Validates a version string against the active versioning strategy.               |
+| [`validate()`](/packages/./api/functions#validate)                                 | function | Validates the current project state against the supplied configuration.          |
+| [`doctor()`](/packages/./api/functions#doctor)                                     | function | Runs an extended readiness check for a project.                                  |
+| [`sync()`](/packages/./api/functions#sync)                                         | function | Synchronizes configured files to the current package version.                    |
+| [`canBump()`](/packages/./api/functions#canbump)                                   | function | Determines whether a project can move from one version to another.               |
+| [`runWizard()`](/packages/./api/functions#runwizard)                               | function | Runs the interactive setup wizard.                                               |
+| [`runHeadless()`](/packages/./api/functions#runheadless)                           | function | Initializes VersionGuard non-interactively using CLI flags.                      |
+| [`createProgram()`](/packages/./api/functions#createprogram)                       | function | Creates the VersionGuard CLI program definition.                                 |
+| [`runCli()`](/packages/./api/functions#runcli)                                     | function | Parses CLI arguments and executes the matching command.                          |
+| [`shouldRunCli()`](/packages/./api/functions#shouldruncli)                         | function | Determines whether the current module is the invoked CLI entry point.            |
+| [`createTempProject()`](/packages/./api/functions#createtempproject)               | function | Creates a temporary project directory with a minimal `package.json` fixture.     |
+| [`initGitRepo()`](/packages/./api/functions#initgitrepo)                           | function | Initializes a git repository in a fixture directory with a first commit.         |
+| [`writeTextFile()`](/packages/./api/functions#writetextfile)                       | function | Writes a text fixture file relative to a temporary project directory.            |
+| [`createBareRemote()`](/packages/./api/functions#createbareremote)                 | function | Creates a bare git repository to use as a remote in integration tests.           |
+| [`addGitRemote()`](/packages/./api/functions#addgitremote)                         | function | Adds a local bare repository as the `origin` remote for a fixture repo.          |
+| [`commitAll()`](/packages/./api/functions#commitall)                               | function | Stages all changes and creates a commit in a fixture repository.                 |
 
 ## Types & Interfaces
 
@@ -123,6 +126,7 @@ API reference for the `.` package.
 | [`ChangelogConfig`](/packages/./api/types#changelogconfig)                     | interface | Controls changelog validation behavior.                                          |
 | [`GitHooksConfig`](/packages/./api/types#githooksconfig)                       | interface | Toggles each supported git hook integration.                                     |
 | [`GitConfig`](/packages/./api/types#gitconfig)                                 | interface | Configures git-related enforcement.                                              |
+| [`GitHubConfig`](/packages/./api/types#githubconfig)                           | interface | Configures GitHub-specific integration features.                                 |
 | [`VersioningConfig`](/packages/./api/types#versioningconfig)                   | interface | Configures the active versioning mode.                                           |
 | [`ScanAllowlistEntry`](/packages/./api/types#scanallowlistentry)               | interface | An intentional version reference that should be excluded from scan results.      |
 | [`ScanConfig`](/packages/./api/types#scanconfig)                               | interface | Configures repo-wide scanning for hardcoded version literals.                    |
@@ -168,51 +172,55 @@ API reference for the `.` package.
 
 ## Other Exports
 
-| Symbol                                                                 | Kind | Description                                                                      |
-| ---------------------------------------------------------------------- | ---- | -------------------------------------------------------------------------------- |
-| [`types.ts`](/packages/./api/functions#typests)                        | file |                                                                                  |
-| [`scheme-rules.ts`](/packages/./api/functions#scheme-rulests)          | file | Shared scheme-rule validation helpers used by both SemVer and CalVer.            |
-| [`calver.ts`](/packages/./api/functions#calverts)                      | file | Calendar version parsing, formatting, and comparison helpers.                    |
-| [`changelog.ts`](/packages/./api/functions#changelogts)                | file |                                                                                  |
-| [`types.ts`](/packages/./api/functions#typests)                        | file |                                                                                  |
-| [`engine.ts`](/packages/./api/functions#enginets)                      | file | CKM engine — auto-generates topic index from a ckm.json manifest.                |
-| [`index.ts`](/packages/./api/functions#indexts)                        | file | CKM (Codebase Knowledge Manifest) module.                                        |
-| [`semver.ts`](/packages/./api/functions#semverts)                      | file | Semantic version parsing, validation, comparison, and increment helpers.         |
-| [`index.ts`](/packages/./api/functions#indexts)                        | file |                                                                                  |
-| [`provider.ts`](/packages/./api/functions#providerts)                  | file |                                                                                  |
-| [`git-tag.ts`](/packages/./api/functions#git-tagts)                    | file | Git tag-based version source for Go, Swift, and similar ecosystems.              |
-| [`utils.ts`](/packages/./api/functions#utilsts)                        | file |                                                                                  |
-| [`json.ts`](/packages/./api/functions#jsonts)                          | file | JSON-based version source provider for package.json and composer.json.           |
-| [`regex.ts`](/packages/./api/functions#regexts)                        | file | Regex-based version source for source-code manifests.  Handles gemspec, mix.e... |
-| [`toml.ts`](/packages/./api/functions#tomlts)                          | file | TOML-based version source provider for Cargo.toml and pyproject.toml.            |
-| [`version-file.ts`](/packages/./api/functions#version-filets)          | file | Plain text VERSION file provider.                                                |
-| [`yaml.ts`](/packages/./api/functions#yamlts)                          | file | YAML-based version source provider for pubspec.yaml and similar manifests.       |
-| [`resolve.ts`](/packages/./api/functions#resolvets)                    | file | Version source auto-detection and resolution.                                    |
-| [`project.ts`](/packages/./api/functions#projectts)                    | file |                                                                                  |
-| [`sync.ts`](/packages/./api/functions#syncts)                          | file |                                                                                  |
-| [`index.ts`](/packages/./api/functions#indexts)                        | file |                                                                                  |
-| [`hooks.ts`](/packages/./api/functions#hooksts)                        | file |                                                                                  |
-| [`guard.ts`](/packages/./api/functions#guardts)                        | file |                                                                                  |
-| [`config.ts`](/packages/./api/functions#configts)                      | file |                                                                                  |
-| [`project-root.ts`](/packages/./api/functions#project-rootts)          | file | Project root detection and boundary validation.                                  |
-| [`index.ts`](/packages/./api/functions#indexts)                        | file | Version source providers for language-agnostic manifest support.                 |
-| [`index.ts`](/packages/./api/functions#indexts)                        | file |                                                                                  |
-| [`index.ts`](/packages/./api/functions#indexts)                        | file | Public API for VersionGuard.                                                     |
-| [`init-wizard.ts`](/packages/./api/functions#init-wizardts)            | file | Interactive setup wizard and headless init for VersionGuard.                     |
-| [`cli.ts`](/packages/./api/functions#clits)                            | file |                                                                                  |
-| [`calver.test.ts`](/packages/./api/functions#calvertestts)             | file |                                                                                  |
-| [`test-utils.ts`](/packages/./api/functions#test-utilsts)              | file | Test helpers for creating temporary VersionGuard fixture projects and git rep... |
-| [`changelog.test.ts`](/packages/./api/functions#changelogtestts)       | file |                                                                                  |
-| [`cli.test.ts`](/packages/./api/functions#clitestts)                   | file |                                                                                  |
-| [`config.test.ts`](/packages/./api/functions#configtestts)             | file |                                                                                  |
-| [`feedback.test.ts`](/packages/./api/functions#feedbacktestts)         | file |                                                                                  |
-| [`fix.test.ts`](/packages/./api/functions#fixtestts)                   | file |                                                                                  |
-| [`guard.test.ts`](/packages/./api/functions#guardtestts)               | file |                                                                                  |
-| [`hooks.test.ts`](/packages/./api/functions#hookstestts)               | file |                                                                                  |
-| [`index.test.ts`](/packages/./api/functions#indextestts)               | file |                                                                                  |
-| [`scan.test.ts`](/packages/./api/functions#scantestts)                 | file |                                                                                  |
-| [`scheme-rules.test.ts`](/packages/./api/functions#scheme-rulestestts) | file |                                                                                  |
-| [`semver.test.ts`](/packages/./api/functions#semvertestts)             | file |                                                                                  |
-| [`sources.test.ts`](/packages/./api/functions#sourcestestts)           | file |                                                                                  |
-| [`sync.test.ts`](/packages/./api/functions#synctestts)                 | file |                                                                                  |
-| [`tag.test.ts`](/packages/./api/functions#tagtestts)                   | file |                                                                                  |
+| Symbol                                                                   | Kind     | Description                                                                      |
+| ------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------- |
+| [`types.ts`](/packages/./api/functions#typests)                          | file     |                                                                                  |
+| [`scheme-rules.ts`](/packages/./api/functions#scheme-rulests)            | file     | Shared scheme-rule validation helpers used by both SemVer and CalVer.            |
+| [`calver.ts`](/packages/./api/functions#calverts)                        | file     | Calendar version parsing, formatting, and comparison helpers.                    |
+| [`changelog.ts`](/packages/./api/functions#changelogts)                  | file     |                                                                                  |
+| [`types.ts`](/packages/./api/functions#typests)                          | file     |                                                                                  |
+| [`engine.ts`](/packages/./api/functions#enginets)                        | file     | CKM engine — auto-generates topic index from a ckm.json manifest.                |
+| [`index.ts`](/packages/./api/functions#indexts)                          | file     | CKM (Codebase Knowledge Manifest) module.                                        |
+| [`semver.ts`](/packages/./api/functions#semverts)                        | file     | Semantic version parsing, validation, comparison, and increment helpers.         |
+| [`index.ts`](/packages/./api/functions#indexts)                          | file     |                                                                                  |
+| [`provider.ts`](/packages/./api/functions#providerts)                    | file     |                                                                                  |
+| [`git-tag.ts`](/packages/./api/functions#git-tagts)                      | file     | Git tag-based version source for Go, Swift, and similar ecosystems.              |
+| [`utils.ts`](/packages/./api/functions#utilsts)                          | file     |                                                                                  |
+| [`json.ts`](/packages/./api/functions#jsonts)                            | file     | JSON-based version source provider for package.json and composer.json.           |
+| [`regex.ts`](/packages/./api/functions#regexts)                          | file     | Regex-based version source for source-code manifests.  Handles gemspec, mix.e... |
+| [`toml.ts`](/packages/./api/functions#tomlts)                            | file     | TOML-based version source provider for Cargo.toml and pyproject.toml.            |
+| [`version-file.ts`](/packages/./api/functions#version-filets)            | file     | Plain text VERSION file provider.                                                |
+| [`yaml.ts`](/packages/./api/functions#yamlts)                            | file     | YAML-based version source provider for pubspec.yaml and similar manifests.       |
+| [`resolve.ts`](/packages/./api/functions#resolvets)                      | file     | Version source auto-detection and resolution.                                    |
+| [`project.ts`](/packages/./api/functions#projectts)                      | file     |                                                                                  |
+| [`sync.ts`](/packages/./api/functions#syncts)                            | file     |                                                                                  |
+| [`index.ts`](/packages/./api/functions#indexts)                          | file     |                                                                                  |
+| [`hooks.ts`](/packages/./api/functions#hooksts)                          | file     |                                                                                  |
+| [`guard.ts`](/packages/./api/functions#guardts)                          | file     |                                                                                  |
+| [`MANIFEST_TO_ECOSYSTEM`](/packages/./api/functions#manifesttoecosystem) | variable | Maps VersionGuard manifest source types to Dependabot package-ecosystem values.  |
+| [`dependabot.ts`](/packages/./api/functions#dependabotts)                | file     | Dependabot configuration generation from detected project manifests.             |
+| [`index.ts`](/packages/./api/functions#indexts)                          | file     | GitHub integration module.                                                       |
+| [`config.ts`](/packages/./api/functions#configts)                        | file     |                                                                                  |
+| [`project-root.ts`](/packages/./api/functions#project-rootts)            | file     | Project root detection and boundary validation.                                  |
+| [`index.ts`](/packages/./api/functions#indexts)                          | file     | Version source providers for language-agnostic manifest support.                 |
+| [`index.ts`](/packages/./api/functions#indexts)                          | file     |                                                                                  |
+| [`index.ts`](/packages/./api/functions#indexts)                          | file     | Public API for VersionGuard.                                                     |
+| [`init-wizard.ts`](/packages/./api/functions#init-wizardts)              | file     | Interactive setup wizard and headless init for VersionGuard.                     |
+| [`cli.ts`](/packages/./api/functions#clits)                              | file     |                                                                                  |
+| [`calver.test.ts`](/packages/./api/functions#calvertestts)               | file     |                                                                                  |
+| [`test-utils.ts`](/packages/./api/functions#test-utilsts)                | file     | Test helpers for creating temporary VersionGuard fixture projects and git rep... |
+| [`changelog.test.ts`](/packages/./api/functions#changelogtestts)         | file     |                                                                                  |
+| [`cli.test.ts`](/packages/./api/functions#clitestts)                     | file     |                                                                                  |
+| [`config.test.ts`](/packages/./api/functions#configtestts)               | file     |                                                                                  |
+| [`feedback.test.ts`](/packages/./api/functions#feedbacktestts)           | file     |                                                                                  |
+| [`fix.test.ts`](/packages/./api/functions#fixtestts)                     | file     |                                                                                  |
+| [`github.test.ts`](/packages/./api/functions#githubtestts)               | file     |                                                                                  |
+| [`guard.test.ts`](/packages/./api/functions#guardtestts)                 | file     |                                                                                  |
+| [`hooks.test.ts`](/packages/./api/functions#hookstestts)                 | file     |                                                                                  |
+| [`index.test.ts`](/packages/./api/functions#indextestts)                 | file     |                                                                                  |
+| [`scan.test.ts`](/packages/./api/functions#scantestts)                   | file     |                                                                                  |
+| [`scheme-rules.test.ts`](/packages/./api/functions#scheme-rulestestts)   | file     |                                                                                  |
+| [`semver.test.ts`](/packages/./api/functions#semvertestts)               | file     |                                                                                  |
+| [`sources.test.ts`](/packages/./api/functions#sourcestestts)             | file     |                                                                                  |
+| [`sync.test.ts`](/packages/./api/functions#synctestts)                   | file     |                                                                                  |
+| [`tag.test.ts`](/packages/./api/functions#tagtestts)                     | file     |                                                                                  |

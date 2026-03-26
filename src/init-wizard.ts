@@ -11,6 +11,8 @@ import * as p from '@clack/prompts';
 import * as yaml from 'js-yaml';
 
 import { isValidCalVerFormat } from './calver';
+import { generateDependabotConfig, writeDependabotConfig } from './github';
+import { detectManifests } from './sources/resolve';
 import type { VersionGuardConfig } from './types';
 
 /**
@@ -34,6 +36,8 @@ export interface InitOptions {
   requirePrerelease?: boolean;
   /** Manifest source type. */
   manifest?: string;
+  /** Whether to generate GitHub integration files (dependabot.yml). */
+  github?: boolean;
   /** Whether to install git hooks. */
   hooks?: boolean;
   /** Whether to enable changelog validation. */
@@ -140,6 +144,16 @@ export async function runWizard(cwd: string): Promise<string | null> {
     return null;
   }
 
+  // Step 6: GitHub integration
+  const github = await p.confirm({
+    message: 'Generate .github/dependabot.yml for automated dependency updates?',
+    initialValue: true,
+  });
+  if (p.isCancel(github)) {
+    p.outro('Setup cancelled.');
+    return null;
+  }
+
   // Build and write config
   const config = buildConfig({
     type: type,
@@ -148,11 +162,20 @@ export async function runWizard(cwd: string): Promise<string | null> {
     allowBuildMetadata,
     requirePrerelease,
     manifest: manifest === 'auto' ? undefined : manifest,
+    github: github,
     hooks: hooks,
     changelog: changelog,
   });
 
   const configPath = writeConfig(cwd, config);
+
+  // Generate dependabot.yml from detected manifests
+  if (github) {
+    const manifests = detectManifests(cwd);
+    const dependabotContent = generateDependabotConfig(manifests);
+    const dependabotPath = writeDependabotConfig(cwd, dependabotContent);
+    p.log.success(`Created ${path.relative(cwd, dependabotPath)}`);
+  }
 
   p.log.success(`Created ${path.relative(cwd, configPath)}`);
   p.outro('Run `vg validate` to verify your setup.');
@@ -193,11 +216,21 @@ export function runHeadless(options: InitOptions): string {
     allowBuildMetadata: options.allowBuildMetadata ?? true,
     requirePrerelease: options.requirePrerelease ?? false,
     manifest: options.manifest,
+    github: options.github ?? true,
     hooks: options.hooks ?? true,
     changelog: options.changelog ?? true,
   });
 
-  return writeConfig(options.cwd, config);
+  const configPath = writeConfig(options.cwd, config);
+
+  // Generate dependabot.yml from detected manifests
+  if (options.github !== false) {
+    const manifests = detectManifests(options.cwd);
+    const dependabotContent = generateDependabotConfig(manifests);
+    writeDependabotConfig(options.cwd, dependabotContent);
+  }
+
+  return configPath;
 }
 
 async function selectCalVerFormat(): Promise<string | null> {
@@ -317,6 +350,7 @@ interface ConfigInput {
   allowBuildMetadata: boolean;
   requirePrerelease: boolean;
   manifest?: string;
+  github: boolean;
   hooks: boolean;
   changelog: boolean;
 }
@@ -361,6 +395,10 @@ function buildConfig(input: ConfigInput): Partial<VersionGuardConfig> {
     file: 'CHANGELOG.md',
     strict: true,
     requireEntry: input.changelog,
+  };
+
+  config.github = {
+    dependabot: input.github,
   };
 
   config.git = {

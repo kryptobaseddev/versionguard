@@ -81,6 +81,14 @@ Configures git-related enforcement.
 | `hooks`        | `GitHooksConfig` | Hook toggles used by the CLI and validation workflow. |
 | `enforceHooks` | `boolean`        | Fails validation when required hooks are missing.     |
 
+### `GitHubConfig`
+
+Configures GitHub-specific integration features.
+
+| Property     | Type      | Description                                                             |
+| ------------ | --------- | ----------------------------------------------------------------------- |
+| `dependabot` | `boolean` | Generates `.github/dependabot.yml` from detected manifests during init. |
+
 ### `VersioningConfig`
 
 Configures the active versioning mode.
@@ -113,6 +121,7 @@ Top-level configuration consumed by versionguard.
 | `sync`       | `SyncConfig`       | Synchronization settings for mirrored version strings. |
 | `changelog`  | `ChangelogConfig`  | Changelog validation settings.                         |
 | `git`        | `GitConfig`        | Git enforcement settings.                              |
+| `github`     | `GitHubConfig`     | GitHub integration settings.                           |
 | `scan`       | `ScanConfig`       | Repo-wide version literal scanning.                    |
 | `ignore`     | `string[]`         | Files or patterns excluded from validation.            |
 
@@ -140,18 +149,19 @@ A config schema entry with type, description, and default.
 
 Options for headless (non-interactive) initialization.
 
-| Property             | Type                                | Description                                   |
-| -------------------- | ----------------------------------- | --------------------------------------------- |
-| `cwd`                | `string`                            | Working directory path.                       |
-| `type`               | `"semver" \| "calver" \| undefined` | Versioning type (semver or calver).           |
-| `format`             | `string \| undefined`               | CalVer format string.                         |
-| `allowVPrefix`       | `boolean \| undefined`              | Allow v-prefix on SemVer versions.            |
-| `allowBuildMetadata` | `boolean \| undefined`              | Allow build metadata on SemVer versions.      |
-| `requirePrerelease`  | `boolean \| undefined`              | Require prerelease labels on SemVer versions. |
-| `manifest`           | `string \| undefined`               | Manifest source type.                         |
-| `hooks`              | `boolean \| undefined`              | Whether to install git hooks.                 |
-| `changelog`          | `boolean \| undefined`              | Whether to enable changelog validation.       |
-| `yes`                | `boolean \| undefined`              | Accept defaults without prompting.            |
-| `force`              | `boolean \| undefined`              | Overwrite existing config.                    |
+| Property             | Type                                | Description                                                    |
+| -------------------- | ----------------------------------- | -------------------------------------------------------------- |
+| `cwd`                | `string`                            | Working directory path.                                        |
+| `type`               | `"semver" \| "calver" \| undefined` | Versioning type (semver or calver).                            |
+| `format`             | `string \| undefined`               | CalVer format string.                                          |
+| `allowVPrefix`       | `boolean \| undefined`              | Allow v-prefix on SemVer versions.                             |
+| `allowBuildMetadata` | `boolean \| undefined`              | Allow build metadata on SemVer versions.                       |
+| `requirePrerelease`  | `boolean \| undefined`              | Require prerelease labels on SemVer versions.                  |
+| `manifest`           | `string \| undefined`               | Manifest source type.                                          |
+| `github`             | `boolean \| undefined`              | Whether to generate GitHub integration files (dependabot.yml). |
+| `hooks`              | `boolean \| undefined`              | Whether to install git hooks.                                  |
+| `changelog`          | `boolean \| undefined`              | Whether to enable changelog validation.                        |
+| `yes`                | `boolean \| undefined`              | Accept defaults without prompting.                             |
+| `force`              | `boolean \| undefined`              | Overwrite existing config.                                     |
 
 {/* FORGE:AUTO-END guide-configuration */}

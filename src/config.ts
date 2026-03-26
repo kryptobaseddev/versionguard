@@ -55,6 +55,9 @@ const DEFAULT_CONFIG: VersionGuardConfig = {
     enforceStructure: false,
     sections: ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'],
   },
+  github: {
+    dependabot: true,
+  },
   scan: {
     enabled: false,
     patterns: [
@@ -248,6 +251,9 @@ changelog:
   file: "CHANGELOG.md"
   strict: true
   requireEntry: true
+
+github:
+  dependabot: true
 
 git:
   hooks:

@@ -1928,6 +1928,69 @@ const report = runGuardChecks(config, process.cwd());
 if (!report.safe) console.error('Guard check failed:', report.warnings);
 ```
 
+## generateDependabotConfig(manifests)
+
+Generates Dependabot YAML configuration from detected manifests.
+
+**Signature**
+
+```typescript
+(manifests: ManifestSourceType[]) => string
+```
+
+**Parameters**
+
+| Name        | Type                   | Description                                      |
+| ----------- | ---------------------- | ------------------------------------------------ |
+| `manifests` | `ManifestSourceType[]` | Detected manifest source types from the project. |
+
+**Returns** — The Dependabot configuration as a YAML string.
+
+**Example**
+
+```ts
+import { generateDependabotConfig } from 'versionguard';
+
+const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+```
+
+## writeDependabotConfig(cwd, content)
+
+Writes a Dependabot configuration file to `.github/dependabot.yml`.
+
+**Signature**
+
+```typescript
+(cwd: string, content: string) => string
+```
+
+**Parameters**
+
+| Name      | Type     | Description            |
+| --------- | -------- | ---------------------- |
+| `cwd`     | `string` | Project directory.     |
+| `content` | `string` | YAML content to write. |
+
+**Returns** — The absolute path to the created file.
+
+## dependabotConfigExists(cwd)
+
+Checks whether `.github/dependabot.yml` exists in the project.
+
+**Signature**
+
+```typescript
+(cwd: string) => boolean
+```
+
+**Parameters**
+
+| Name  | Type     | Description        |
+| ----- | -------- | ------------------ |
+| `cwd` | `string` | Project directory. |
+
+**Returns** — `true` when the file exists.
+
 ## getDefaultConfig()
 
 Returns a deep-cloned copy of the built-in VersionGuard configuration.

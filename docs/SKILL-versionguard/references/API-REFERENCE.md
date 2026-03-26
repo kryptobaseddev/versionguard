@@ -5,6 +5,7 @@
 - [Functions](#functions)
 - [Types](#types)
 - [Classes](#classes)
+- [Constants](#constants)
 
 ## Functions
 
@@ -1327,6 +1328,55 @@ const report = runGuardChecks(config, process.cwd());
 if (!report.safe) console.error('Guard check failed:', report.warnings);
 ```
 
+### `generateDependabotConfig`
+
+Generates Dependabot YAML configuration from detected manifests.
+
+```typescript
+(manifests: ManifestSourceType[]) => string
+```
+
+**Parameters:**
+
+- `manifests` — Detected manifest source types from the project.
+
+**Returns:** The Dependabot configuration as a YAML string.
+
+```ts
+import { generateDependabotConfig } from 'versionguard';
+
+const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+```
+
+### `writeDependabotConfig`
+
+Writes a Dependabot configuration file to `.github/dependabot.yml`.
+
+```typescript
+(cwd: string, content: string) => string
+```
+
+**Parameters:**
+
+- `cwd` — Project directory.
+- `content` — YAML content to write.
+
+**Returns:** The absolute path to the created file.
+
+### `dependabotConfigExists`
+
+Checks whether `.github/dependabot.yml` exists in the project.
+
+```typescript
+(cwd: string) => boolean
+```
+
+**Parameters:**
+
+- `cwd` — Project directory.
+
+**Returns:** `true` when the file exists.
+
 ### `getDefaultConfig`
 
 Returns a deep-cloned copy of the built-in VersionGuard configuration.
@@ -2044,6 +2094,18 @@ GitConfig
 - `hooks` — Hook toggles used by the CLI and validation workflow.
 - `enforceHooks` — Fails validation when required hooks are missing.
 
+### `GitHubConfig`
+
+Configures GitHub-specific integration features.
+
+```typescript
+GitHubConfig
+```
+
+**Members:**
+
+- `dependabot` — Generates `.github/dependabot.yml` from detected manifests during init.
+
 ### `VersioningConfig`
 
 Configures the active versioning mode.
@@ -2101,6 +2163,7 @@ VersionGuardConfig
 - `sync` — Synchronization settings for mirrored version strings.
 - `changelog` — Changelog validation settings.
 - `git` — Git enforcement settings.
+- `github` — GitHub integration settings.
 - `scan` — Repo-wide version literal scanning.
 - `ignore` — Files or patterns excluded from validation.
 
@@ -2649,6 +2712,7 @@ InitOptions
 - `allowBuildMetadata` — Allow build metadata on SemVer versions.
 - `requirePrerelease` — Require prerelease labels on SemVer versions.
 - `manifest` — Manifest source type.
+- `github` — Whether to generate GitHub integration files (dependabot.yml).
 - `hooks` — Whether to install git hooks.
 - `changelog` — Whether to enable changelog validation.
 - `yes` — Accept defaults without prompting.
@@ -2758,3 +2822,13 @@ typeof YamlVersionSource
 - `exists` — Returns `true` when the manifest file exists in `cwd`.
 - `getVersion` — Reads the version string from the YAML manifest.
 - `setVersion` — Writes a version string to the YAML manifest, preserving formatting.
+
+## Constants
+
+### `MANIFEST_TO_ECOSYSTEM`
+
+Maps VersionGuard manifest source types to Dependabot package-ecosystem values.
+
+```typescript
+Record<ManifestSourceType, string | null>
+```

@@ -788,6 +788,18 @@ const report = runGuardChecks(config, process.cwd());
 if (!report.safe) console.error('Guard check failed:', report.warnings);
 ```
 
+## `generateDependabotConfig()`
+
+*Generates Dependabot YAML configuration from detected manifests.*
+
+[View in API reference](/packages/./api/functions#generatedependabotconfig)
+
+```ts
+import { generateDependabotConfig } from 'versionguard';
+
+const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+```
+
 ## `getDefaultConfig()`
 
 *Returns a deep-cloned copy of the built-in VersionGuard configuration.*

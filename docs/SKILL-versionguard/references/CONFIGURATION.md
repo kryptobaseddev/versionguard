@@ -164,6 +164,23 @@ const config: Partial<GitConfig> = {
 | `hooks` | `GitHooksConfig` | Hook toggles used by the CLI and validation workflow. |
 | `enforceHooks` | `boolean` | Fails validation when required hooks are missing. |
 
+## `GitHubConfig`
+
+Configures GitHub-specific integration features.
+
+```typescript
+import type { GitHubConfig } from "@codluv/versionguard";
+
+const config: Partial<GitHubConfig> = {
+  // Generates `.github/dependabot.yml` from detected manifests during init.
+  dependabot: true,
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `dependabot` | `boolean` | Generates `.github/dependabot.yml` from detected manifests during init. |
+
 ## `VersioningConfig`
 
 Configures the active versioning mode.
@@ -231,6 +248,8 @@ const config: Partial<VersionGuardConfig> = {
   changelog: { /* ... */ },
   // Git enforcement settings.
   git: { /* ... */ },
+  // GitHub integration settings.
+  github: { /* ... */ },
   // Repo-wide version literal scanning.
   scan: { /* ... */ },
   // Files or patterns excluded from validation.
@@ -245,6 +264,7 @@ const config: Partial<VersionGuardConfig> = {
 | `sync` | `SyncConfig` | Synchronization settings for mirrored version strings. |
 | `changelog` | `ChangelogConfig` | Changelog validation settings. |
 | `git` | `GitConfig` | Git enforcement settings. |
+| `github` | `GitHubConfig` | GitHub integration settings. |
 | `scan` | `ScanConfig` | Repo-wide version literal scanning. |
 | `ignore` | `string[]` | Files or patterns excluded from validation. |
 

@@ -2,8 +2,8 @@
 
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
 
-Version: 0.7.0
-Generated: 2026-03-26T21:16:11.934Z
+Version: 0.8.1
+Generated: 2026-03-26T22:14:21.965Z
 
 ## Package: main
 
@@ -1207,6 +1207,47 @@ Example:
   const report = runGuardChecks(config, process.cwd());
   if (!report.safe) console.error('Guard check failed:', report.warnings);
 
+#### generateDependabotConfig()
+
+(manifests: ManifestSourceType[]) => string
+
+Generates Dependabot YAML configuration from detected manifests.
+
+Each detected manifest is mapped to its Dependabot ecosystem. A `github-actions` entry is always appended since any GitHub-hosted project benefits from action version updates.
+
+Parameters:
+- manifests: Detected manifest source types from the project.
+
+Returns: The Dependabot configuration as a YAML string.
+
+Example:
+  import { generateDependabotConfig } from 'versionguard';
+  
+  const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+
+#### writeDependabotConfig()
+
+(cwd: string, content: string) => string
+
+Writes a Dependabot configuration file to `.github/dependabot.yml`.
+
+Parameters:
+- cwd: Project directory.
+- content: YAML content to write.
+
+Returns: The absolute path to the created file.
+
+#### dependabotConfigExists()
+
+(cwd: string) => boolean
+
+Checks whether `.github/dependabot.yml` exists in the project.
+
+Parameters:
+- cwd: Project directory.
+
+Returns: `true` when the file exists.
+
 #### getDefaultConfig()
 
 () => VersionGuardConfig
@@ -2311,6 +2352,20 @@ boolean
 
 Fails validation when required hooks are missing.
 
+#### GitHubConfig
+
+GitHubConfig
+
+Configures GitHub-specific integration features.
+
+Members:
+
+##### dependabot
+
+boolean
+
+Generates `.github/dependabot.yml` from detected manifests during init.
+
 #### VersioningConfig
 
 VersioningConfig
@@ -2426,6 +2481,12 @@ Changelog validation settings.
 GitConfig
 
 Git enforcement settings.
+
+##### github
+
+GitHubConfig
+
+GitHub integration settings.
 
 ##### scan
 
@@ -3576,6 +3637,12 @@ string | undefined
 
 Manifest source type.
 
+##### github
+
+boolean | undefined
+
+Whether to generate GitHub integration files (dependabot.yml).
+
 ##### hooks
 
 boolean | undefined
@@ -3645,3 +3712,13 @@ JSON-compatible scalar, array, or object value used by package metadata.
 PackageJsonArray
 
 Recursive array type used for arbitrary JSON-compatible package values.
+
+### Variables
+
+#### MANIFEST_TO_ECOSYSTEM
+
+Record<ManifestSourceType, string | null>
+
+Maps VersionGuard manifest source types to Dependabot package-ecosystem values.
+
+Returns `null` for sources that have no Dependabot equivalent (VERSION files, git tags, custom regex). The `auto` source is resolved at detection time, not mapped directly.
