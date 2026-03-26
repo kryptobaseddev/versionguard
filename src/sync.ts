@@ -3,7 +3,7 @@ import * as path from 'node:path';
 
 import { globSync } from 'glob';
 
-import type { SyncConfig, SyncPattern, SyncResult, VersionMismatch } from './types';
+import type { ScanConfig, SyncConfig, SyncPattern, SyncResult, VersionMismatch } from './types';
 
 function resolveFiles(patterns: string[], cwd: string, ignore: string[] = []): string[] {
   return [
@@ -171,6 +171,134 @@ export function checkHardcodedVersions(
       while (match) {
         const found = extractVersion(match.slice(1));
         if (found !== 'Unreleased' && found !== expectedVersion) {
+          mismatches.push({
+            file: path.relative(cwd, filePath),
+            line: getLineNumber(content, match.index),
+            found,
+          });
+        }
+        match = regex.exec(content);
+      }
+    }
+  }
+
+  return mismatches;
+}
+
+/** Extensions that are almost certainly binary and should be skipped. */
+const BINARY_EXTENSIONS = new Set([
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.ico',
+  '.svg',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.eot',
+  '.otf',
+  '.zip',
+  '.tar',
+  '.gz',
+  '.bz2',
+  '.7z',
+  '.pdf',
+  '.exe',
+  '.dll',
+  '.so',
+  '.dylib',
+  '.wasm',
+  '.mp3',
+  '.mp4',
+  '.webm',
+  '.webp',
+  '.avif',
+]);
+
+/**
+ * Scans the entire repository for hardcoded version literals.
+ *
+ * @public
+ * @since 0.8.0
+ * @remarks
+ * Unlike {@link checkHardcodedVersions}, which only checks files listed in
+ * `sync.files`, this function globs the entire repository (respecting
+ * `.gitignore` and `ignore` patterns) and applies configurable version-like
+ * regex patterns. An allowlist filters out intentional references.
+ *
+ * @param expectedVersion - Version all matching entries should use.
+ * @param scanConfig - Scan configuration with patterns and allowlist.
+ * @param ignorePatterns - Glob patterns to exclude while scanning.
+ * @param cwd - Project directory used to resolve file globs.
+ * @returns A list of detected version mismatches across the repository.
+ * @example
+ * ```ts
+ * import { getDefaultConfig, scanRepoForVersions } from 'versionguard';
+ *
+ * const config = getDefaultConfig();
+ * const findings = scanRepoForVersions('1.2.3', config.scan, config.ignore, process.cwd());
+ * ```
+ */
+export function scanRepoForVersions(
+  expectedVersion: string,
+  scanConfig: ScanConfig,
+  ignorePatterns: string[],
+  cwd: string = process.cwd(),
+): VersionMismatch[] {
+  const files = [
+    ...new Set(
+      globSync('**/*', {
+        cwd,
+        absolute: true,
+        dot: true,
+        ignore: [
+          ...ignorePatterns,
+          // Always skip changelogs (handled by changelog validation) and lockfiles
+          'CHANGELOG.md',
+          '*.lock',
+          'package-lock.json',
+          'yarn.lock',
+          'pnpm-lock.yaml',
+          // Skip VG's own config
+          '.versionguard.yml',
+          '.versionguard.yaml',
+        ],
+      }),
+    ),
+  ].sort();
+
+  // Build allowlist lookup: file glob → true
+  const allowedFiles = new Set(
+    scanConfig.allowlist.flatMap((entry) => resolveFiles([entry.file], cwd, [])),
+  );
+
+  const mismatches: VersionMismatch[] = [];
+
+  for (const filePath of files) {
+    // Skip binary files
+    if (BINARY_EXTENSIONS.has(path.extname(filePath).toLowerCase())) continue;
+
+    // Skip files on the allowlist
+    if (allowedFiles.has(filePath)) continue;
+
+    let content: string;
+    try {
+      content = fs.readFileSync(filePath, 'utf-8');
+    } catch {
+      continue; // unreadable file, skip
+    }
+
+    // Skip files that look binary (contain null bytes in first 8KB)
+    if (content.slice(0, 8192).includes('\0')) continue;
+
+    for (const patternStr of scanConfig.patterns) {
+      const regex = new RegExp(patternStr, 'gm');
+      let match = regex.exec(content);
+
+      while (match) {
+        const found = match[1] ?? match[0] ?? '';
+        if (found && found !== expectedVersion && found !== 'Unreleased') {
           mismatches.push({
             file: path.relative(cwd, filePath),
             line: getLineNumber(content, match.index),

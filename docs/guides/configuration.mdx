@@ -92,6 +92,16 @@ Configures the active versioning mode.
 | `semver`      | `SemVerConfig \| undefined` | SemVer-specific settings when `type` is `'semver'`.                  |
 | `calver`      | `CalVerConfig \| undefined` | CalVer-specific settings when `type` is `'calver'`.                  |
 
+### `ScanConfig`
+
+Configures repo-wide scanning for hardcoded version literals.
+
+| Property    | Type                   | Description                                                                                                       |
+| ----------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `enabled`   | `boolean`              | Enables repo-wide scanning for stale version literals.                                                            |
+| `patterns`  | `string[]`             | Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string. |
+| `allowlist` | `ScanAllowlistEntry[]` | Files containing intentional version references that should not be flagged.                                       |
+
 ### `VersionGuardConfig`
 
 Top-level configuration consumed by versionguard.
@@ -103,6 +113,7 @@ Top-level configuration consumed by versionguard.
 | `sync`       | `SyncConfig`       | Synchronization settings for mirrored version strings. |
 | `changelog`  | `ChangelogConfig`  | Changelog validation settings.                         |
 | `git`        | `GitConfig`        | Git enforcement settings.                              |
+| `scan`       | `ScanConfig`       | Repo-wide version literal scanning.                    |
 | `ignore`     | `string[]`         | Files or patterns excluded from validation.            |
 
 ### `ChangelogStructureOptions`

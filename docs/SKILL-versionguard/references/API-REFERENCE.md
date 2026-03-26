@@ -995,6 +995,30 @@ const mismatches = checkHardcodedVersions(
 );
 ```
 
+### `scanRepoForVersions`
+
+Scans the entire repository for hardcoded version literals.
+
+```typescript
+(expectedVersion: string, scanConfig: ScanConfig, ignorePatterns: string[], cwd?: string) => VersionMismatch[]
+```
+
+**Parameters:**
+
+- `expectedVersion` — Version all matching entries should use.
+- `scanConfig` — Scan configuration with patterns and allowlist.
+- `ignorePatterns` — Glob patterns to exclude while scanning.
+- `cwd` — Project directory used to resolve file globs.
+
+**Returns:** A list of detected version mismatches across the repository.
+
+```ts
+import { getDefaultConfig, scanRepoForVersions } from 'versionguard';
+
+const config = getDefaultConfig();
+const findings = scanRepoForVersions('1.2.3', config.scan, config.ignore, process.cwd());
+```
+
 ### `fixPackageVersion`
 
 Updates the `package.json` version field when needed.
@@ -2035,6 +2059,33 @@ VersioningConfig
 - `semver` — SemVer-specific settings when `type` is `'semver'`.
 - `calver` — CalVer-specific settings when `type` is `'calver'`.
 
+### `ScanAllowlistEntry`
+
+An intentional version reference that should be excluded from scan results.
+
+```typescript
+ScanAllowlistEntry
+```
+
+**Members:**
+
+- `file` — Glob pattern matching the file(s) where this reference is intentional.
+- `reason` — Reason this reference is allowed (for documentation / review).
+
+### `ScanConfig`
+
+Configures repo-wide scanning for hardcoded version literals.
+
+```typescript
+ScanConfig
+```
+
+**Members:**
+
+- `enabled` — Enables repo-wide scanning for stale version literals.
+- `patterns` — Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string.
+- `allowlist` — Files containing intentional version references that should not be flagged.
+
 ### `VersionGuardConfig`
 
 Top-level configuration consumed by versionguard.
@@ -2050,6 +2101,7 @@ VersionGuardConfig
 - `sync` — Synchronization settings for mirrored version strings.
 - `changelog` — Changelog validation settings.
 - `git` — Git enforcement settings.
+- `scan` — Repo-wide version literal scanning.
 - `ignore` — Files or patterns excluded from validation.
 
 ### `SemVer`

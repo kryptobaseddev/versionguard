@@ -13,7 +13,7 @@ import { validateChangelog } from './changelog';
 import { areHooksInstalled, findGitDir } from './hooks';
 import { getPackageVersion } from './project';
 import * as semver from './semver';
-import { checkHardcodedVersions, syncVersion } from './sync';
+import { checkHardcodedVersions, scanRepoForVersions, syncVersion } from './sync';
 import {
   type DoctorReport,
   type FullValidationResult,
@@ -40,7 +40,7 @@ export { getPackageVersion, getVersionSource } from './project';
 export { findProjectRoot, formatNotProjectError } from './project-root';
 export * as semver from './semver';
 export * from './sources';
-export { checkHardcodedVersions, syncVersion } from './sync';
+export { checkHardcodedVersions, scanRepoForVersions, syncVersion } from './sync';
 export * from './tag';
 export * from './types';
 
@@ -127,6 +127,16 @@ export function validate(
     for (const mismatch of hardcoded) {
       errors.push(
         `Version mismatch in ${mismatch.file}:${mismatch.line} - found "${mismatch.found}" but expected "${version}"`,
+      );
+    }
+  }
+
+  // Repo-wide scan for stale version literals
+  if (config.scan?.enabled) {
+    const scanFindings = scanRepoForVersions(version, config.scan, config.ignore, cwd);
+    for (const finding of scanFindings) {
+      errors.push(
+        `Stale version in ${finding.file}:${finding.line} - found "${finding.found}" but expected "${version}"`,
       );
     }
   }

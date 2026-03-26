@@ -2,8 +2,8 @@
 
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
 
-Version: 0.6.0
-Generated: 2026-03-26T21:07:33.071Z
+Version: 0.7.0
+Generated: 2026-03-26T21:16:11.934Z
 
 ## Package: main
 
@@ -905,6 +905,28 @@ Example:
     getDefaultConfig().ignore,
     process.cwd(),
   );
+
+#### scanRepoForVersions()
+
+(expectedVersion: string, scanConfig: ScanConfig, ignorePatterns: string[], cwd?: string) => VersionMismatch[]
+
+Scans the entire repository for hardcoded version literals.
+
+Unlike `checkHardcodedVersions`, which only checks files listed in `sync.files`, this function globs the entire repository (respecting `.gitignore` and `ignore` patterns) and applies configurable version-like regex patterns. An allowlist filters out intentional references.
+
+Parameters:
+- expectedVersion: Version all matching entries should use.
+- scanConfig: Scan configuration with patterns and allowlist.
+- ignorePatterns: Glob patterns to exclude while scanning.
+- cwd: Project directory used to resolve file globs.
+
+Returns: A list of detected version mismatches across the repository.
+
+Example:
+  import { getDefaultConfig, scanRepoForVersions } from 'versionguard';
+  
+  const config = getDefaultConfig();
+  const findings = scanRepoForVersions('1.2.3', config.scan, config.ignore, process.cwd());
 
 #### fixPackageVersion()
 
@@ -2321,6 +2343,52 @@ CalVerConfig | undefined
 
 CalVer-specific settings when `type` is `'calver'`.
 
+#### ScanAllowlistEntry
+
+ScanAllowlistEntry
+
+An intentional version reference that should be excluded from scan results.
+
+Members:
+
+##### file
+
+string
+
+Glob pattern matching the file(s) where this reference is intentional.
+
+##### reason
+
+string | undefined
+
+Reason this reference is allowed (for documentation / review).
+
+#### ScanConfig
+
+ScanConfig
+
+Configures repo-wide scanning for hardcoded version literals.
+
+Members:
+
+##### enabled
+
+boolean
+
+Enables repo-wide scanning for stale version literals.
+
+##### patterns
+
+string[]
+
+Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string.
+
+##### allowlist
+
+ScanAllowlistEntry[]
+
+Files containing intentional version references that should not be flagged.
+
 #### VersionGuardConfig
 
 VersionGuardConfig
@@ -2358,6 +2426,12 @@ Changelog validation settings.
 GitConfig
 
 Git enforcement settings.
+
+##### scan
+
+ScanConfig
+
+Repo-wide version literal scanning.
 
 ##### ignore
 

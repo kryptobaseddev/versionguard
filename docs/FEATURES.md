@@ -49,7 +49,8 @@ node dist/cli.js validate
 | [x] | Symmetric Config | Config ships both `semver:` and `calver:` blocks — `type` is the switch, no commenting needed | `src/__tests__/config.test.ts` |
 | [x] | Changelog Structure Enforcement | `changelog.enforceStructure` validates section headers against `changelog.sections` whitelist (defaults to Keep a Changelog). Empty sections detected | `src/__tests__/changelog.test.ts` |
 | [x] | `vg` CLI Alias | `vg` is a shorthand alias for `versionguard` — same binary, shorter to type | `package.json` bin field |
-| [x] | 225 Tests | Full test suite with 94%+ coverage across 14 test files | `npm test` |
+| [x] | Repo-Wide Version Scanning | `scan.enabled` + `vg validate --scan` scans entire repo for stale version literals with allowlist, binary skip, .gitignore respect | `src/__tests__/scan.test.ts` |
+| [x] | 237 Tests | Full test suite with 94%+ coverage across 15 test files | `npm test` |
 
 ## Roadmap: Future Epics
 
@@ -87,16 +88,16 @@ VersionGuard is an enforcement layer. It validates and guards. It does not own v
 
 **Upstream repo**: kryptobaseddev/forge-ts
 
-### T003: Smarter Hardcoded Version Scanning
+### T003: Smarter Hardcoded Version Scanning ✓ (shipped v0.8.0)
 
 **Priority**: MEDIUM
-**Problem**: Current sync scanning only checks configured files. Accidental version literals in source code, CI configs, or Docker files go undetected.
+**Status**: SHIPPED
 
 **Deliverables**:
-- [ ] Scan entire repo (respecting .gitignore) for version-like patterns
-- [ ] Configurable allowlist for intentional version references
-- [ ] Report with file:line locations and severity (warning vs error)
-- [ ] Integration with `validate --strict`
+- [x] Scan entire repo (respecting .gitignore) for version-like patterns
+- [x] Configurable allowlist for intentional version references
+- [x] Report with file:line locations and severity
+- [x] Integration with `validate --scan`
 
 ### T004: Changelog Structure Enforcement ✓ (shipped v0.7.0)
 

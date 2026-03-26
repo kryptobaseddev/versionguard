@@ -55,6 +55,18 @@ const DEFAULT_CONFIG: VersionGuardConfig = {
     enforceStructure: false,
     sections: ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'],
   },
+  scan: {
+    enabled: false,
+    patterns: [
+      // version = "1.2.3" or version: "1.2.3" in code/config
+      '(?:version\\s*[:=]\\s*["\'])([\\d]+\\.[\\d]+\\.[\\d]+(?:-[\\w.]+)?)["\']',
+      // Docker FROM image:1.2.3
+      '(?:FROM\\s+\\S+:)(\\d+\\.\\d+\\.\\d+(?:-[\\w.]+)?)',
+      // GitHub Actions uses: action@v1.2.3
+      '(?:uses:\\s+\\S+@v?)(\\d+\\.\\d+\\.\\d+(?:-[\\w.]+)?)',
+    ],
+    allowlist: [],
+  },
   git: {
     hooks: {
       'pre-commit': true,

@@ -137,6 +137,25 @@ Configures the active versioning mode.
 | `semver`      | `SemVerConfig \| undefined` | No       | SemVer-specific settings when `type` is `'semver'`.                  |
 | `calver`      | `CalVerConfig \| undefined` | No       | CalVer-specific settings when `type` is `'calver'`.                  |
 
+## ScanAllowlistEntry
+
+An intentional version reference that should be excluded from scan results.
+
+| Property | Type                  | Required | Description                                                            |
+| -------- | --------------------- | -------- | ---------------------------------------------------------------------- |
+| `file`   | `string`              | Yes      | Glob pattern matching the file(s) where this reference is intentional. |
+| `reason` | `string \| undefined` | No       | Reason this reference is allowed (for documentation / review).         |
+
+## ScanConfig
+
+Configures repo-wide scanning for hardcoded version literals.
+
+| Property    | Type                   | Required | Description                                                                                                       |
+| ----------- | ---------------------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `enabled`   | `boolean`              | Yes      | Enables repo-wide scanning for stale version literals.                                                            |
+| `patterns`  | `string[]`             | Yes      | Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string. |
+| `allowlist` | `ScanAllowlistEntry[]` | Yes      | Files containing intentional version references that should not be flagged.                                       |
+
 ## VersionGuardConfig
 
 Top-level configuration consumed by versionguard.
@@ -148,6 +167,7 @@ Top-level configuration consumed by versionguard.
 | `sync`       | `SyncConfig`       | Yes      | Synchronization settings for mirrored version strings. |
 | `changelog`  | `ChangelogConfig`  | Yes      | Changelog validation settings.                         |
 | `git`        | `GitConfig`        | Yes      | Git enforcement settings.                              |
+| `scan`       | `ScanConfig`       | Yes      | Repo-wide version literal scanning.                    |
 | `ignore`     | `string[]`         | Yes      | Files or patterns excluded from validation.            |
 
 ## SemVer

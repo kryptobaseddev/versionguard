@@ -190,6 +190,29 @@ const config: Partial<VersioningConfig> = {
 | `semver` | `SemVerConfig | undefined` | SemVer-specific settings when `type` is `'semver'`. |
 | `calver` | `CalVerConfig | undefined` | CalVer-specific settings when `type` is `'calver'`. |
 
+## `ScanConfig`
+
+Configures repo-wide scanning for hardcoded version literals.
+
+```typescript
+import type { ScanConfig } from "@codluv/versionguard";
+
+const config: Partial<ScanConfig> = {
+  // Enables repo-wide scanning for stale version literals.
+  enabled: true,
+  // Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string.
+  patterns: "...",
+  // Files containing intentional version references that should not be flagged.
+  allowlist: [],
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `enabled` | `boolean` | Enables repo-wide scanning for stale version literals. |
+| `patterns` | `string[]` | Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string. |
+| `allowlist` | `ScanAllowlistEntry[]` | Files containing intentional version references that should not be flagged. |
+
 ## `VersionGuardConfig`
 
 Top-level configuration consumed by versionguard.
@@ -208,6 +231,8 @@ const config: Partial<VersionGuardConfig> = {
   changelog: { /* ... */ },
   // Git enforcement settings.
   git: { /* ... */ },
+  // Repo-wide version literal scanning.
+  scan: { /* ... */ },
   // Files or patterns excluded from validation.
   ignore: "...",
 };
@@ -220,6 +245,7 @@ const config: Partial<VersionGuardConfig> = {
 | `sync` | `SyncConfig` | Synchronization settings for mirrored version strings. |
 | `changelog` | `ChangelogConfig` | Changelog validation settings. |
 | `git` | `GitConfig` | Git enforcement settings. |
+| `scan` | `ScanConfig` | Repo-wide version literal scanning. |
 | `ignore` | `string[]` | Files or patterns excluded from validation. |
 
 ## `CkmConfigEntry`

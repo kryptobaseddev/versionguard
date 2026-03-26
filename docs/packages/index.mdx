@@ -58,6 +58,7 @@ description: . package overview
 | [`syncVersion()`](/packages/./api/index#syncversion)                         | function | Synchronizes configured files to a single version string.                        |
 | [`syncFile()`](/packages/./api/index#syncfile)                               | function | Synchronizes a single file to a target version.                                  |
 | [`checkHardcodedVersions()`](/packages/./api/index#checkhardcodedversions)   | function | Checks configured files for hardcoded version mismatches.                        |
+| [`scanRepoForVersions()`](/packages/./api/index#scanrepoforversions)         | function | Scans the entire repository for hardcoded version literals.                      |
 | [`fixPackageVersion()`](/packages/./api/index#fixpackageversion)             | function | Updates the `package.json` version field when needed.                            |
 | [`fixSyncIssues()`](/packages/./api/index#fixsyncissues)                     | function | Synchronizes configured files to the package version.                            |
 | [`fixChangelog()`](/packages/./api/index#fixchangelog)                       | function | Ensures the changelog contains an entry for a version.                           |
@@ -121,6 +122,8 @@ description: . package overview
 | [`GitHooksConfig`](/packages/./api/index#githooksconfig)                       | interface | Toggles each supported git hook integration.                                     |
 | [`GitConfig`](/packages/./api/index#gitconfig)                                 | interface | Configures git-related enforcement.                                              |
 | [`VersioningConfig`](/packages/./api/index#versioningconfig)                   | interface | Configures the active versioning mode.                                           |
+| [`ScanAllowlistEntry`](/packages/./api/index#scanallowlistentry)               | interface | An intentional version reference that should be excluded from scan results.      |
+| [`ScanConfig`](/packages/./api/index#scanconfig)                               | interface | Configures repo-wide scanning for hardcoded version literals.                    |
 | [`VersionGuardConfig`](/packages/./api/index#versionguardconfig)               | interface | Top-level configuration consumed by versionguard.                                |
 | [`SemVer`](/packages/./api/index#semver)                                       | interface | Parsed semantic version components.                                              |
 | [`CalVer`](/packages/./api/index#calver)                                       | interface | Parsed calendar version components.                                              |
@@ -205,6 +208,7 @@ description: . package overview
 | [`guard.test.ts`](/packages/./api/index#guardtestts)               | file |                                                                                  |
 | [`hooks.test.ts`](/packages/./api/index#hookstestts)               | file |                                                                                  |
 | [`index.test.ts`](/packages/./api/index#indextestts)               | file |                                                                                  |
+| [`scan.test.ts`](/packages/./api/index#scantestts)                 | file |                                                                                  |
 | [`scheme-rules.test.ts`](/packages/./api/index#scheme-rulestestts) | file |                                                                                  |
 | [`semver.test.ts`](/packages/./api/index#semvertestts)             | file |                                                                                  |
 | [`sources.test.ts`](/packages/./api/index#sourcestestts)           | file |                                                                                  |

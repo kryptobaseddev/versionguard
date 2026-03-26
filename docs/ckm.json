@@ -2,7 +2,7 @@
   "$schema": "https://forge-ts.dev/schemas/ckm/v1.json",
   "version": "1.0.0",
   "project": "@codluv/versionguard",
-  "generated": "2026-03-26T21:07:33.077Z",
+  "generated": "2026-03-26T21:16:11.940Z",
   "concepts": [
     {
       "id": "concept-ManifestConfig",
@@ -191,6 +191,45 @@
       ]
     },
     {
+      "id": "concept-ScanAllowlistEntry",
+      "name": "ScanAllowlistEntry",
+      "what": "An intentional version reference that should be excluded from scan results.",
+      "properties": [
+        {
+          "name": "file",
+          "type": "string",
+          "description": "Glob pattern matching the file(s) where this reference is intentional."
+        },
+        {
+          "name": "reason",
+          "type": "string | undefined",
+          "description": "Reason this reference is allowed (for documentation / review)."
+        }
+      ]
+    },
+    {
+      "id": "concept-ScanConfig",
+      "name": "ScanConfig",
+      "what": "Configures repo-wide scanning for hardcoded version literals.",
+      "properties": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enables repo-wide scanning for stale version literals."
+        },
+        {
+          "name": "patterns",
+          "type": "string[]",
+          "description": "Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string."
+        },
+        {
+          "name": "allowlist",
+          "type": "ScanAllowlistEntry[]",
+          "description": "Files containing intentional version references that should not be flagged."
+        }
+      ]
+    },
+    {
       "id": "concept-VersionGuardConfig",
       "name": "VersionGuardConfig",
       "what": "Top-level configuration consumed by versionguard.",
@@ -219,6 +258,11 @@
           "name": "git",
           "type": "GitConfig",
           "description": "Git enforcement settings."
+        },
+        {
+          "name": "scan",
+          "type": "ScanConfig",
+          "description": "Repo-wide version literal scanning."
         },
         {
           "name": "ignore",
@@ -1111,6 +1155,24 @@
       "default": "undefined"
     },
     {
+      "key": "ScanConfig.enabled",
+      "type": "boolean",
+      "description": "Enables repo-wide scanning for stale version literals.",
+      "default": "false"
+    },
+    {
+      "key": "ScanConfig.patterns",
+      "type": "string[]",
+      "description": "Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string.",
+      "default": "Patterns matching common version formats in code, CI, and Docker files."
+    },
+    {
+      "key": "ScanConfig.allowlist",
+      "type": "ScanAllowlistEntry[]",
+      "description": "Files containing intentional version references that should not be flagged.",
+      "default": "[]"
+    },
+    {
       "key": "VersionGuardConfig.versioning",
       "type": "VersioningConfig",
       "description": "Active versioning settings."
@@ -1135,6 +1197,12 @@
       "key": "VersionGuardConfig.git",
       "type": "GitConfig",
       "description": "Git enforcement settings."
+    },
+    {
+      "key": "VersionGuardConfig.scan",
+      "type": "ScanConfig",
+      "description": "Repo-wide version literal scanning.",
+      "default": "`{ enabled: false, patterns: [...], allowlist: [] }`"
     },
     {
       "key": "VersionGuardConfig.ignore",

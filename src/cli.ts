@@ -232,115 +232,148 @@ export function createProgram(): Command {
     .option('--hook <name>', 'Running as git hook')
     .option('--json', 'Print machine-readable JSON output')
     .option('--strict', 'Run guard checks and fail on any policy gap or bypass')
-    .action((options: { cwd: string; hook?: string; json?: boolean; strict?: boolean }) => {
-      try {
-        options.cwd = requireProject(options.cwd, 'validate');
-        const config = versionguard.getConfig(options.cwd);
-        const version = versionguard.getPackageVersion(options.cwd, config.manifest);
-        const result = versionguard.validate(config, options.cwd);
+    .option('--scan', 'Run repo-wide scan for stale version literals')
+    .action(
+      (options: {
+        cwd: string;
+        hook?: string;
+        json?: boolean;
+        strict?: boolean;
+        scan?: boolean;
+      }) => {
+        try {
+          options.cwd = requireProject(options.cwd, 'validate');
+          const config = versionguard.getConfig(options.cwd);
 
-        let postTagResult: { success: boolean; message: string; actions: string[] } | undefined;
-        let guardReport: guard.GuardReport | undefined;
-
-        if (options.hook === 'post-tag') {
-          postTagResult = tag.handlePostTag(config, options.cwd);
-        }
-
-        if (options.strict) {
-          guardReport = guard.runGuardChecks(config, options.cwd);
-        }
-
-        if (options.json) {
-          console.log(
-            JSON.stringify(
-              {
-                ...result,
-                hook: options.hook ?? null,
-                postTag: postTagResult ?? null,
-                guard: guardReport ?? null,
-              },
-              null,
-              2,
-            ),
-          );
-
-          if (
-            !result.valid ||
-            (postTagResult && !postTagResult.success) ||
-            (guardReport && !guardReport.safe)
-          ) {
-            process.exit(1);
+          // --scan flag enables repo-wide scanning for this run
+          if (options.scan && config.scan) {
+            config.scan.enabled = true;
           }
 
-          return;
-        }
+          const version = versionguard.getPackageVersion(options.cwd, config.manifest);
+          const result = versionguard.validate(config, options.cwd);
 
-        console.log(styles.bold(`Validating version ${version}...`));
-        console.log('');
+          let postTagResult: { success: boolean; message: string; actions: string[] } | undefined;
+          let guardReport: guard.GuardReport | undefined;
 
-        if (!result.syncValid) {
-          console.log(styles.error('Sync Issues:'));
-          for (const error of result.errors.filter((item) => item.includes('mismatch'))) {
-            const parts = error.match(
-              /Version mismatch in (.+):(\d+) - found "(.+?)" but expected "(.+?)"/,
+          if (options.hook === 'post-tag') {
+            postTagResult = tag.handlePostTag(config, options.cwd);
+          }
+
+          if (options.strict) {
+            guardReport = guard.runGuardChecks(config, options.cwd);
+          }
+
+          if (options.json) {
+            console.log(
+              JSON.stringify(
+                {
+                  ...result,
+                  hook: options.hook ?? null,
+                  postTag: postTagResult ?? null,
+                  guard: guardReport ?? null,
+                },
+                null,
+                2,
+              ),
             );
-            if (!parts) {
-              continue;
+
+            if (
+              !result.valid ||
+              (postTagResult && !postTagResult.success) ||
+              (guardReport && !guardReport.safe)
+            ) {
+              process.exit(1);
             }
-            const suggestions = feedback.getSyncFeedback(parts[1], parts[3], parts[4]);
-            console.log(styles.error(`  ✗ ${parts[1]} has wrong version`));
-            console.log(styles.dim(`    Found: "${parts[3]}" Expected: "${parts[4]}"`));
+
+            return;
+          }
+
+          console.log(styles.bold(`Validating version ${version}...`));
+          console.log('');
+
+          if (!result.syncValid) {
+            console.log(styles.error('Sync Issues:'));
+            for (const error of result.errors.filter((item) => item.includes('mismatch'))) {
+              const parts = error.match(
+                /Version mismatch in (.+):(\d+) - found "(.+?)" but expected "(.+?)"/,
+              );
+              if (!parts) {
+                continue;
+              }
+              const suggestions = feedback.getSyncFeedback(parts[1], parts[3], parts[4]);
+              console.log(styles.error(`  ✗ ${parts[1]} has wrong version`));
+              console.log(styles.dim(`    Found: "${parts[3]}" Expected: "${parts[4]}"`));
+              if (suggestions[0]?.fix) {
+                console.log(styles.info(`    Fix: ${suggestions[0].fix}`));
+              }
+            }
+            console.log('');
+          }
+
+          // Show scan findings (stale version literals)
+          const scanErrors = result.errors.filter((item) => item.startsWith('Stale version'));
+          if (scanErrors.length > 0) {
+            console.log(styles.error('Scan Findings:'));
+            for (const error of scanErrors) {
+              const parts = error.match(
+                /Stale version in (.+):(\d+) - found "(.+?)" but expected "(.+?)"/,
+              );
+              if (parts) {
+                console.log(styles.error(`  ✗ ${parts[1]}:${parts[2]} has "${parts[3]}"`));
+              }
+            }
+            console.log(
+              styles.dim('  Hint: add entries to scan.allowlist to exclude intentional references'),
+            );
+            console.log('');
+          }
+
+          if (config.changelog.enabled && !result.changelogValid) {
+            console.log(styles.error('Changelog Issues:'));
+            for (const error of result.errors.filter((item) =>
+              item.toLowerCase().includes('changelog'),
+            )) {
+              console.log(styles.error(`  ✗ ${error}`));
+            }
+            const suggestions = feedback.getChangelogFeedback(false, version);
             if (suggestions[0]?.fix) {
-              console.log(styles.info(`    Fix: ${suggestions[0].fix}`));
+              console.log(styles.info(`Fix: ${suggestions[0].fix}`));
+            }
+            console.log('');
+          }
+
+          if (postTagResult) {
+            if (!postTagResult.success) {
+              console.log(styles.error(`✗ ${postTagResult.message}`));
+              process.exit(1);
             }
           }
-          console.log('');
-        }
 
-        if (config.changelog.enabled && !result.changelogValid) {
-          console.log(styles.error('Changelog Issues:'));
-          for (const error of result.errors.filter((item) =>
-            item.toLowerCase().includes('changelog'),
-          )) {
-            console.log(styles.error(`  ✗ ${error}`));
+          if (guardReport && guardReport.warnings.length > 0) {
+            console.log(styles.bold('Guard Checks:'));
+            for (const warning of guardReport.warnings) {
+              const icon = warning.severity === 'error' ? styles.error('✗') : styles.warning('⚠');
+              console.log(`  ${icon} [${warning.code}] ${warning.message}`);
+              if (warning.fix) {
+                console.log(styles.dim(`    Fix: ${warning.fix}`));
+              }
+            }
+            console.log('');
           }
-          const suggestions = feedback.getChangelogFeedback(false, version);
-          if (suggestions[0]?.fix) {
-            console.log(styles.info(`Fix: ${suggestions[0].fix}`));
-          }
-          console.log('');
-        }
 
-        if (postTagResult) {
-          if (!postTagResult.success) {
-            console.log(styles.error(`✗ ${postTagResult.message}`));
+          if (!result.valid || (guardReport && !guardReport.safe)) {
+            console.log(styles.error('✗ Validation failed'));
             process.exit(1);
           }
-        }
 
-        if (guardReport && guardReport.warnings.length > 0) {
-          console.log(styles.bold('Guard Checks:'));
-          for (const warning of guardReport.warnings) {
-            const icon = warning.severity === 'error' ? styles.error('✗') : styles.warning('⚠');
-            console.log(`  ${icon} [${warning.code}] ${warning.message}`);
-            if (warning.fix) {
-              console.log(styles.dim(`    Fix: ${warning.fix}`));
-            }
-          }
-          console.log('');
-        }
-
-        if (!result.valid || (guardReport && !guardReport.safe)) {
-          console.log(styles.error('✗ Validation failed'));
+          console.log(styles.success('✓ All validations passed'));
+        } catch (error) {
+          console.error(styles.error(`✗ ${(error as Error).message}`));
           process.exit(1);
         }
-
-        console.log(styles.success('✓ All validations passed'));
-      } catch (error) {
-        console.error(styles.error(`✗ ${(error as Error).message}`));
-        process.exit(1);
-      }
-    });
+      },
+    );
 
   program
     .command('doctor')

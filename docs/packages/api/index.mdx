@@ -60,6 +60,7 @@ API reference for the `.` package.
 | [`syncVersion()`](/packages/./api/functions#syncversion)                         | function | Synchronizes configured files to a single version string.                        |
 | [`syncFile()`](/packages/./api/functions#syncfile)                               | function | Synchronizes a single file to a target version.                                  |
 | [`checkHardcodedVersions()`](/packages/./api/functions#checkhardcodedversions)   | function | Checks configured files for hardcoded version mismatches.                        |
+| [`scanRepoForVersions()`](/packages/./api/functions#scanrepoforversions)         | function | Scans the entire repository for hardcoded version literals.                      |
 | [`fixPackageVersion()`](/packages/./api/functions#fixpackageversion)             | function | Updates the `package.json` version field when needed.                            |
 | [`fixSyncIssues()`](/packages/./api/functions#fixsyncissues)                     | function | Synchronizes configured files to the package version.                            |
 | [`fixChangelog()`](/packages/./api/functions#fixchangelog)                       | function | Ensures the changelog contains an entry for a version.                           |
@@ -123,6 +124,8 @@ API reference for the `.` package.
 | [`GitHooksConfig`](/packages/./api/types#githooksconfig)                       | interface | Toggles each supported git hook integration.                                     |
 | [`GitConfig`](/packages/./api/types#gitconfig)                                 | interface | Configures git-related enforcement.                                              |
 | [`VersioningConfig`](/packages/./api/types#versioningconfig)                   | interface | Configures the active versioning mode.                                           |
+| [`ScanAllowlistEntry`](/packages/./api/types#scanallowlistentry)               | interface | An intentional version reference that should be excluded from scan results.      |
+| [`ScanConfig`](/packages/./api/types#scanconfig)                               | interface | Configures repo-wide scanning for hardcoded version literals.                    |
 | [`VersionGuardConfig`](/packages/./api/types#versionguardconfig)               | interface | Top-level configuration consumed by versionguard.                                |
 | [`SemVer`](/packages/./api/types#semver)                                       | interface | Parsed semantic version components.                                              |
 | [`CalVer`](/packages/./api/types#calver)                                       | interface | Parsed calendar version components.                                              |
@@ -207,6 +210,7 @@ API reference for the `.` package.
 | [`guard.test.ts`](/packages/./api/functions#guardtestts)               | file |                                                                                  |
 | [`hooks.test.ts`](/packages/./api/functions#hookstestts)               | file |                                                                                  |
 | [`index.test.ts`](/packages/./api/functions#indextestts)               | file |                                                                                  |
+| [`scan.test.ts`](/packages/./api/functions#scantestts)                 | file |                                                                                  |
 | [`scheme-rules.test.ts`](/packages/./api/functions#scheme-rulestestts) | file |                                                                                  |
 | [`semver.test.ts`](/packages/./api/functions#semvertestts)             | file |                                                                                  |
 | [`sources.test.ts`](/packages/./api/functions#sourcestestts)           | file |                                                                                  |

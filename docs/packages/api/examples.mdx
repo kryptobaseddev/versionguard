@@ -591,6 +591,19 @@ const mismatches = checkHardcodedVersions(
 );
 ```
 
+## `scanRepoForVersions()`
+
+*Scans the entire repository for hardcoded version literals.*
+
+[View in API reference](/packages/./api/functions#scanrepoforversions)
+
+```ts
+import { getDefaultConfig, scanRepoForVersions } from 'versionguard';
+
+const config = getDefaultConfig();
+const findings = scanRepoForVersions('1.2.3', config.scan, config.ignore, process.cwd());
+```
+
 ## `fixPackageVersion()`
 
 *Updates the `package.json` version field when needed.*

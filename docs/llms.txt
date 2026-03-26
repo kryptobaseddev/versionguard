@@ -1,6 +1,6 @@
 # @codluv/versionguard
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
-> Version: 0.6.0
+> Version: 0.7.0
 
 ## Install
 
@@ -16,7 +16,7 @@ npm install -D @codluv/versionguard
 ## Packages
 
 ### main
-89 functions, 53 types
+90 functions, 55 types
 
 - getSemVerConfig() — Resolves the SemVer config from a VersionGuard config.
 - getCalVerConfig() — Extracts the CalVer config from a VersionGuard config, throwing if missing.
@@ -63,6 +63,7 @@ npm install -D @codluv/versionguard
 - syncVersion() — Synchronizes configured files to a single version string.
 - syncFile() — Synchronizes a single file to a target version.
 - checkHardcodedVersions() — Checks configured files for hardcoded version mismatches.
+- scanRepoForVersions() — Scans the entire repository for hardcoded version literals.
 - fixPackageVersion() — Updates the `package.json` version field when needed.
 - fixSyncIssues() — Synchronizes configured files to the package version.
 - fixChangelog() — Ensures the changelog contains an entry for a version.
@@ -122,6 +123,8 @@ npm install -D @codluv/versionguard
 - GitHooksConfig — Toggles each supported git hook integration.
 - GitConfig — Configures git-related enforcement.
 - VersioningConfig — Configures the active versioning mode.
+- ScanAllowlistEntry — An intentional version reference that should be excluded from scan results.
+- ScanConfig — Configures repo-wide scanning for hardcoded version literals.
 - VersionGuardConfig — Top-level configuration consumed by versionguard.
 - SemVer — Parsed semantic version components.
 - CalVer — Parsed calendar version components.

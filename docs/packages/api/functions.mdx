@@ -1502,6 +1502,36 @@ const mismatches = checkHardcodedVersions(
 );
 ```
 
+## scanRepoForVersions(expectedVersion, scanConfig, ignorePatterns, cwd)
+
+Scans the entire repository for hardcoded version literals.
+
+**Signature**
+
+```typescript
+(expectedVersion: string, scanConfig: ScanConfig, ignorePatterns: string[], cwd?: string) => VersionMismatch[]
+```
+
+**Parameters**
+
+| Name              | Type         | Description                                     |
+| ----------------- | ------------ | ----------------------------------------------- |
+| `expectedVersion` | `string`     | Version all matching entries should use.        |
+| `scanConfig`      | `ScanConfig` | Scan configuration with patterns and allowlist. |
+| `ignorePatterns`  | `string[]`   | Glob patterns to exclude while scanning.        |
+| `cwd`             | `: string`   | Project directory used to resolve file globs.   |
+
+**Returns** — A list of detected version mismatches across the repository.
+
+**Example**
+
+```ts
+import { getDefaultConfig, scanRepoForVersions } from 'versionguard';
+
+const config = getDefaultConfig();
+const findings = scanRepoForVersions('1.2.3', config.scan, config.ignore, process.cwd());
+```
+
 ## fixPackageVersion(targetVersion, cwd, manifest)
 
 Updates the `package.json` version field when needed.

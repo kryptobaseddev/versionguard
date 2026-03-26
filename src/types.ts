@@ -377,6 +377,57 @@ export interface VersioningConfig {
 }
 
 /**
+ * An intentional version reference that should be excluded from scan results.
+ *
+ * @public
+ * @since 0.8.0
+ * @forgeIgnore E020
+ */
+export interface ScanAllowlistEntry {
+  /**
+   * Glob pattern matching the file(s) where this reference is intentional.
+   */
+  file: string;
+
+  /**
+   * Reason this reference is allowed (for documentation / review).
+   */
+  reason?: string;
+}
+
+/**
+ * Configures repo-wide scanning for hardcoded version literals.
+ *
+ * @public
+ * @since 0.8.0
+ * @forgeIgnore E020
+ */
+export interface ScanConfig {
+  /**
+   * Enables repo-wide scanning for stale version literals.
+   *
+   * @defaultValue false
+   */
+  enabled: boolean;
+
+  /**
+   * Regex patterns that match version-like strings in source files.
+   *
+   * Capture group 1 must contain the version string.
+   *
+   * @defaultValue Patterns matching common version formats in code, CI, and Docker files.
+   */
+  patterns: string[];
+
+  /**
+   * Files containing intentional version references that should not be flagged.
+   *
+   * @defaultValue []
+   */
+  allowlist: ScanAllowlistEntry[];
+}
+
+/**
  * Top-level configuration consumed by versionguard.
  *
  * @public
@@ -410,6 +461,14 @@ export interface VersionGuardConfig {
    * Git enforcement settings.
    */
   git: GitConfig;
+
+  /**
+   * Repo-wide version literal scanning.
+   *
+   * @defaultValue `{ enabled: false, patterns: [...], allowlist: [] }`
+   * @since 0.8.0
+   */
+  scan: ScanConfig;
 
   /**
    * Files or patterns excluded from validation.
