@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-03-26
+
+### Added
+
+- Add GitHub Dependabot config generation (T007)
+
+  - New `github.dependabot` config field (default: `true`) — opinionated default for GitHub-hosted projects
+  - `vg init` wizard generates `.github/dependabot.yml` from detected manifests automatically
+  - Shared `MANIFEST_TO_ECOSYSTEM` mapping reuses VG's existing ecosystem detection (DRY)
+  - Supports all VG manifest types: npm, cargo, pip, pub, composer, maven
+  - Always includes `github-actions` ecosystem entry
+  - Minor+patch grouped into single PRs for clean PR lists
+  - `--no-github` headless flag to opt out
+  - `vg doctor` warns when dependabot config is enabled but file is missing
+  - CKM auto-generates `github` topic from `GitHubConfig`
+  - 11 new tests (248 total)
+
+
 ## [0.8.1] - 2026-03-26
 
 ### Fixed
@@ -24,7 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - js-yaml: 4.1.0 → 4.1.1
   - @types/node: 24.6.0 → 25.5.0
   - 0 vulnerabilities (was 6), 0 deprecation warnings
-
 
 ## [0.8.0] - 2026-03-26
 
@@ -192,7 +209,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI with init, check, validate, sync, bump commands
 - Configurable via .versionguard.yml
 
-[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/kryptobaseddev/versionguard/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.6.0...v0.7.0
