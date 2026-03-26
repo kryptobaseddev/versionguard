@@ -49,6 +49,14 @@ yarn-error.log*
 .forge-audit.jsonl
 .forge-lock.json
 
-# CLEO
-.cleo/
+# CLEO — track docs (adrs, specs, agent-outputs), ignore databases and ephemeral state
+.cleo/*.db
+.cleo/*.db-shm
+.cleo/*.db-wal
+.cleo/*.db.bak
+.cleo/*.json
+.cleo/logs/
+.cleo/backups/
+.cleo/rcasd/
+.cleo/memory-bridge.md
 clawmsgr-agent.json
