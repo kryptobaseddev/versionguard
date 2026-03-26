@@ -577,8 +577,16 @@ export function shouldRunCli(
   argv: string[] = process.argv,
   metaUrl: string = import.meta.url,
 ): boolean {
-  const entryPath = argv[1] ? path.resolve(argv[1]) : null;
-  return entryPath === fileURLToPath(metaUrl);
+  if (!argv[1]) return false;
+  const metaPath = fileURLToPath(metaUrl);
+  const resolved = path.resolve(argv[1]);
+  // Try resolving through symlinks first (needed for global npm installs)
+  try {
+    return fs.realpathSync(resolved) === metaPath;
+  } catch {
+    // File may not exist in test contexts — fall back to direct comparison
+    return resolved === metaPath;
+  }
 }
 
 /* v8 ignore start -- exercised only by direct CLI execution */
