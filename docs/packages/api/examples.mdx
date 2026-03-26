@@ -185,7 +185,10 @@ getNextVersions('2026.3.1', 'YYYY.M.MICRO').length;
 ```ts
 import { validateChangelog } from 'versionguard';
 
-const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true);
+const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true, {
+  enforceStructure: true,
+  sections: ['Added', 'Changed', 'Fixed'],
+});
 ```
 
 ## `getLatestVersion()`

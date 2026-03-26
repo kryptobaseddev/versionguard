@@ -2,8 +2,8 @@
 
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
 
-Version: 0.5.0
-Generated: 2026-03-26T20:51:51.370Z
+Version: 0.6.0
+Generated: 2026-03-26T21:07:33.071Z
 
 ## Package: main
 
@@ -270,24 +270,28 @@ Example:
 
 #### validateChangelog()
 
-(changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean) => ChangelogValidationResult
+(changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean, structure?: ChangelogStructureOptions) => ChangelogValidationResult
 
 Validates a changelog file for release readiness.
 
-The validator checks for a top-level changelog heading, an `[Unreleased]` section, and optionally a dated entry for the requested version.
+The validator checks for a top-level changelog heading, an `[Unreleased]` section, and optionally a dated entry for the requested version.  When `structure.enforceStructure` is `true`, section headers (`### Name`) are validated against the allowed list and empty sections produce warnings.
 
 Parameters:
 - changelogPath: Path to the changelog file.
 - version: Version that must be present in the changelog.
 - strict: Whether to require compare links and dated release headings.
 - requireEntry: Whether the requested version must already have an entry.
+- structure: Optional structure enforcement options.
 
 Returns: The result of validating the changelog file.
 
 Example:
   import { validateChangelog } from 'versionguard';
   
-  const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true);
+  const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true, {
+    enforceStructure: true,
+    sections: ['Added', 'Changed', 'Fixed'],
+  });
 
 #### getLatestVersion()
 
@@ -2227,6 +2231,18 @@ boolean
 
 Requires an entry for the current version.
 
+##### enforceStructure
+
+boolean | undefined
+
+Validates that changelog section headers use only allowed names.  When enabled, any `### SectionName` header not present in `sections` is reported as an error.
+
+##### sections
+
+string[] | undefined
+
+Allowed Keep a Changelog section names.  Only applied when `enforceStructure` is `true`.
+
 #### GitHooksConfig
 
 GitHooksConfig
@@ -2788,6 +2804,26 @@ Human-readable validation errors.
 boolean
 
 Indicates whether the changelog contains an entry for the requested version.
+
+#### ChangelogStructureOptions
+
+ChangelogStructureOptions
+
+Options for changelog structure enforcement.
+
+Members:
+
+##### enforceStructure
+
+boolean | undefined
+
+Validate section headers against an allowed list.
+
+##### sections
+
+string[] | undefined
+
+Allowed section names. Defaults to Keep a Changelog standard sections.
 
 #### CkmConcept
 

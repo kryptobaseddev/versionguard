@@ -313,4 +313,109 @@ describe('changelog', () => {
 
     expect(fixChangesetMangling(changelogPath)).toBe(false);
   });
+
+  describe('section structure enforcement', () => {
+    const structure = {
+      enforceStructure: true,
+      sections: ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'],
+    };
+
+    it('passes when all sections are allowed Keep a Changelog names', () => {
+      const cwd = createTempProject();
+      const changelogPath = writeTextFile(
+        cwd,
+        'CHANGELOG.md',
+        '# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-03-26\n\n### Added\n\n- Feature A\n\n### Fixed\n\n- Bug B\n\n[Unreleased]: https://example.com\n',
+      );
+
+      const result = validateChangelog(changelogPath, '1.0.0', true, true, structure);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('rejects non-standard section names', () => {
+      const cwd = createTempProject();
+      const changelogPath = writeTextFile(
+        cwd,
+        'CHANGELOG.md',
+        '# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-03-26\n\n### Improvements\n\n- Better stuff\n\n[Unreleased]: https://example.com\n',
+      );
+
+      const result = validateChangelog(changelogPath, '1.0.0', true, true, structure);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Invalid changelog section "### Improvements"'),
+        ]),
+      );
+    });
+
+    it('detects empty sections', () => {
+      const cwd = createTempProject();
+      const changelogPath = writeTextFile(
+        cwd,
+        'CHANGELOG.md',
+        '# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-03-26\n\n### Added\n\n### Fixed\n\n- Bug B\n\n[Unreleased]: https://example.com\n',
+      );
+
+      const result = validateChangelog(changelogPath, '1.0.0', true, true, structure);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toEqual(
+        expect.arrayContaining([expect.stringContaining('Empty changelog section "### Added"')]),
+      );
+    });
+
+    it('accepts custom section whitelist', () => {
+      const cwd = createTempProject();
+      const changelogPath = writeTextFile(
+        cwd,
+        'CHANGELOG.md',
+        '# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-03-26\n\n### Features\n\n- Feature A\n\n### Bugfixes\n\n- Bug B\n\n[Unreleased]: https://example.com\n',
+      );
+
+      const custom = { enforceStructure: true, sections: ['Features', 'Bugfixes'] };
+      const result = validateChangelog(changelogPath, '1.0.0', true, true, custom);
+      expect(result.valid).toBe(true);
+    });
+
+    it('does not enforce sections when enforceStructure is false', () => {
+      const cwd = createTempProject();
+      const changelogPath = writeTextFile(
+        cwd,
+        'CHANGELOG.md',
+        '# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-03-26\n\n### Whatever\n\n- Stuff\n\n[Unreleased]: https://example.com\n',
+      );
+
+      const result = validateChangelog(changelogPath, '1.0.0', true, true, {
+        enforceStructure: false,
+      });
+      expect(result.valid).toBe(true);
+    });
+
+    it('does not enforce sections when no structure options provided', () => {
+      const cwd = createTempProject();
+      const changelogPath = writeTextFile(
+        cwd,
+        'CHANGELOG.md',
+        '# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-03-26\n\n### Nonsense\n\n- Stuff\n\n[Unreleased]: https://example.com\n',
+      );
+
+      const result = validateChangelog(changelogPath, '1.0.0', true, true);
+      expect(result.valid).toBe(true);
+    });
+
+    it('reports multiple invalid sections in one pass', () => {
+      const cwd = createTempProject();
+      const changelogPath = writeTextFile(
+        cwd,
+        'CHANGELOG.md',
+        '# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-03-26\n\n### Improvements\n\n- A\n\n### Bugfixes\n\n- B\n\n[Unreleased]: https://example.com\n',
+      );
+
+      const result = validateChangelog(changelogPath, '1.0.0', true, true, structure);
+      expect(result.valid).toBe(false);
+      const sectionErrors = result.errors.filter((e) => e.includes('Invalid changelog section'));
+      expect(sectionErrors).toHaveLength(2);
+    });
+  });
 });

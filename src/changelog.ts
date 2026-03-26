@@ -24,6 +24,29 @@ export interface ChangelogValidationResult {
 
 const CHANGELOG_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Default Keep a Changelog section names. */
+const KEEP_A_CHANGELOG_SECTIONS = [
+  'Added',
+  'Changed',
+  'Deprecated',
+  'Removed',
+  'Fixed',
+  'Security',
+];
+
+/**
+ * Options for changelog structure enforcement.
+ *
+ * @public
+ * @since 0.7.0
+ */
+export interface ChangelogStructureOptions {
+  /** Validate section headers against an allowed list. */
+  enforceStructure?: boolean;
+  /** Allowed section names. Defaults to Keep a Changelog standard sections. */
+  sections?: string[];
+}
+
 /**
  * Validates a changelog file for release readiness.
  *
@@ -33,16 +56,23 @@ const CHANGELOG_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
  * The validator checks for a top-level changelog heading, an `[Unreleased]`
  * section, and optionally a dated entry for the requested version.
  *
+ * When `structure.enforceStructure` is `true`, section headers (`### Name`)
+ * are validated against the allowed list and empty sections produce warnings.
+ *
  * @param changelogPath - Path to the changelog file.
  * @param version - Version that must be present in the changelog.
  * @param strict - Whether to require compare links and dated release headings.
  * @param requireEntry - Whether the requested version must already have an entry.
+ * @param structure - Optional structure enforcement options.
  * @returns The result of validating the changelog file.
  * @example
  * ```ts
  * import { validateChangelog } from 'versionguard';
  *
- * const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true);
+ * const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true, {
+ *   enforceStructure: true,
+ *   sections: ['Added', 'Changed', 'Fixed'],
+ * });
  * ```
  */
 export function validateChangelog(
@@ -50,6 +80,7 @@ export function validateChangelog(
   version: string,
   strict: boolean = true,
   requireEntry: boolean = true,
+  structure?: ChangelogStructureOptions,
 ): ChangelogValidationResult {
   if (!fs.existsSync(changelogPath)) {
     return {
@@ -93,11 +124,49 @@ export function validateChangelog(
     }
   }
 
+  // Section structure enforcement
+  if (structure?.enforceStructure) {
+    const allowed = structure.sections ?? KEEP_A_CHANGELOG_SECTIONS;
+    const sectionErrors = validateSections(content, allowed);
+    errors.push(...sectionErrors);
+  }
+
   return {
     valid: errors.length === 0,
     errors,
     hasEntryForVersion,
   };
+}
+
+/**
+ * Validates that all `### SectionName` headers use allowed names
+ * and flags empty sections.
+ */
+function validateSections(content: string, allowed: string[]): string[] {
+  const errors: string[] = [];
+  const lines = content.split('\n');
+
+  for (let i = 0; i < lines.length; i++) {
+    const sectionMatch = lines[i].match(/^### (.+)/);
+    if (!sectionMatch) continue;
+
+    const sectionName = sectionMatch[1].trim();
+
+    // Check against allowed list
+    if (!allowed.includes(sectionName)) {
+      errors.push(
+        `Invalid changelog section "### ${sectionName}" (line ${i + 1}). Allowed: ${allowed.join(', ')}`,
+      );
+    }
+
+    // Detect empty sections: next non-blank line is another heading or EOF
+    const nextContentLine = lines.slice(i + 1).find((l) => l.trim().length > 0);
+    if (!nextContentLine || nextContentLine.startsWith('#')) {
+      errors.push(`Empty changelog section "### ${sectionName}" (line ${i + 1})`);
+    }
+  }
+
+  return errors;
 }
 
 /**

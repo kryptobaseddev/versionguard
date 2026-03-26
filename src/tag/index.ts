@@ -376,6 +376,10 @@ function getTagPreflightError(
     version,
     config.changelog.strict,
     config.changelog.requireEntry,
+    {
+      enforceStructure: config.changelog.enforceStructure,
+      sections: config.changelog.sections,
+    },
   );
   if (!changelogResult.valid) {
     return changelogResult.errors[0] ?? 'Changelog validation failed';

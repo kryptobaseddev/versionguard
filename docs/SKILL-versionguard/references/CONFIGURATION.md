@@ -105,6 +105,10 @@ const config: Partial<ChangelogConfig> = {
   strict: true,
   // Requires an entry for the current version.
   requireEntry: true,
+  // Validates that changelog section headers use only allowed names.  When enabled, any `### SectionName` header not present in `sections` is reported as an error.
+  enforceStructure: true,
+  // Allowed Keep a Changelog section names.  Only applied when `enforceStructure` is `true`.
+  sections: "...",
 };
 ```
 
@@ -114,6 +118,8 @@ const config: Partial<ChangelogConfig> = {
 | `file` | `string` | Path to the changelog file to inspect. |
 | `strict` | `boolean` | Treats changelog problems as hard failures. |
 | `requireEntry` | `boolean` | Requires an entry for the current version. |
+| `enforceStructure` | `boolean | undefined` | Validates that changelog section headers use only allowed names.  When enabled, any `### SectionName` header not present in `sections` is reported as an error. |
+| `sections` | `string[] | undefined` | Allowed Keep a Changelog section names.  Only applied when `enforceStructure` is `true`. |
 
 ## `GitHooksConfig`
 

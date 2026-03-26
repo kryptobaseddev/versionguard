@@ -298,7 +298,7 @@ getNextVersions('2026.3.1', 'YYYY.M.MICRO').length;
 Validates a changelog file for release readiness.
 
 ```typescript
-(changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean) => ChangelogValidationResult
+(changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean, structure?: ChangelogStructureOptions) => ChangelogValidationResult
 ```
 
 **Parameters:**
@@ -307,13 +307,17 @@ Validates a changelog file for release readiness.
 - `version` — Version that must be present in the changelog.
 - `strict` — Whether to require compare links and dated release headings.
 - `requireEntry` — Whether the requested version must already have an entry.
+- `structure` — Optional structure enforcement options.
 
 **Returns:** The result of validating the changelog file.
 
 ```ts
 import { validateChangelog } from 'versionguard';
 
-const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true);
+const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true, {
+  enforceStructure: true,
+  sections: ['Added', 'Changed', 'Fixed'],
+});
 ```
 
 ### `getLatestVersion`
@@ -1986,6 +1990,8 @@ ChangelogConfig
 - `file` — Path to the changelog file to inspect.
 - `strict` — Treats changelog problems as hard failures.
 - `requireEntry` — Requires an entry for the current version.
+- `enforceStructure` — Validates that changelog section headers use only allowed names.  When enabled, any `### SectionName` header not present in `sections` is reported as an error.
+- `sections` — Allowed Keep a Changelog section names.  Only applied when `enforceStructure` is `true`.
 
 ### `GitHooksConfig`
 
@@ -2252,6 +2258,19 @@ ChangelogValidationResult
 - `valid` — Indicates whether the changelog satisfies all requested checks.
 - `errors` — Human-readable validation errors.
 - `hasEntryForVersion` — Indicates whether the changelog contains an entry for the requested version.
+
+### `ChangelogStructureOptions`
+
+Options for changelog structure enforcement.
+
+```typescript
+ChangelogStructureOptions
+```
+
+**Members:**
+
+- `enforceStructure` — Validate section headers against an allowed list.
+- `sections` — Allowed section names. Defaults to Keep a Changelog standard sections.
 
 ### `CkmConcept`
 

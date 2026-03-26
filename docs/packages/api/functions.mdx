@@ -368,24 +368,25 @@ getNextVersions('2026.3.1', 'YYYY.M.MICRO').length;
 // => 2
 ```
 
-## validateChangelog(changelogPath, version, strict, requireEntry)
+## validateChangelog(changelogPath, version, strict, requireEntry, structure)
 
 Validates a changelog file for release readiness.
 
 **Signature**
 
 ```typescript
-(changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean) => ChangelogValidationResult
+(changelogPath: string, version: string, strict?: boolean, requireEntry?: boolean, structure?: ChangelogStructureOptions) => ChangelogValidationResult
 ```
 
 **Parameters**
 
-| Name            | Type        | Description                                                  |
-| --------------- | ----------- | ------------------------------------------------------------ |
-| `changelogPath` | `string`    | Path to the changelog file.                                  |
-| `version`       | `string`    | Version that must be present in the changelog.               |
-| `strict`        | `: boolean` | Whether to require compare links and dated release headings. |
-| `requireEntry`  | `: boolean` | Whether the requested version must already have an entry.    |
+| Name            | Type                          | Description                                                  |
+| --------------- | ----------------------------- | ------------------------------------------------------------ |
+| `changelogPath` | `string`                      | Path to the changelog file.                                  |
+| `version`       | `string`                      | Version that must be present in the changelog.               |
+| `strict`        | `: boolean`                   | Whether to require compare links and dated release headings. |
+| `requireEntry`  | `: boolean`                   | Whether the requested version must already have an entry.    |
+| `structure`     | `: ChangelogStructureOptions` | Optional structure enforcement options.                      |
 
 **Returns** — The result of validating the changelog file.
 
@@ -394,7 +395,10 @@ Validates a changelog file for release readiness.
 ```ts
 import { validateChangelog } from 'versionguard';
 
-const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true);
+const result = validateChangelog('CHANGELOG.md', '1.2.0', true, true, {
+  enforceStructure: true,
+  sections: ['Added', 'Changed', 'Fixed'],
+});
 ```
 
 ## getLatestVersion(changelogPath)

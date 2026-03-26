@@ -155,7 +155,7 @@ export async function runWizard(cwd: string): Promise<string | null> {
   const configPath = writeConfig(cwd, config);
 
   p.log.success(`Created ${path.relative(cwd, configPath)}`);
-  p.outro('Run `versionguard validate` to verify your setup.');
+  p.outro('Run `vg validate` to verify your setup.');
 
   return configPath;
 }

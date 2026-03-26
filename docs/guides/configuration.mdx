@@ -53,12 +53,14 @@ Configures files and patterns that should stay in sync with the canonical versio
 
 Controls changelog validation behavior.
 
-| Property       | Type      | Description                                 |
-| -------------- | --------- | ------------------------------------------- |
-| `enabled`      | `boolean` | Enables changelog validation.               |
-| `file`         | `string`  | Path to the changelog file to inspect.      |
-| `strict`       | `boolean` | Treats changelog problems as hard failures. |
-| `requireEntry` | `boolean` | Requires an entry for the current version.  |
+| Property           | Type                    | Description                                                                                                                                                     |
+| ------------------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`          | `boolean`               | Enables changelog validation.                                                                                                                                   |
+| `file`             | `string`                | Path to the changelog file to inspect.                                                                                                                          |
+| `strict`           | `boolean`               | Treats changelog problems as hard failures.                                                                                                                     |
+| `requireEntry`     | `boolean`               | Requires an entry for the current version.                                                                                                                      |
+| `enforceStructure` | `boolean \| undefined`  | Validates that changelog section headers use only allowed names.  When enabled, any `### SectionName` header not present in `sections` is reported as an error. |
+| `sections`         | `string[] \| undefined` | Allowed Keep a Changelog section names.  Only applied when `enforceStructure` is `true`.                                                                        |
 
 ### `GitHooksConfig`
 
@@ -102,6 +104,15 @@ Top-level configuration consumed by versionguard.
 | `changelog`  | `ChangelogConfig`  | Changelog validation settings.                         |
 | `git`        | `GitConfig`        | Git enforcement settings.                              |
 | `ignore`     | `string[]`         | Files or patterns excluded from validation.            |
+
+### `ChangelogStructureOptions`
+
+Options for changelog structure enforcement.
+
+| Property           | Type                    | Description                                                            |
+| ------------------ | ----------------------- | ---------------------------------------------------------------------- |
+| `enforceStructure` | `boolean \| undefined`  | Validate section headers against an allowed list.                      |
+| `sections`         | `string[] \| undefined` | Allowed section names. Defaults to Keep a Changelog standard sections. |
 
 ### `CkmConfigEntry`
 

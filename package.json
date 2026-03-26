@@ -12,7 +12,8 @@
     }
   },
   "bin": {
-    "versionguard": "dist/cli.js"
+    "versionguard": "dist/cli.js",
+    "vg": "dist/cli.js"
   },
   "repository": {
     "type": "git",

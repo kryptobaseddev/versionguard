@@ -52,6 +52,8 @@ const DEFAULT_CONFIG: VersionGuardConfig = {
     file: 'CHANGELOG.md',
     strict: true,
     requireEntry: true,
+    enforceStructure: false,
+    sections: ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'],
   },
   git: {
     hooks: {

@@ -267,6 +267,27 @@ export interface ChangelogConfig {
    * @defaultValue false
    */
   requireEntry: boolean;
+
+  /**
+   * Validates that changelog section headers use only allowed names.
+   *
+   * When enabled, any `### SectionName` header not present in `sections`
+   * is reported as an error.
+   *
+   * @defaultValue false
+   * @since 0.7.0
+   */
+  enforceStructure?: boolean;
+
+  /**
+   * Allowed Keep a Changelog section names.
+   *
+   * Only applied when `enforceStructure` is `true`.
+   *
+   * @defaultValue ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security']
+   * @since 0.7.0
+   */
+  sections?: string[];
 }
 
 /**

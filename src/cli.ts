@@ -73,8 +73,8 @@ export function createProgram(): Command {
   const program = new Command();
 
   program
-    .name('versionguard')
-    .description('Strict versioning enforcement for SemVer and CalVer')
+    .name('vg')
+    .description('Strict versioning enforcement for SemVer and CalVer (alias: versionguard)')
     .version(CLI_VERSION);
 
   program
@@ -577,12 +577,12 @@ export function createProgram(): Command {
         if (!content) {
           console.error(styles.error(`Unknown topic: ${topic}`));
           console.log('');
-          console.log(ckmEngine.getTopicIndex('versionguard'));
+          console.log(ckmEngine.getTopicIndex('vg'));
           process.exit(1);
         }
         console.log(content);
       } else {
-        console.log(ckmEngine.getTopicIndex('versionguard'));
+        console.log(ckmEngine.getTopicIndex('vg'));
       }
     });
 

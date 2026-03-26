@@ -47,7 +47,9 @@ node dist/cli.js validate
 | [x] | ESM Package | Full ESM build with Vite, executable CLI bundle, forge-ts docs embedded | `npm run build` |
 | [x] | Forge Compliance | forge-ts check passes with 0 errors, CKM manifest generated | `npm run forge:check` |
 | [x] | Symmetric Config | Config ships both `semver:` and `calver:` blocks — `type` is the switch, no commenting needed | `src/__tests__/config.test.ts` |
-| [x] | 218 Tests | Full test suite with 94%+ coverage across 14 test files | `npm test` |
+| [x] | Changelog Structure Enforcement | `changelog.enforceStructure` validates section headers against `changelog.sections` whitelist (defaults to Keep a Changelog). Empty sections detected | `src/__tests__/changelog.test.ts` |
+| [x] | `vg` CLI Alias | `vg` is a shorthand alias for `versionguard` — same binary, shorter to type | `package.json` bin field |
+| [x] | 225 Tests | Full test suite with 94%+ coverage across 14 test files | `npm test` |
 
 ## Roadmap: Future Epics
 
@@ -96,16 +98,16 @@ VersionGuard is an enforcement layer. It validates and guards. It does not own v
 - [ ] Report with file:line locations and severity (warning vs error)
 - [ ] Integration with `validate --strict`
 
-### T004: Changelog Structure Enforcement
+### T004: Changelog Structure Enforcement ✓ (shipped v0.7.0)
 
 **Priority**: MEDIUM
-**Problem**: The CleoCode integration spec requests `changelog.enforceStructure` and `changelog.sections` config to validate that entries use valid Keep a Changelog section names (Added, Changed, Deprecated, Removed, Fixed, Security).
+**Status**: SHIPPED
 
 **Deliverables**:
-- [ ] `changelog.sections` config: whitelist of allowed section names
-- [ ] `changelog.enforceStructure` config: fail on non-standard sections
-- [ ] Detect and warn on empty sections
-- [ ] Integration with `validate` and `fix`
+- [x] `changelog.sections` config: whitelist of allowed section names
+- [x] `changelog.enforceStructure` config: fail on non-standard sections
+- [x] Detect and warn on empty sections
+- [x] Integration with `validate` and `fix`
 
 ### T005: Release Commit Policy
 

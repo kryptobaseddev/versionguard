@@ -24,7 +24,12 @@ import {
 } from './types';
 
 export * as calver from './calver';
-export { fixChangesetMangling, isChangesetMangled, validateChangelog } from './changelog';
+export {
+  type ChangelogStructureOptions,
+  fixChangesetMangling,
+  isChangesetMangled,
+  validateChangelog,
+} from './changelog';
 export { type CkmEngine, createCkmEngine } from './ckm';
 export { getConfig, initConfig } from './config';
 export * from './feedback';
@@ -134,6 +139,10 @@ export function validate(
       version,
       config.changelog.strict,
       config.changelog.requireEntry,
+      {
+        enforceStructure: config.changelog.enforceStructure,
+        sections: config.changelog.sections,
+      },
     );
 
     if (!changelogResult.valid) {
