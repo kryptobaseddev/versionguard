@@ -23,9 +23,9 @@ node dist/cli.js validate
 
 | Status | Feature | Description | Validation |
 | --- | --- | --- | --- |
-| [x] | SemVer | Strict SemVer parsing, validation, comparison, and increment helpers with leading-zero rejection and prerelease/build support | `src/__tests__/semver.test.ts` |
+| [x] | SemVer | Strict SemVer parsing, validation, comparison, and increment helpers with leading-zero rejection and prerelease/build support. Configurable via `SemVerConfig` (allowVPrefix, allowBuildMetadata, requirePrerelease) | `src/__tests__/semver.test.ts` |
 | [x] | CalVer (Full Spec) | Composable token-based format strings (YYYY, YY, 0Y, MM, M, 0M, WW, 0W, DD, D, 0D, MICRO, PATCH), strict regex validation (MM: 1-12, DD: 1-31), MODIFIER support (-alpha.1, -rc2), isValidCalVerFormat() | `src/__tests__/calver.test.ts` |
-| [x] | Scheme Rules | schemeRules.allowedModifiers whitelist, schemeRules.maxNumericSegments warning threshold | `src/__tests__/calver.test.ts` |
+| [x] | Scheme Rules | schemeRules.allowedModifiers whitelist (validates both SemVer prerelease and CalVer modifiers), schemeRules.maxNumericSegments warning threshold, shared via scheme-rules.ts | `src/__tests__/calver.test.ts`, `src/__tests__/scheme-rules.test.ts` |
 | [x] | Config File | YAML-based config loading, defaults, deep merge, and project initialization via `.versionguard.yml` | `src/__tests__/config.test.ts` |
 | [x] | Language-Agnostic Manifests | Version source providers for package.json, Cargo.toml, pyproject.toml, pubspec.yaml, composer.json, pom.xml, VERSION files, git tags, and custom regex | `src/__tests__/sources.test.ts` |
 | [x] | Manifest Auto-Detection | Scans for known manifest files in priority order when manifest.source is 'auto' | `src/__tests__/sources.test.ts` |
@@ -37,7 +37,7 @@ node dist/cli.js validate
 | [x] | Agent Guardrails | `--strict` mode detects hook bypasses (HOOKS_PATH_OVERRIDE, HUSKY_BYPASS, HOOK_MISSING, HOOK_REPLACED, HOOK_TAMPERED, HOOKS_NOT_ENFORCED) | `src/__tests__/guard.test.ts` |
 | [x] | Tag Automation | Annotated tag creation with version validation, auto-fix, and post-tag workflows | `src/__tests__/tag.test.ts` |
 | [x] | Interactive Init Wizard | @clack/prompts guided setup: versioning type, CalVer format, manifest source, hooks, changelog | `src/__tests__/cli.test.ts` |
-| [x] | Headless Init | `--type`, `--format`, `--manifest`, `--hooks/--no-hooks`, `--changelog/--no-changelog`, `--yes`, `--force` flags | `src/__tests__/cli.test.ts` |
+| [x] | Headless Init | `--type`, `--format`, `--manifest`, `--hooks/--no-hooks`, `--changelog/--no-changelog`, `--yes`, `--force`, `--allow-v-prefix`, `--no-build-metadata`, `--require-prerelease` flags | `src/__tests__/cli.test.ts` |
 | [x] | Init Idempotency | Re-running init requires `--force` to overwrite; hooks replaced in-place without duplication | `src/__tests__/cli.test.ts` |
 | [x] | Project Root Detection | Commands walk up from cwd to find .versionguard.yml, .git, or manifest files; helpful error when outside a project | CLI integration tests |
 | [x] | CKM Help System | `versionguard ckm` with auto-derived topics from forge-ts ckm.json, --json for LLM agents, --llm for full API context | CLI integration tests |
@@ -46,7 +46,8 @@ node dist/cli.js validate
 | [x] | Actionable Feedback | Version, sync, changelog, and tag feedback with `npx versionguard fix` suggestions | `src/__tests__/feedback.test.ts` |
 | [x] | ESM Package | Full ESM build with Vite, executable CLI bundle, forge-ts docs embedded | `npm run build` |
 | [x] | Forge Compliance | forge-ts check passes with 0 errors, CKM manifest generated | `npm run forge:check` |
-| [x] | 198 Tests | Full test suite with 94%+ coverage across 13 test files | `npm test` |
+| [x] | Symmetric Config | Config ships both `semver:` and `calver:` blocks — `type` is the switch, no commenting needed | `src/__tests__/config.test.ts` |
+| [x] | 218 Tests | Full test suite with 94%+ coverage across 14 test files | `npm test` |
 
 ## Roadmap: Future Epics
 
