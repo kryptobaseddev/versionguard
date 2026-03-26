@@ -391,6 +391,8 @@ export interface ScanAllowlistEntry {
 
   /**
    * Reason this reference is allowed (for documentation / review).
+   *
+   * @defaultValue undefined
    */
   reason?: string;
 }

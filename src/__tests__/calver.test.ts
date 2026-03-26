@@ -159,6 +159,7 @@ describe('calver', () => {
     const parsed = calver.parse('2026.3.0-alpha.1', 'YYYY.M.MICRO');
     expect(parsed).toMatchObject({ year: 2026, month: 3, patch: 0, modifier: 'alpha.1' });
 
+    // biome-ignore lint/style/noNonNullAssertion: test asserts parsed is not null above
     const formatted = calver.format(parsed!);
     expect(formatted).toBe('2026.3.0-alpha.1');
 
