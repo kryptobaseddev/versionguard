@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-26
+
+### Added
+
+- Add repo-wide version literal scanning (T003)
+
+  - New `scan` config block with `enabled`, `patterns`, and `allowlist` fields
+  - `scanRepoForVersions()` globs the entire repo (respecting .gitignore and ignore patterns)
+  - Default patterns detect version literals in code (`version = "1.2.3"`), Dockerfiles (`FROM node:18.0.0`), and GitHub Actions (`uses: action@v3.5.0`)
+  - Allowlist entries exclude intentional references by file glob with optional reason
+  - Binary files skipped by extension and null-byte detection
+  - `vg validate --scan` flag enables scanning for a single run
+  - `scan.enabled: true` in config enables permanent scanning
+  - CKM auto-generates `scan` topic from ScanConfig
+  - 12 new tests covering detection, allowlist, ignore, binary skip, and edge cases
+
+
 ## [0.7.0] - 2026-03-26
 
 ### Added
@@ -19,7 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `vg` as a CLI alias for `versionguard` — shorter to type, same functionality
   - CLI help text now shows `vg` as the primary command name
   - 7 new changelog structure enforcement tests (225 total)
-
 
 ## [0.6.0] - 2026-03-26
 
@@ -158,7 +174,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI with init, check, validate, sync, bump commands
 - Configurable via .versionguard.yml
 
-[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.4.0...v0.5.0
