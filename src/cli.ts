@@ -17,6 +17,7 @@ import * as feedback from './feedback';
 import * as fix from './fix';
 import * as guard from './guard';
 import * as versionguard from './index';
+import { runHeadless, runWizard } from './init-wizard';
 import * as project from './project';
 import * as tag from './tag';
 
@@ -56,39 +57,68 @@ export function createProgram(): Command {
 
   program
     .command('init')
-    .description('Initialize VersionGuard configuration')
+    .description('Initialize VersionGuard configuration (interactive wizard or headless)')
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
-    .action((options: { cwd: string }) => {
-      try {
-        const configPath = versionguard.initConfig(options.cwd);
-        console.log(styles.success(`✓ Created ${path.relative(options.cwd, configPath)}`));
-
-        // Auto-install hooks using the newly created config
+    .option('-t, --type <type>', 'Versioning type: semver or calver')
+    .option('-f, --format <format>', 'CalVer format tokens (e.g., YYYY.M.MICRO)')
+    .option('--manifest <source>', 'Manifest source (e.g., Cargo.toml, pyproject.toml, auto)')
+    .option('--hooks', 'Install git hooks (default: true)')
+    .option('--no-hooks', 'Skip git hooks')
+    .option('--changelog', 'Enable changelog validation (default: true)')
+    .option('--no-changelog', 'Disable changelog validation')
+    .option('-y, --yes', 'Accept all defaults, no prompts')
+    .action(
+      async (options: {
+        cwd: string;
+        type?: string;
+        format?: string;
+        manifest?: string;
+        hooks?: boolean;
+        changelog?: boolean;
+        yes?: boolean;
+      }) => {
         try {
-          const config = versionguard.getConfig(options.cwd);
-          versionguard.installHooks(config.git, options.cwd);
-          console.log(styles.success('✓ Git hooks installed'));
-        } catch {
-          // Non-fatal: hooks install may fail in non-git environments
-          console.log(
-            styles.info('ℹ Skipped hooks install (not a git repository or hooks disabled)'),
-          );
-        }
+          const isHeadless = options.yes || options.type || options.format || options.manifest;
 
-        console.log('');
-        console.log(styles.info('Next steps:'));
-        console.log('  1. Edit .versionguard.yml to set your versioning type');
-        console.log('  2. Run: npx versionguard check');
-        console.log('');
-        console.log(
-          styles.info('Tip: Add a prepare script to package.json for clone persistence:'),
-        );
-        console.log('  "prepare": "npx versionguard hooks install"');
-      } catch (error) {
-        console.error(styles.error(`✗ ${(error as Error).message}`));
-        process.exit(1);
-      }
-    });
+          let configPath: string | null;
+
+          if (isHeadless) {
+            // Headless mode: use flags, no prompts
+            configPath = runHeadless({
+              cwd: options.cwd,
+              type: options.type as 'semver' | 'calver' | undefined,
+              format: options.format,
+              manifest: options.manifest,
+              hooks: options.hooks,
+              changelog: options.changelog,
+              yes: options.yes,
+            });
+            console.log(styles.success(`✓ Created ${path.relative(options.cwd, configPath)}`));
+          } else {
+            // Interactive wizard
+            configPath = await runWizard(options.cwd);
+            if (!configPath) {
+              process.exit(0);
+              return;
+            }
+          }
+
+          // Auto-install hooks if enabled
+          try {
+            const config = versionguard.getConfig(options.cwd);
+            if (config.git.enforceHooks) {
+              versionguard.installHooks(config.git, options.cwd);
+              console.log(styles.success('✓ Git hooks installed'));
+            }
+          } catch {
+            console.log(styles.info('ℹ Skipped hooks install (not a git repository)'));
+          }
+        } catch (error) {
+          console.error(styles.error(`✗ ${(error as Error).message}`));
+          process.exit(1);
+        }
+      },
+    );
 
   program
     .command('check')

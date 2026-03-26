@@ -44,15 +44,57 @@ describe('cli', () => {
     writeTextFile(cwd, 'CHANGELOG.md', releaseChangelog());
   }
 
-  it('initializes config files via the init command', async () => {
+  it('initializes config files via the init command (headless)', async () => {
     const cwd = createTempProject();
     const program = createProgram();
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-    await program.parseAsync(['node', 'versionguard', 'init', '--cwd', cwd]);
+    await program.parseAsync(['node', 'versionguard', 'init', '--cwd', cwd, '--yes']);
 
     expect(fs.existsSync(path.join(cwd, '.versionguard.yml'))).toBe(true);
     expect(logSpy).toHaveBeenCalled();
+  });
+
+  it('initializes with calver flags (headless)', async () => {
+    const cwd = createTempProject();
+    const program = createProgram();
+    vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    await program.parseAsync([
+      'node',
+      'versionguard',
+      'init',
+      '--cwd',
+      cwd,
+      '--type',
+      'calver',
+      '--format',
+      'YYYY.M.MICRO',
+    ]);
+
+    const content = fs.readFileSync(path.join(cwd, '.versionguard.yml'), 'utf-8');
+    expect(content).toContain('calver');
+    expect(content).toContain('YYYY.M.MICRO');
+  });
+
+  it('initializes with manifest flag (headless)', async () => {
+    const cwd = createTempProject();
+    const program = createProgram();
+    vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    await program.parseAsync([
+      'node',
+      'versionguard',
+      'init',
+      '--cwd',
+      cwd,
+      '--manifest',
+      'Cargo.toml',
+      '--yes',
+    ]);
+
+    const content = fs.readFileSync(path.join(cwd, '.versionguard.yml'), 'utf-8');
+    expect(content).toContain('Cargo.toml');
   });
 
   it('reports init errors when config already exists', async () => {
@@ -63,10 +105,10 @@ describe('cli', () => {
     failOnExit();
 
     await expect(
-      program.parseAsync(['node', 'versionguard', 'init', '--cwd', cwd]),
+      program.parseAsync(['node', 'versionguard', 'init', '--cwd', cwd, '--type', 'semver']),
     ).rejects.toThrow('process.exit:1');
 
-    expect(errorSpy.mock.calls.flat().join('\n')).toContain('Config file already exists');
+    expect(errorSpy.mock.calls.flat().join('\n')).toContain('already exists');
   });
 
   it('installs git hooks from the hooks command', async () => {
