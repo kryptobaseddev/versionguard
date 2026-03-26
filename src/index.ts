@@ -25,7 +25,6 @@ import {
 } from './types';
 
 export * as calver from './calver';
-export * from './github';
 export {
   type ChangelogStructureOptions,
   fixChangesetMangling,
@@ -36,6 +35,7 @@ export { type CkmEngine, createCkmEngine } from './ckm';
 export { getConfig, initConfig } from './config';
 export * from './feedback';
 export * from './fix';
+export * from './github';
 export * from './guard';
 export { areHooksInstalled, installHooks, uninstallHooks } from './hooks';
 export { getPackageVersion, getVersionSource } from './project';

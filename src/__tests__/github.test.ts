@@ -4,9 +4,9 @@ import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
-  MANIFEST_TO_ECOSYSTEM,
   dependabotConfigExists,
   generateDependabotConfig,
+  MANIFEST_TO_ECOSYSTEM,
   writeDependabotConfig,
 } from '../github';
 import { createTempProject } from './test-utils';
