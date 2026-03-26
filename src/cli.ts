@@ -13,10 +13,17 @@ const CLI_VERSION: string = (
   }
 ).version;
 
+// Embedded at build time — no external files needed at runtime
+import ckmRaw from '../docs/ckm.json?raw';
+import llmsRaw from '../docs/llms.txt?raw';
+import type { CkmManifest } from './ckm';
+import { createCkmEngine } from './ckm';
 import * as feedback from './feedback';
 import * as fix from './fix';
 import * as guard from './guard';
-import { getHelpJson, getLlmContext, getTopicContent, getTopicIndex } from './help';
+
+const ckmEngine = createCkmEngine(JSON.parse(ckmRaw) as CkmManifest);
+
 import * as versionguard from './index';
 import { runHeadless, runWizard } from './init-wizard';
 import * as project from './project';
@@ -534,32 +541,32 @@ export function createProgram(): Command {
     );
 
   program
-    .command('help [topic]')
-    .description('Show help for a topic (config, calver, manifest, hooks, changelog)')
-    .option('--json', 'Machine-readable JSON output')
-    .option('--llm', 'Full API context for LLM agents')
+    .command('ckm [topic]')
+    .description('Codebase Knowledge Manifest — auto-generated docs and help')
+    .option('--json', 'Machine-readable CKM output for LLM agents')
+    .option('--llm', 'Full API context (forge-ts llms.txt)')
     .action((topic: string | undefined, options: { json?: boolean; llm?: boolean }) => {
       if (options.llm) {
-        console.log(getLlmContext());
+        console.log(llmsRaw);
         return;
       }
 
       if (options.json) {
-        console.log(JSON.stringify(getHelpJson(topic), null, 2));
+        console.log(JSON.stringify(ckmEngine.getTopicJson(topic), null, 2));
         return;
       }
 
       if (topic) {
-        const content = getTopicContent(topic);
+        const content = ckmEngine.getTopicContent(topic);
         if (!content) {
           console.error(styles.error(`Unknown topic: ${topic}`));
           console.log('');
-          console.log(getTopicIndex());
+          console.log(ckmEngine.getTopicIndex('versionguard'));
           process.exit(1);
         }
         console.log(content);
       } else {
-        console.log(getTopicIndex());
+        console.log(ckmEngine.getTopicIndex('versionguard'));
       }
     });
 

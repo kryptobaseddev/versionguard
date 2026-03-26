@@ -24,6 +24,7 @@ import {
 
 export * as calver from './calver';
 export { fixChangesetMangling, isChangesetMangled, validateChangelog } from './changelog';
+export { type CkmEngine, createCkmEngine } from './ckm';
 export { getConfig, initConfig } from './config';
 export * from './feedback';
 export * from './fix';
