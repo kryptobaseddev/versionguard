@@ -76,7 +76,9 @@ jobs:
       - run: npm run build
 
       - name: Validate with versionguard (dogfood)
-        run: node dist/cli.js validate
+        run: |
+          node dist/cli.js hooks install
+          node dist/cli.js validate
 
       - name: Check for pending changesets
         id: has_changesets
