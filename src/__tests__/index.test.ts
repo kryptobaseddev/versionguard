@@ -8,7 +8,7 @@ import { canBump, doctor, sync, validate, validateVersion } from '../index';
 import { createTempProject, initGitRepo, writeTextFile } from './test-utils';
 
 describe('core validation', () => {
-  it('validates a healthy semver project', () => {
+  it('validates a healthy semver project', async () => {
     const cwd = createTempProject();
     writeTextFile(cwd, 'README.md', 'version = "1.2.3"\n');
     writeTextFile(
@@ -17,7 +17,7 @@ describe('core validation', () => {
       '# Changelog\n\n## [Unreleased]\n\n## [1.2.3] - 2026-03-21\n\n### Added\n\n- Initial release\n\n[Unreleased]: https://example.com\n',
     );
 
-    expect(validate(getDefaultConfig(), cwd).valid).toBe(true);
+    expect((await validate(getDefaultConfig(), cwd)).valid).toBe(true);
   });
 
   it('checks bump progression rules', () => {
@@ -26,12 +26,12 @@ describe('core validation', () => {
     expect(canBump('1.2.3', '1.2.3', config).canBump).toBe(false);
   });
 
-  it('reports validation errors for invalid versions and missing package metadata', () => {
+  it('reports validation errors for invalid versions and missing package metadata', async () => {
     const config = getDefaultConfig();
     const cwd = createTempProject();
     writeTextFile(cwd, 'package.json', '{\n  "name": "fixture"\n}\n');
 
-    expect(validate(config, cwd)).toEqual({
+    expect(await validate(config, cwd)).toMatchObject({
       valid: false,
       version: '',
       versionValid: false,
@@ -57,12 +57,12 @@ describe('core validation', () => {
     );
     writeTextFile(invalidVersionCwd, 'README.md', 'version = "v1.2.3"\n');
 
-    expect(validate(config, invalidVersionCwd).errors).toContain(
+    expect((await validate(config, invalidVersionCwd)).errors).toContain(
       "Version should not start with 'v': v1.2.3",
     );
   });
 
-  it('reports invalid projects and doctor readiness', () => {
+  it('reports invalid projects and doctor readiness', async () => {
     const cwd = createTempProject();
     const config = getDefaultConfig();
     initGitRepo(cwd);
@@ -74,11 +74,13 @@ describe('core validation', () => {
       '# Changelog\n\n## [Unreleased]\n\n[Unreleased]: https://example.com\n',
     );
 
-    const validation = validate(config, cwd);
+    const validation = await validate(config, cwd);
     expect(validation.valid).toBe(false);
-    expect(validation.errors.some((error) => error.includes('Version mismatch'))).toBe(true);
+    expect(validation.errors.some((error: string) => error.includes('Version mismatch'))).toBe(
+      true,
+    );
 
-    const report = doctor(config, cwd);
+    const report = await doctor(config, cwd);
     expect(report.ready).toBe(false);
     expect(report.errors.length).toBeGreaterThan(0);
   });
@@ -101,34 +103,40 @@ describe('core validation', () => {
     expect(canBump('2026.3.2', '2026.3.1', config).canBump).toBe(false);
   });
 
-  it('supports changelog-disabled validation and non-git doctor runs', () => {
+  it('supports changelog-disabled validation and non-git doctor runs', async () => {
     const cwd = createTempProject();
     const config = getDefaultConfig();
     config.changelog.enabled = false;
+    config.scan.enabled = false;
+    config.guard.enabled = false;
+    config.publish.enabled = false;
     writeTextFile(cwd, 'README.md', 'version = "1.2.3"\n');
 
-    expect(validate(config, cwd)).toMatchObject({
+    expect(await validate(config, cwd)).toMatchObject({
       valid: true,
       version: '1.2.3',
       changelogValid: true,
     });
 
-    expect(doctor(config, cwd)).toEqual({
+    expect(await doctor(config, cwd)).toMatchObject({
       ready: true,
       version: '1.2.3',
       versionValid: true,
       syncValid: true,
       changelogValid: true,
+      scanValid: true,
+      guardValid: true,
+      publishValid: true,
       gitRepository: false,
       hooksInstalled: false,
       worktreeClean: true,
-      errors: [],
     });
   });
 
-  it('reports hook and worktree problems separately in doctor', () => {
+  it('reports hook and worktree problems separately in doctor', async () => {
     const cwd = createTempProject();
     const config = getDefaultConfig();
+    config.publish.enabled = false;
     initGitRepo(cwd);
     writeTextFile(cwd, 'README.md', 'version = "1.2.3"\n');
     writeTextFile(
@@ -137,16 +145,16 @@ describe('core validation', () => {
       '# Changelog\n\n## [Unreleased]\n\n## [1.2.3] - 2026-03-21\n\n### Added\n\n- Initial release\n\n[Unreleased]: https://example.com\n',
     );
 
-    let report = doctor(config, cwd);
+    let report = await doctor(config, cwd);
     expect(report.errors).toContain('Git hooks are not installed');
 
     installHooks(config.git, cwd);
     writeTextFile(cwd, 'README.md', 'version = "1.2.3"\nupdated\n');
-    report = doctor(config, cwd);
+    report = await doctor(config, cwd);
     expect(report.errors).toContain('Working tree is not clean');
 
     config.git.enforceHooks = false;
-    report = doctor(config, cwd);
+    report = await doctor(config, cwd);
     expect(report.errors).not.toContain('Git hooks are not installed');
   });
 
@@ -174,6 +182,7 @@ describe('core validation', () => {
   it('returns an unclean worktree when git status fails', async () => {
     const cwd = createTempProject();
     const config = getDefaultConfig();
+    config.publish.enabled = false;
     initGitRepo(cwd);
     installHooks(config.git, cwd);
     writeTextFile(cwd, 'README.md', 'version = "1.2.3"\n');
@@ -188,10 +197,13 @@ describe('core validation', () => {
       execSync: vi.fn(() => {
         throw new Error('git failed');
       }),
+      execFileSync: vi.fn(() => {
+        throw new Error('git failed');
+      }),
     }));
 
     const { doctor: mockedDoctor } = await import('../index');
-    const report = mockedDoctor(config, cwd);
+    const report = await mockedDoctor(config, cwd);
 
     expect(report.worktreeClean).toBe(false);
     expect(report.errors).toContain('Working tree is not clean');

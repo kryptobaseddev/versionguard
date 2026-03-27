@@ -11,15 +11,21 @@ import * as path from 'node:path';
 import * as calver from './calver';
 import { validateChangelog } from './changelog';
 import { dependabotConfigExists } from './github';
+import { runGuardChecks } from './guard';
 import { areHooksInstalled, findGitDir } from './hooks';
 import { getPackageVersion } from './project';
+import { checkPublishStatus, readPackageName } from './publish';
 import * as semver from './semver';
+import { detectManifests } from './sources/resolve';
 import { checkHardcodedVersions, scanRepoForVersions, syncVersion } from './sync';
 import {
   type DoctorReport,
   type FullValidationResult,
+  type GuardReport,
   getCalVerConfig,
   getSemVerConfig,
+  type PublishCheckResult,
+  type ValidateMode,
   type ValidationResult,
   type VersionGuardConfig,
 } from './types';
@@ -40,6 +46,7 @@ export * from './guard';
 export { areHooksInstalled, installHooks, uninstallHooks } from './hooks';
 export { getPackageVersion, getVersionSource } from './project';
 export { findProjectRoot, formatNotProjectError } from './project-root';
+export { checkPublishStatus, REGISTRY_TABLE, readPackageName } from './publish';
 export * as semver from './semver';
 export * from './sources';
 export { checkHardcodedVersions, scanRepoForVersions, syncVersion } from './sync';
@@ -85,23 +92,26 @@ export function validateVersion(version: string, config: VersionGuardConfig): Va
  * @public
  * @since 0.1.0
  * @remarks
- * This reads the package version from `package.json`, validates the version
- * format, checks synchronized files, and optionally validates the changelog.
+ * Runs version, sync, changelog, scan, guard, and publish checks based on
+ * the validation mode. Full mode (default) runs all checks. Lightweight
+ * mode (for pre-commit hooks) runs only version + sync.
  *
  * @param config - VersionGuard configuration to apply.
  * @param cwd - Project directory to inspect.
+ * @param mode - Validation mode: 'full' (default) or 'lightweight'.
  * @returns A full validation report for the project rooted at `cwd`.
  * @example
  * ```ts
  * import { getDefaultConfig, validate } from 'versionguard';
  *
- * const result = validate(getDefaultConfig(), process.cwd());
+ * const result = await validate(getDefaultConfig(), process.cwd());
  * ```
  */
-export function validate(
+export async function validate(
   config: VersionGuardConfig,
   cwd: string = process.cwd(),
-): FullValidationResult {
+  mode: ValidateMode = 'full',
+): Promise<FullValidationResult> {
   const errors: string[] = [];
 
   let version: string;
@@ -114,6 +124,9 @@ export function validate(
       versionValid: false,
       syncValid: false,
       changelogValid: false,
+      scanValid: true,
+      guardValid: true,
+      publishValid: true,
       errors: [(err as Error).message],
     };
   }
@@ -133,16 +146,24 @@ export function validate(
     }
   }
 
-  // Repo-wide scan for stale version literals
-  if (config.scan?.enabled) {
-    const scanFindings = scanRepoForVersions(version, config.scan, config.ignore, cwd);
-    for (const finding of scanFindings) {
-      errors.push(
-        `Stale version in ${finding.file}:${finding.line} - found "${finding.found}" but expected "${version}"`,
-      );
-    }
+  // Lightweight mode: version + sync only (fast path for pre-commit hooks)
+  if (mode === 'lightweight') {
+    return {
+      valid: errors.length === 0,
+      version,
+      versionValid: versionResult.valid,
+      syncValid: hardcoded.length === 0,
+      changelogValid: true,
+      scanValid: true,
+      guardValid: true,
+      publishValid: true,
+      errors,
+    };
   }
 
+  // --- Full mode: all checks ---
+
+  // Changelog validation
   let changelogValid = true;
   if (config.changelog.enabled) {
     const changelogPath = path.join(cwd, config.changelog.file);
@@ -163,12 +184,71 @@ export function validate(
     }
   }
 
+  // Repo-wide scan for stale version literals
+  let scanValid = true;
+  if (config.scan?.enabled) {
+    const scanFindings = scanRepoForVersions(version, config.scan, config.ignore, cwd);
+    if (scanFindings.length > 0) {
+      scanValid = false;
+      for (const finding of scanFindings) {
+        errors.push(
+          `Stale version in ${finding.file}:${finding.line} - found "${finding.found}" but expected "${version}"`,
+        );
+      }
+    }
+  }
+
+  // Guard checks (hook bypass detection)
+  let guardValid = true;
+  let guardReport: GuardReport | undefined;
+  if (config.guard?.enabled) {
+    guardReport = runGuardChecks(config, cwd);
+    if (!guardReport.safe) {
+      guardValid = false;
+      for (const warning of guardReport.warnings) {
+        if (warning.severity === 'error') {
+          errors.push(`[${warning.code}] ${warning.message}`);
+        }
+      }
+    }
+  }
+
+  // Publish check (registry status verification)
+  const publishValid = true;
+  let publishCheck: PublishCheckResult | undefined;
+  if (config.publish?.enabled) {
+    const manifestSource =
+      config.manifest.source !== 'auto'
+        ? config.manifest.source
+        : (detectManifests(cwd)[0] ?? null);
+    if (manifestSource) {
+      const packageName = readPackageName(manifestSource, cwd);
+      if (packageName) {
+        publishCheck = await checkPublishStatus(
+          manifestSource,
+          packageName,
+          version,
+          config.publish,
+        );
+        // Network/timeout errors are informational, not failures (fail-open)
+        if (publishCheck.error) {
+          errors.push(`Publish check warning: ${publishCheck.error}`);
+        }
+      }
+    }
+  }
+
   return {
     valid: errors.length === 0,
     version,
     versionValid: versionResult.valid,
     syncValid: hardcoded.length === 0,
     changelogValid,
+    scanValid,
+    guardValid,
+    publishValid,
+    publishCheck,
+    guardReport,
     errors,
   };
 }
@@ -192,8 +272,11 @@ export function validate(
  * const report = doctor(getDefaultConfig(), process.cwd());
  * ```
  */
-export function doctor(config: VersionGuardConfig, cwd: string = process.cwd()): DoctorReport {
-  const validation = validate(config, cwd);
+export async function doctor(
+  config: VersionGuardConfig,
+  cwd: string = process.cwd(),
+): Promise<DoctorReport> {
+  const validation = await validate(config, cwd);
   const gitRepository = findGitDir(cwd) !== null;
   const hooksInstalled = gitRepository ? areHooksInstalled(cwd) : false;
   const worktreeClean = gitRepository ? isWorktreeClean(cwd) : true;
@@ -217,6 +300,9 @@ export function doctor(config: VersionGuardConfig, cwd: string = process.cwd()):
     versionValid: validation.versionValid,
     syncValid: validation.syncValid,
     changelogValid: validation.changelogValid,
+    scanValid: validation.scanValid,
+    guardValid: validation.guardValid,
+    publishValid: validation.publishValid,
     gitRepository,
     hooksInstalled,
     worktreeClean,

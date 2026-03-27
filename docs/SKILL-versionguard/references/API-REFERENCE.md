@@ -1128,6 +1128,55 @@ const suggestions = suggestNextVersion('1.2.3', config, 'minor');
 console.log(suggestions[0]?.version);
 ```
 
+### `generateDependabotConfig`
+
+Generates Dependabot YAML configuration from detected manifests.
+
+```typescript
+(manifests: ManifestSourceType[]) => string
+```
+
+**Parameters:**
+
+- `manifests` — Detected manifest source types from the project.
+
+**Returns:** The Dependabot configuration as a YAML string.
+
+```ts
+import { generateDependabotConfig } from 'versionguard';
+
+const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+```
+
+### `writeDependabotConfig`
+
+Writes a Dependabot configuration file to `.github/dependabot.yml`.
+
+```typescript
+(cwd: string, content: string) => string
+```
+
+**Parameters:**
+
+- `cwd` — Project directory.
+- `content` — YAML content to write.
+
+**Returns:** The absolute path to the created file.
+
+### `dependabotConfigExists`
+
+Checks whether `.github/dependabot.yml` exists in the project.
+
+```typescript
+(cwd: string) => boolean
+```
+
+**Parameters:**
+
+- `cwd` — Project directory.
+
+**Returns:** `true` when the file exists.
+
 ### `installHooks`
 
 Installs VersionGuard-managed Git hooks in a repository.
@@ -1328,54 +1377,43 @@ const report = runGuardChecks(config, process.cwd());
 if (!report.safe) console.error('Guard check failed:', report.warnings);
 ```
 
-### `generateDependabotConfig`
+### `checkPublishStatus`
 
-Generates Dependabot YAML configuration from detected manifests.
+Checks whether a package version has been published to its ecosystem registry.
 
 ```typescript
-(manifests: ManifestSourceType[]) => string
+(manifestSource: ManifestSourceType, packageName: string, version: string, config: PublishConfig) => Promise<PublishCheckResult>
 ```
 
 **Parameters:**
 
-- `manifests` — Detected manifest source types from the project.
+- `manifestSource` — The detected manifest source type.
+- `packageName` — Package name as read from the manifest.
+- `version` — Version string to check.
+- `config` — Publish configuration with timeout and optional registry URL.
 
-**Returns:** The Dependabot configuration as a YAML string.
+**Returns:** The publish check result.
 
 ```ts
-import { generateDependabotConfig } from 'versionguard';
+import { checkPublishStatus } from './publish';
 
-const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+const result = await checkPublishStatus('package.json', '@codluv/vg', '1.0.0', { enabled: true, timeout: 5000 });
 ```
 
-### `writeDependabotConfig`
+### `readPackageName`
 
-Writes a Dependabot configuration file to `.github/dependabot.yml`.
+Reads the package name from a manifest file for registry lookups.
 
 ```typescript
-(cwd: string, content: string) => string
+(manifestSource: ManifestSourceType, cwd: string) => string | null
 ```
 
 **Parameters:**
 
-- `cwd` — Project directory.
-- `content` — YAML content to write.
-
-**Returns:** The absolute path to the created file.
-
-### `dependabotConfigExists`
-
-Checks whether `.github/dependabot.yml` exists in the project.
-
-```typescript
-(cwd: string) => boolean
-```
-
-**Parameters:**
-
+- `manifestSource` — Detected manifest type.
 - `cwd` — Project directory.
 
-**Returns:** `true` when the file exists.
+**Returns:** The package name, or null if it cannot be determined.
 
 ### `getDefaultConfig`
 
@@ -1671,20 +1709,21 @@ const result = validateVersion('1.2.3', getDefaultConfig());
 Validates the current project state against the supplied configuration.
 
 ```typescript
-(config: VersionGuardConfig, cwd?: string) => FullValidationResult
+(config: VersionGuardConfig, cwd?: string, mode?: ValidateMode) => Promise<FullValidationResult>
 ```
 
 **Parameters:**
 
 - `config` — VersionGuard configuration to apply.
 - `cwd` — Project directory to inspect.
+- `mode` — Validation mode: 'full' (default) or 'lightweight'.
 
 **Returns:** A full validation report for the project rooted at `cwd`.
 
 ```ts
 import { getDefaultConfig, validate } from 'versionguard';
 
-const result = validate(getDefaultConfig(), process.cwd());
+const result = await validate(getDefaultConfig(), process.cwd());
 ```
 
 ### `doctor`
@@ -1692,7 +1731,7 @@ const result = validate(getDefaultConfig(), process.cwd());
 Runs an extended readiness check for a project.
 
 ```typescript
-(config: VersionGuardConfig, cwd?: string) => DoctorReport
+(config: VersionGuardConfig, cwd?: string) => Promise<DoctorReport>
 ```
 
 **Parameters:**
@@ -2148,6 +2187,83 @@ ScanConfig
 - `patterns` — Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string.
 - `allowlist` — Files containing intentional version references that should not be flagged.
 
+### `GuardConfig`
+
+Configures guard check behavior (hook bypass detection).
+
+```typescript
+GuardConfig
+```
+
+**Members:**
+
+- `enabled` — Enables hook bypass detection in validate.
+
+### `PublishConfig`
+
+Configures registry publish status verification.
+
+```typescript
+PublishConfig
+```
+
+**Members:**
+
+- `enabled` — Enables registry publish status check.
+- `timeout` — Timeout in ms for registry HTTP/CLI calls.
+- `registryUrl` — Override registry URL for private registries.
+
+### `PublishCheckResult`
+
+Result of a registry publish status check.
+
+```typescript
+PublishCheckResult
+```
+
+**Members:**
+
+- `published` — Whether the version exists on the registry.
+- `registry` — Registry name (npm, crates.io, pypi, etc.).
+- `packageName` — Package name as read from the manifest.
+- `error` — Set when the check could not complete (network, timeout).
+
+### `GuardWarning`
+
+Describes a single guard finding.
+
+```typescript
+GuardWarning
+```
+
+**Members:**
+
+- `code` — Machine-readable code for filtering and automation.
+- `severity` — Severity: errors block releases, warnings inform.
+- `message` — Human-readable description of the issue.
+- `fix` — Suggested remediation command when available.
+
+### `GuardReport`
+
+Result of a full guard check pass.
+
+```typescript
+GuardReport
+```
+
+**Members:**
+
+- `safe` — True when no errors were found. Warnings alone do not fail.
+- `warnings` — All findings from the guard check.
+
+### `ValidateMode`
+
+Controls whether validate runs all checks or a fast subset.
+
+```typescript
+ValidateMode
+```
+
 ### `VersionGuardConfig`
 
 Top-level configuration consumed by versionguard.
@@ -2165,6 +2281,8 @@ VersionGuardConfig
 - `git` — Git enforcement settings.
 - `github` — GitHub integration settings.
 - `scan` — Repo-wide version literal scanning.
+- `guard` — Guard check configuration (hook bypass detection).
+- `publish` — Registry publish status verification.
 - `ignore` — Files or patterns excluded from validation.
 
 ### `SemVer`
@@ -2322,6 +2440,11 @@ FullValidationResult
 - `versionValid` — Indicates whether the root version string is valid.
 - `syncValid` — Indicates whether synchronized files are in sync.
 - `changelogValid` — Indicates whether changelog checks passed.
+- `scanValid` — Indicates whether repo-wide scan passed (no stale version literals).
+- `guardValid` — Indicates whether guard checks passed (no hook bypass detected).
+- `publishValid` — Indicates whether the publish check passed.
+- `publishCheck` — Detailed publish check result when publish checks are enabled.
+- `guardReport` — Detailed guard check report when guard checks are enabled.
 - `errors` — Human-readable validation failures collected during the run.
 
 ### `DoctorReport`
@@ -2339,6 +2462,9 @@ DoctorReport
 - `versionValid` — Indicates whether the package version matches the configured scheme.
 - `syncValid` — Indicates whether synced files match the package version.
 - `changelogValid` — Indicates whether changelog validation passed.
+- `scanValid` — Indicates whether repo-wide scan passed.
+- `guardValid` — Indicates whether guard checks passed.
+- `publishValid` — Indicates whether the publish check passed.
 - `gitRepository` — Indicates whether the current working directory is inside a Git repository.
 - `hooksInstalled` — Indicates whether VersionGuard-managed Git hooks are installed.
 - `worktreeClean` — Indicates whether `git status --porcelain` reports a clean worktree.
@@ -2635,34 +2761,6 @@ FixResult
 - `message` — Human-readable description of the fix attempt.
 - `file` — Absolute path to the file that was updated, when applicable.
 
-### `GuardWarning`
-
-Describes a single guard finding.
-
-```typescript
-GuardWarning
-```
-
-**Members:**
-
-- `code` — Machine-readable code for filtering and automation.
-- `severity` — Severity: errors block releases, warnings inform.
-- `message` — Human-readable description of the issue.
-- `fix` — Suggested remediation command when available.
-
-### `GuardReport`
-
-Result of a full guard check pass.
-
-```typescript
-GuardReport
-```
-
-**Members:**
-
-- `safe` — True when no errors were found. Warnings alone do not fail.
-- `warnings` — All findings from the guard check.
-
 ### `ProjectRootResult`
 
 Result of project root detection.
@@ -2831,4 +2929,12 @@ Maps VersionGuard manifest source types to Dependabot package-ecosystem values.
 
 ```typescript
 Record<ManifestSourceType, string | null>
+```
+
+### `REGISTRY_TABLE`
+
+Maps manifest source types to their registry check implementations.
+
+```typescript
+Record<string, { registry: string; check: (packageName: string, version: string, config: PublishConfig) => Promise<PublishCheckResult> | PublishCheckResult; }>
 ```

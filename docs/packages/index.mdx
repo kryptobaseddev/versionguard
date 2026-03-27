@@ -64,6 +64,9 @@ description: . package overview
 | [`fixChangelog()`](/packages/./api/index#fixchangelog)                         | function | Ensures the changelog contains an entry for a version.                           |
 | [`fixAll()`](/packages/./api/index#fixall)                                     | function | Runs all configured auto-fix operations.                                         |
 | [`suggestNextVersion()`](/packages/./api/index#suggestnextversion)             | function | Suggests candidate next versions for a release.                                  |
+| [`generateDependabotConfig()`](/packages/./api/index#generatedependabotconfig) | function | Generates Dependabot YAML configuration from detected manifests.                 |
+| [`writeDependabotConfig()`](/packages/./api/index#writedependabotconfig)       | function | Writes a Dependabot configuration file to `.github/dependabot.yml`.              |
+| [`dependabotConfigExists()`](/packages/./api/index#dependabotconfigexists)     | function | Checks whether `.github/dependabot.yml` exists in the project.                   |
 | [`installHooks()`](/packages/./api/index#installhooks)                         | function | Installs VersionGuard-managed Git hooks in a repository.                         |
 | [`uninstallHooks()`](/packages/./api/index#uninstallhooks)                     | function | Removes VersionGuard-managed Git hooks from a repository.                        |
 | [`findGitDir()`](/packages/./api/index#findgitdir)                             | function | Finds the nearest `.git` directory by walking up from a starting directory.      |
@@ -74,9 +77,8 @@ description: . package overview
 | [`checkHookIntegrity()`](/packages/./api/index#checkhookintegrity)             | function | Verifies that installed hook scripts match the expected content.                 |
 | [`checkEnforceHooksPolicy()`](/packages/./api/index#checkenforcehookspolicy)   | function | Checks whether hooks are configured as required but not enforced.                |
 | [`runGuardChecks()`](/packages/./api/index#runguardchecks)                     | function | Runs all guard checks and returns a consolidated report.                         |
-| [`generateDependabotConfig()`](/packages/./api/index#generatedependabotconfig) | function | Generates Dependabot YAML configuration from detected manifests.                 |
-| [`writeDependabotConfig()`](/packages/./api/index#writedependabotconfig)       | function | Writes a Dependabot configuration file to `.github/dependabot.yml`.              |
-| [`dependabotConfigExists()`](/packages/./api/index#dependabotconfigexists)     | function | Checks whether `.github/dependabot.yml` exists in the project.                   |
+| [`checkPublishStatus()`](/packages/./api/index#checkpublishstatus)             | function | Checks whether a package version has been published to its ecosystem registry.   |
+| [`readPackageName()`](/packages/./api/index#readpackagename)                   | function | Reads the package name from a manifest file for registry lookups.                |
 | [`getDefaultConfig()`](/packages/./api/index#getdefaultconfig)                 | function | Returns a deep-cloned copy of the built-in VersionGuard configuration.           |
 | [`findConfig()`](/packages/./api/index#findconfig)                             | function | Finds the first supported VersionGuard config file in a directory.               |
 | [`loadConfig()`](/packages/./api/index#loadconfig)                             | function | Loads a VersionGuard config file from disk.                                      |
@@ -128,6 +130,12 @@ description: . package overview
 | [`VersioningConfig`](/packages/./api/index#versioningconfig)                   | interface | Configures the active versioning mode.                                           |
 | [`ScanAllowlistEntry`](/packages/./api/index#scanallowlistentry)               | interface | An intentional version reference that should be excluded from scan results.      |
 | [`ScanConfig`](/packages/./api/index#scanconfig)                               | interface | Configures repo-wide scanning for hardcoded version literals.                    |
+| [`GuardConfig`](/packages/./api/index#guardconfig)                             | interface | Configures guard check behavior (hook bypass detection).                         |
+| [`PublishConfig`](/packages/./api/index#publishconfig)                         | interface | Configures registry publish status verification.                                 |
+| [`PublishCheckResult`](/packages/./api/index#publishcheckresult)               | interface | Result of a registry publish status check.                                       |
+| [`GuardWarning`](/packages/./api/index#guardwarning)                           | interface | Describes a single guard finding.                                                |
+| [`GuardReport`](/packages/./api/index#guardreport)                             | interface | Result of a full guard check pass.                                               |
+| [`ValidateMode`](/packages/./api/index#validatemode)                           | type      | Controls whether validate runs all checks or a fast subset.                      |
 | [`VersionGuardConfig`](/packages/./api/index#versionguardconfig)               | interface | Top-level configuration consumed by versionguard.                                |
 | [`SemVer`](/packages/./api/index#semver)                                       | interface | Parsed semantic version components.                                              |
 | [`CalVer`](/packages/./api/index#calver)                                       | interface | Parsed calendar version components.                                              |
@@ -162,8 +170,6 @@ description: . package overview
 | [`PackageJsonObject`](/packages/./api/index#packagejsonobject)                 | interface | Recursive object type used for arbitrary JSON-compatible package values.         |
 | [`PackageJson`](/packages/./api/index#packagejson)                             | interface | Minimal shape of a `package.json` document used by VersionGuard.                 |
 | [`FixResult`](/packages/./api/index#fixresult)                                 | interface | Fix entry point exports for auto-remediation helpers.                            |
-| [`GuardWarning`](/packages/./api/index#guardwarning)                           | interface | Describes a single guard finding.                                                |
-| [`GuardReport`](/packages/./api/index#guardreport)                             | interface | Result of a full guard check pass.                                               |
 | [`ProjectRootResult`](/packages/./api/index#projectrootresult)                 | interface | Result of project root detection.                                                |
 | [`TagInfo`](/packages/./api/index#taginfo)                                     | interface | Tag entry point exports for release-tag management helpers.                      |
 | [`InitOptions`](/packages/./api/index#initoptions)                             | interface | Options for headless (non-interactive) initialization.                           |
@@ -193,11 +199,13 @@ description: . package overview
 | [`project.ts`](/packages/./api/index#projectts)                      | file     |                                                                                  |
 | [`sync.ts`](/packages/./api/index#syncts)                            | file     |                                                                                  |
 | [`index.ts`](/packages/./api/index#indexts)                          | file     |                                                                                  |
-| [`hooks.ts`](/packages/./api/index#hooksts)                          | file     |                                                                                  |
-| [`guard.ts`](/packages/./api/index#guardts)                          | file     |                                                                                  |
 | [`MANIFEST_TO_ECOSYSTEM`](/packages/./api/index#manifesttoecosystem) | variable | Maps VersionGuard manifest source types to Dependabot package-ecosystem values.  |
 | [`dependabot.ts`](/packages/./api/index#dependabotts)                | file     | Dependabot configuration generation from detected project manifests.             |
 | [`index.ts`](/packages/./api/index#indexts)                          | file     | GitHub integration module.                                                       |
+| [`hooks.ts`](/packages/./api/index#hooksts)                          | file     |                                                                                  |
+| [`guard.ts`](/packages/./api/index#guardts)                          | file     |                                                                                  |
+| [`REGISTRY_TABLE`](/packages/./api/index#registrytable)              | variable | Maps manifest source types to their registry check implementations.              |
+| [`publish.ts`](/packages/./api/index#publishts)                      | file     | Registry publish status verification.  Checks whether a package version has b... |
 | [`config.ts`](/packages/./api/index#configts)                        | file     |                                                                                  |
 | [`project-root.ts`](/packages/./api/index#project-rootts)            | file     | Project root detection and boundary validation.                                  |
 | [`index.ts`](/packages/./api/index#indexts)                          | file     | Version source providers for language-agnostic manifest support.                 |
@@ -216,6 +224,7 @@ description: . package overview
 | [`guard.test.ts`](/packages/./api/index#guardtestts)                 | file     |                                                                                  |
 | [`hooks.test.ts`](/packages/./api/index#hookstestts)                 | file     |                                                                                  |
 | [`index.test.ts`](/packages/./api/index#indextestts)                 | file     |                                                                                  |
+| [`publish.test.ts`](/packages/./api/index#publishtestts)             | file     |                                                                                  |
 | [`scan.test.ts`](/packages/./api/index#scantestts)                   | file     |                                                                                  |
 | [`scheme-rules.test.ts`](/packages/./api/index#scheme-rulestestts)   | file     |                                                                                  |
 | [`semver.test.ts`](/packages/./api/index#semvertestts)               | file     |                                                                                  |

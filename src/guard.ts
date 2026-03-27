@@ -3,43 +3,11 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { findGitDir, generateHookScript } from './hooks';
-import type { VersionGuardConfig } from './types';
+import type { GuardReport, GuardWarning, VersionGuardConfig } from './types';
+
+export type { GuardReport, GuardWarning } from './types';
 
 const HOOK_NAMES = ['pre-commit', 'pre-push', 'post-tag'] as const;
-
-/**
- * Describes a single guard finding.
- *
- * @public
- * @since 0.2.0
- */
-export interface GuardWarning {
-  /** Machine-readable code for filtering and automation. */
-  code: string;
-  /** Severity: errors block releases, warnings inform. */
-  severity: 'error' | 'warning';
-  /** Human-readable description of the issue. */
-  message: string;
-  /**
-   * Suggested remediation command when available.
-   *
-   * @defaultValue `undefined`
-   */
-  fix?: string;
-}
-
-/**
- * Result of a full guard check pass.
- *
- * @public
- * @since 0.2.0
- */
-export interface GuardReport {
-  /** True when no errors were found. Warnings alone do not fail. */
-  safe: boolean;
-  /** All findings from the guard check. */
-  warnings: GuardWarning[];
-}
 
 /**
  * Checks whether git hooks have been redirected away from the repository.

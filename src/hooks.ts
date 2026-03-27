@@ -198,9 +198,18 @@ export function areHooksInstalled(cwd: string = process.cwd()): boolean {
  * @param hookName - Name of the Git hook to generate.
  * @returns The VG block with start/end markers.
  */
+/** Mode description per hook for generated comments. */
+const HOOK_MODE_COMMENTS: Record<string, string> = {
+  'pre-commit': '# Mode: lightweight (version + sync only — fast)',
+  'pre-push': '# Mode: full (version, sync, changelog, scan, guard, publish)',
+  'post-tag': '# Mode: full with post-tag actions',
+};
+
 function generateHookBlock(hookName: (typeof HOOK_NAMES)[number]): string {
+  const modeComment = HOOK_MODE_COMMENTS[hookName] ?? '# Mode: full';
   return `${VG_BLOCK_START}
 # VersionGuard ${hookName} hook
+${modeComment}
 # --no-install prevents accidentally downloading an unscoped package
 # if @codluv/versionguard is not installed locally
 npx --no-install versionguard validate --hook=${hookName}

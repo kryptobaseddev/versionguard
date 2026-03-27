@@ -48,6 +48,12 @@ When you consume the package, these map to the main `versionguard` entrypoint an
 - **`VersioningConfig`** — Configures the active versioning mode.
 - **`ScanAllowlistEntry`** — An intentional version reference that should be excluded from scan results.
 - **`ScanConfig`** — Configures repo-wide scanning for hardcoded version literals.
+- **`GuardConfig`** — Configures guard check behavior (hook bypass detection).
+- **`PublishConfig`** — Configures registry publish status verification.
+- **`PublishCheckResult`** — Result of a registry publish status check.
+- **`GuardWarning`** — Describes a single guard finding.
+- **`GuardReport`** — Result of a full guard check pass.
+- **`ValidateMode`** — Controls whether validate runs all checks or a fast subset.
 - **`VersionGuardConfig`** — Top-level configuration consumed by versionguard.
 - **`SemVer`** — Parsed semantic version components.
 - **`CalVer`** — Parsed calendar version components.
@@ -82,8 +88,6 @@ When you consume the package, these map to the main `versionguard` entrypoint an
 - **`PackageJsonObject`** — Recursive object type used for arbitrary JSON-compatible package values.
 - **`PackageJson`** — Minimal shape of a `package.json` document used by VersionGuard.
 - **`FixResult`** — Fix entry point exports for auto-remediation helpers.
-- **`GuardWarning`** — Describes a single guard finding.
-- **`GuardReport`** — Result of a full guard check pass.
 - **`ProjectRootResult`** — Result of project root detection.
 - **`TagInfo`** — Tag entry point exports for release-tag management helpers.
 - **`InitOptions`** — Options for headless (non-interactive) initialization.

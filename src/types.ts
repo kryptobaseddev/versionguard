@@ -446,6 +446,137 @@ export interface ScanConfig {
 }
 
 /**
+ * Configures guard check behavior (hook bypass detection).
+ *
+ * @public
+ * @since 1.0.0
+ * @forgeIgnore E020
+ */
+export interface GuardConfig {
+  /**
+   * Enables hook bypass detection in validate.
+   *
+   * @defaultValue true
+   */
+  enabled: boolean;
+}
+
+/**
+ * Configures registry publish status verification.
+ *
+ * @public
+ * @since 1.0.0
+ * @forgeIgnore E020
+ */
+export interface PublishConfig {
+  /**
+   * Enables registry publish status check.
+   *
+   * @defaultValue true
+   */
+  enabled: boolean;
+
+  /**
+   * Timeout in ms for registry HTTP/CLI calls.
+   *
+   * @defaultValue 5000
+   */
+  timeout: number;
+
+  /**
+   * Override registry URL for private registries.
+   *
+   * @defaultValue undefined
+   */
+  registryUrl?: string;
+}
+
+/**
+ * Result of a registry publish status check.
+ *
+ * @public
+ * @since 1.0.0
+ * @forgeIgnore E020
+ */
+export interface PublishCheckResult {
+  /**
+   * Whether the version exists on the registry.
+   */
+  published: boolean;
+
+  /**
+   * Registry name (npm, crates.io, pypi, etc.).
+   */
+  registry: string;
+
+  /**
+   * Package name as read from the manifest.
+   *
+   * @defaultValue undefined
+   */
+  packageName?: string;
+
+  /**
+   * Set when the check could not complete (network, timeout).
+   *
+   * @defaultValue undefined
+   */
+  error?: string;
+}
+
+/**
+ * Controls whether validate runs all checks or a fast subset.
+ *
+ * @public
+ * @since 1.0.0
+ * @forgeIgnore E020
+ */
+/**
+ * Describes a single guard finding.
+ *
+ * @public
+ * @since 1.0.0
+ * @forgeIgnore E020
+ */
+export interface GuardWarning {
+  /** Machine-readable code for filtering and automation. */
+  code: string;
+  /** Severity: errors block releases, warnings inform. */
+  severity: 'error' | 'warning';
+  /** Human-readable description of the issue. */
+  message: string;
+  /**
+   * Suggested remediation command when available.
+   *
+   * @defaultValue undefined
+   */
+  fix?: string;
+}
+
+/**
+ * Result of a full guard check pass.
+ *
+ * @public
+ * @since 1.0.0
+ * @forgeIgnore E020
+ */
+export interface GuardReport {
+  /** True when no errors were found. Warnings alone do not fail. */
+  safe: boolean;
+  /** All findings from the guard check. */
+  warnings: GuardWarning[];
+}
+
+/**
+ * Controls whether validate runs all checks or a fast subset.
+ *
+ * @public
+ * @since 1.0.0
+ * @forgeIgnore E020
+ */
+export type ValidateMode = 'full' | 'lightweight';
+
+/**
  * Top-level configuration consumed by versionguard.
  *
  * @public
@@ -491,10 +622,26 @@ export interface VersionGuardConfig {
   /**
    * Repo-wide version literal scanning.
    *
-   * @defaultValue `{ enabled: false, patterns: [...], allowlist: [] }`
+   * @defaultValue `{ enabled: true, patterns: [...], allowlist: [] }`
    * @since 0.8.0
    */
   scan: ScanConfig;
+
+  /**
+   * Guard check configuration (hook bypass detection).
+   *
+   * @defaultValue `{ enabled: true }`
+   * @since 1.0.0
+   */
+  guard: GuardConfig;
+
+  /**
+   * Registry publish status verification.
+   *
+   * @defaultValue `{ enabled: true, timeout: 5000 }`
+   * @since 1.0.0
+   */
+  publish: PublishConfig;
 
   /**
    * Files or patterns excluded from validation.
@@ -873,6 +1020,43 @@ export interface FullValidationResult {
   changelogValid: boolean;
 
   /**
+   * Indicates whether repo-wide scan passed (no stale version literals).
+   *
+   * @since 1.0.0
+   */
+  scanValid: boolean;
+
+  /**
+   * Indicates whether guard checks passed (no hook bypass detected).
+   *
+   * @since 1.0.0
+   */
+  guardValid: boolean;
+
+  /**
+   * Indicates whether the publish check passed.
+   *
+   * @since 1.0.0
+   */
+  publishValid: boolean;
+
+  /**
+   * Detailed publish check result when publish checks are enabled.
+   *
+   * @defaultValue undefined
+   * @since 1.0.0
+   */
+  publishCheck?: PublishCheckResult;
+
+  /**
+   * Detailed guard check report when guard checks are enabled.
+   *
+   * @defaultValue undefined
+   * @since 1.0.0
+   */
+  guardReport?: GuardReport;
+
+  /**
    * Human-readable validation failures collected during the run.
    */
   errors: string[];
@@ -911,6 +1095,27 @@ export interface DoctorReport {
    * Indicates whether changelog validation passed.
    */
   changelogValid: boolean;
+
+  /**
+   * Indicates whether repo-wide scan passed.
+   *
+   * @since 1.0.0
+   */
+  scanValid: boolean;
+
+  /**
+   * Indicates whether guard checks passed.
+   *
+   * @since 1.0.0
+   */
+  guardValid: boolean;
+
+  /**
+   * Indicates whether the publish check passed.
+   *
+   * @since 1.0.0
+   */
+  publishValid: boolean;
 
   /**
    * Indicates whether the current working directory is inside a Git repository.

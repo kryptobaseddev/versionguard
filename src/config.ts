@@ -59,7 +59,7 @@ const DEFAULT_CONFIG: VersionGuardConfig = {
     dependabot: true,
   },
   scan: {
-    enabled: false,
+    enabled: true,
     patterns: [
       // version = "1.2.3" or version: "1.2.3" in code/config
       '(?:version\\s*[:=]\\s*["\'])([\\d]+\\.[\\d]+\\.[\\d]+(?:-[\\w.]+)?)["\']',
@@ -77,6 +77,13 @@ const DEFAULT_CONFIG: VersionGuardConfig = {
       'post-tag': true,
     },
     enforceHooks: true,
+  },
+  guard: {
+    enabled: true,
+  },
+  publish: {
+    enabled: true,
+    timeout: 5000,
   },
   ignore: ['node_modules/**', 'dist/**', '.git/**', '*.lock', 'package-lock.json'],
 };
@@ -254,6 +261,16 @@ changelog:
 
 github:
   dependabot: true
+
+scan:
+  enabled: true
+
+guard:
+  enabled: true
+
+publish:
+  enabled: true
+  timeout: 5000
 
 git:
   hooks:

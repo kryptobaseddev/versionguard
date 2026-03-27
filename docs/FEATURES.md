@@ -34,7 +34,7 @@ node dist/cli.js validate
 | [x] | Changelog Validation | Keep a Changelog structure checks, required version entry, date format enforcement | `src/__tests__/changelog.test.ts` |
 | [x] | Changelog Auto-Fix | Detects and restructures Changesets-mangled changelogs into Keep a Changelog format | `src/__tests__/changelog.test.ts` |
 | [x] | Cooperative Git Hooks | Appends VG block with markers to existing hooks (Husky, lefthook, etc.), idempotent re-install, clean uninstall | `src/__tests__/hooks.test.ts` |
-| [x] | Agent Guardrails | `--strict` mode detects hook bypasses (HOOKS_PATH_OVERRIDE, HUSKY_BYPASS, HOOK_MISSING, HOOK_REPLACED, HOOK_TAMPERED, HOOKS_NOT_ENFORCED) | `src/__tests__/guard.test.ts` |
+| [x] | Agent Guardrails | Guard checks detect hook bypasses (HOOKS_PATH_OVERRIDE, HUSKY_BYPASS, HOOK_MISSING, HOOK_REPLACED, HOOK_TAMPERED, HOOKS_NOT_ENFORCED) — enabled by default, no flag required | `src/__tests__/guard.test.ts` |
 | [x] | Tag Automation | Annotated tag creation with version validation, auto-fix, and post-tag workflows | `src/__tests__/tag.test.ts` |
 | [x] | Interactive Init Wizard | @clack/prompts guided setup: versioning type, CalVer format, manifest source, hooks, changelog | `src/__tests__/cli.test.ts` |
 | [x] | Headless Init | `--type`, `--format`, `--manifest`, `--hooks/--no-hooks`, `--changelog/--no-changelog`, `--yes`, `--force`, `--allow-v-prefix`, `--no-build-metadata`, `--require-prerelease` flags | `src/__tests__/cli.test.ts` |
@@ -49,8 +49,11 @@ node dist/cli.js validate
 | [x] | Symmetric Config | Config ships both `semver:` and `calver:` blocks — `type` is the switch, no commenting needed | `src/__tests__/config.test.ts` |
 | [x] | Changelog Structure Enforcement | `changelog.enforceStructure` validates section headers against `changelog.sections` whitelist (defaults to Keep a Changelog). Empty sections detected | `src/__tests__/changelog.test.ts` |
 | [x] | `vg` CLI Alias | `vg` is a shorthand alias for `versionguard` — same binary, shorter to type | `package.json` bin field |
-| [x] | Repo-Wide Version Scanning | `scan.enabled` + `vg validate --scan` scans entire repo for stale version literals with allowlist, binary skip, .gitignore respect | `src/__tests__/scan.test.ts` |
-| [x] | 237 Tests | Full test suite with 94%+ coverage across 15 test files | `npm test` |
+| [x] | Repo-Wide Version Scanning | `scan.enabled` scans entire repo for stale version literals with allowlist, binary skip, .gitignore respect — enabled by default | `src/__tests__/scan.test.ts` |
+| [x] | Strict by Default | `vg validate` runs all checks (version, sync, changelog, scan, guard, publish) by default. Config opts out, not in. `--strict` and `--scan` flags deprecated with warnings | `src/__tests__/cli.test.ts`, `src/__tests__/index.test.ts` |
+| [x] | Publish Check | Registry publish status verification — detects whether the current version already exists on npm, crates.io, PyPI, Packagist, pub.dev, or Maven Central. Fail-open on network errors | `src/__tests__/publish.test.ts` |
+| [x] | Validation Modes | `full` mode (default) runs all checks; `lightweight` mode (pre-commit hook) runs version + sync only for speed | `src/__tests__/index.test.ts` |
+| [x] | 274+ Tests | Full test suite with 94%+ coverage across 17 test files | `npm test` |
 
 ## Roadmap: Future Epics
 
@@ -109,6 +112,20 @@ VersionGuard is an enforcement layer. It validates and guards. It does not own v
 - [x] `changelog.enforceStructure` config: fail on non-standard sections
 - [x] Detect and warn on empty sections
 - [x] Integration with `validate` and `fix`
+
+### T008: Strict by Default ✓ (shipped v1.0.0)
+
+**Priority**: HIGH
+**Status**: SHIPPED
+
+**Deliverables**:
+- [x] `vg validate` runs scan, guard, and publish checks by default without flags
+- [x] Registry publish status verification for npm, crates.io, PyPI, Packagist, pub.dev, Maven Central
+- [x] `--strict` and `--scan` flags deprecated with warning (still functional)
+- [x] Config opt-out for each check category (`scan.enabled`, `guard.enabled`, `publish.enabled`)
+- [x] Pre-commit hook uses lightweight mode; pre-push and CI use full validation
+- [x] All network checks fail-open (warning, not error)
+- [x] Shipped as v1.0.0 with stability policy
 
 ### T005: Release Commit Policy
 

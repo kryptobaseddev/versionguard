@@ -226,12 +226,15 @@ describe('cli', () => {
   it('handles unmatched sync mismatch messages during validation', async () => {
     const cwd = createTempProject();
     makeHealthyProject(cwd);
-    vi.spyOn(indexModule, 'validate').mockReturnValue({
+    vi.spyOn(indexModule, 'validate').mockResolvedValue({
       valid: false,
       version: '1.2.3',
       versionValid: true,
       syncValid: false,
       changelogValid: true,
+      scanValid: true,
+      guardValid: true,
+      publishValid: true,
       errors: ['Version mismatch in README.md - unexpected format'],
     });
     const program = createProgram();
@@ -436,12 +439,15 @@ describe('cli', () => {
 
   it('prints doctor details for missing versions and dirty repositories', async () => {
     const cwd = createTempProject();
-    vi.spyOn(indexModule, 'doctor').mockReturnValue({
+    vi.spyOn(indexModule, 'doctor').mockResolvedValue({
       ready: false,
       version: '',
       versionValid: false,
       syncValid: false,
       changelogValid: false,
+      scanValid: true,
+      guardValid: true,
+      publishValid: true,
       gitRepository: true,
       hooksInstalled: false,
       worktreeClean: false,

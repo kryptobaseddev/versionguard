@@ -2,8 +2,8 @@
 
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
 
-Version: 0.8.1
-Generated: 2026-03-26T22:14:21.965Z
+Version: 0.9.0
+Generated: 2026-03-26T23:24:59.593Z
 
 ## Package: main
 
@@ -1026,6 +1026,47 @@ Example:
   const suggestions = suggestNextVersion('1.2.3', config, 'minor');
   console.log(suggestions[0]?.version);
 
+#### generateDependabotConfig()
+
+(manifests: ManifestSourceType[]) => string
+
+Generates Dependabot YAML configuration from detected manifests.
+
+Each detected manifest is mapped to its Dependabot ecosystem. A `github-actions` entry is always appended since any GitHub-hosted project benefits from action version updates.
+
+Parameters:
+- manifests: Detected manifest source types from the project.
+
+Returns: The Dependabot configuration as a YAML string.
+
+Example:
+  import { generateDependabotConfig } from 'versionguard';
+  
+  const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+
+#### writeDependabotConfig()
+
+(cwd: string, content: string) => string
+
+Writes a Dependabot configuration file to `.github/dependabot.yml`.
+
+Parameters:
+- cwd: Project directory.
+- content: YAML content to write.
+
+Returns: The absolute path to the created file.
+
+#### dependabotConfigExists()
+
+(cwd: string) => boolean
+
+Checks whether `.github/dependabot.yml` exists in the project.
+
+Parameters:
+- cwd: Project directory.
+
+Returns: `true` when the file exists.
+
 #### installHooks()
 
 (config: GitConfig, cwd?: string) => void
@@ -1207,46 +1248,38 @@ Example:
   const report = runGuardChecks(config, process.cwd());
   if (!report.safe) console.error('Guard check failed:', report.warnings);
 
-#### generateDependabotConfig()
+#### checkPublishStatus()
 
-(manifests: ManifestSourceType[]) => string
+(manifestSource: ManifestSourceType, packageName: string, version: string, config: PublishConfig) => Promise<PublishCheckResult>
 
-Generates Dependabot YAML configuration from detected manifests.
+Checks whether a package version has been published to its ecosystem registry.
 
-Each detected manifest is mapped to its Dependabot ecosystem. A `github-actions` entry is always appended since any GitHub-hosted project benefits from action version updates.
+Uses the REGISTRY_TABLE to dispatch to the correct check implementation based on the detected manifest source type. Fail-open on network errors: returns `published: false` with an error message when the check cannot complete.
 
 Parameters:
-- manifests: Detected manifest source types from the project.
+- manifestSource: The detected manifest source type.
+- packageName: Package name as read from the manifest.
+- version: Version string to check.
+- config: Publish configuration with timeout and optional registry URL.
 
-Returns: The Dependabot configuration as a YAML string.
+Returns: The publish check result.
 
 Example:
-  import { generateDependabotConfig } from 'versionguard';
+  import { checkPublishStatus } from './publish';
   
-  const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+  const result = await checkPublishStatus('package.json', '@codluv/vg', '1.0.0', { enabled: true, timeout: 5000 });
 
-#### writeDependabotConfig()
+#### readPackageName()
 
-(cwd: string, content: string) => string
+(manifestSource: ManifestSourceType, cwd: string) => string | null
 
-Writes a Dependabot configuration file to `.github/dependabot.yml`.
-
-Parameters:
-- cwd: Project directory.
-- content: YAML content to write.
-
-Returns: The absolute path to the created file.
-
-#### dependabotConfigExists()
-
-(cwd: string) => boolean
-
-Checks whether `.github/dependabot.yml` exists in the project.
+Reads the package name from a manifest file for registry lookups.
 
 Parameters:
+- manifestSource: Detected manifest type.
 - cwd: Project directory.
 
-Returns: `true` when the file exists.
+Returns: The package name, or null if it cannot be determined.
 
 #### getDefaultConfig()
 
@@ -1512,26 +1545,27 @@ Example:
 
 #### validate()
 
-(config: VersionGuardConfig, cwd?: string) => FullValidationResult
+(config: VersionGuardConfig, cwd?: string, mode?: ValidateMode) => Promise<FullValidationResult>
 
 Validates the current project state against the supplied configuration.
 
-This reads the package version from `package.json`, validates the version format, checks synchronized files, and optionally validates the changelog.
+Runs version, sync, changelog, scan, guard, and publish checks based on the validation mode. Full mode (default) runs all checks. Lightweight mode (for pre-commit hooks) runs only version + sync.
 
 Parameters:
 - config: VersionGuard configuration to apply.
 - cwd: Project directory to inspect.
+- mode: Validation mode: 'full' (default) or 'lightweight'.
 
 Returns: A full validation report for the project rooted at `cwd`.
 
 Example:
   import { getDefaultConfig, validate } from 'versionguard';
   
-  const result = validate(getDefaultConfig(), process.cwd());
+  const result = await validate(getDefaultConfig(), process.cwd());
 
 #### doctor()
 
-(config: VersionGuardConfig, cwd?: string) => DoctorReport
+(config: VersionGuardConfig, cwd?: string) => Promise<DoctorReport>
 
 Runs an extended readiness check for a project.
 
@@ -2444,6 +2478,130 @@ ScanAllowlistEntry[]
 
 Files containing intentional version references that should not be flagged.
 
+#### GuardConfig
+
+GuardConfig
+
+Configures guard check behavior (hook bypass detection).
+
+Members:
+
+##### enabled
+
+boolean
+
+Enables hook bypass detection in validate.
+
+#### PublishConfig
+
+PublishConfig
+
+Configures registry publish status verification.
+
+Members:
+
+##### enabled
+
+boolean
+
+Enables registry publish status check.
+
+##### timeout
+
+number
+
+Timeout in ms for registry HTTP/CLI calls.
+
+##### registryUrl
+
+string | undefined
+
+Override registry URL for private registries.
+
+#### PublishCheckResult
+
+PublishCheckResult
+
+Result of a registry publish status check.
+
+Members:
+
+##### published
+
+boolean
+
+Whether the version exists on the registry.
+
+##### registry
+
+string
+
+Registry name (npm, crates.io, pypi, etc.).
+
+##### packageName
+
+string | undefined
+
+Package name as read from the manifest.
+
+##### error
+
+string | undefined
+
+Set when the check could not complete (network, timeout).
+
+#### GuardWarning
+
+GuardWarning
+
+Describes a single guard finding.
+
+Members:
+
+##### code
+
+string
+
+Machine-readable code for filtering and automation.
+
+##### severity
+
+"error" | "warning"
+
+Severity: errors block releases, warnings inform.
+
+##### message
+
+string
+
+Human-readable description of the issue.
+
+##### fix
+
+string | undefined
+
+Suggested remediation command when available.
+
+#### GuardReport
+
+GuardReport
+
+Result of a full guard check pass.
+
+Members:
+
+##### safe
+
+boolean
+
+True when no errors were found. Warnings alone do not fail.
+
+##### warnings
+
+GuardWarning[]
+
+All findings from the guard check.
+
 #### VersionGuardConfig
 
 VersionGuardConfig
@@ -2493,6 +2651,18 @@ GitHub integration settings.
 ScanConfig
 
 Repo-wide version literal scanning.
+
+##### guard
+
+GuardConfig
+
+Guard check configuration (hook bypass detection).
+
+##### publish
+
+PublishConfig
+
+Registry publish status verification.
 
 ##### ignore
 
@@ -2808,6 +2978,36 @@ boolean
 
 Indicates whether changelog checks passed.
 
+##### scanValid
+
+boolean
+
+Indicates whether repo-wide scan passed (no stale version literals).
+
+##### guardValid
+
+boolean
+
+Indicates whether guard checks passed (no hook bypass detected).
+
+##### publishValid
+
+boolean
+
+Indicates whether the publish check passed.
+
+##### publishCheck
+
+PublishCheckResult | undefined
+
+Detailed publish check result when publish checks are enabled.
+
+##### guardReport
+
+GuardReport | undefined
+
+Detailed guard check report when guard checks are enabled.
+
 ##### errors
 
 string[]
@@ -2851,6 +3051,24 @@ Indicates whether synced files match the package version.
 boolean
 
 Indicates whether changelog validation passed.
+
+##### scanValid
+
+boolean
+
+Indicates whether repo-wide scan passed.
+
+##### guardValid
+
+boolean
+
+Indicates whether guard checks passed.
+
+##### publishValid
+
+boolean
+
+Indicates whether the publish check passed.
 
 ##### gitRepository
 
@@ -3459,58 +3677,6 @@ string | undefined
 
 Absolute path to the file that was updated, when applicable.
 
-#### GuardWarning
-
-GuardWarning
-
-Describes a single guard finding.
-
-Members:
-
-##### code
-
-string
-
-Machine-readable code for filtering and automation.
-
-##### severity
-
-"error" | "warning"
-
-Severity: errors block releases, warnings inform.
-
-##### message
-
-string
-
-Human-readable description of the issue.
-
-##### fix
-
-string | undefined
-
-Suggested remediation command when available.
-
-#### GuardReport
-
-GuardReport
-
-Result of a full guard check pass.
-
-Members:
-
-##### safe
-
-boolean
-
-True when no errors were found. Warnings alone do not fail.
-
-##### warnings
-
-GuardWarning[]
-
-All findings from the guard check.
-
 #### ProjectRootResult
 
 ProjectRootResult
@@ -3695,6 +3861,12 @@ A CalVer format string composed of dot-separated tokens.
 
 Any dot-separated combination of valid `CalVerToken` values is accepted. Common examples: `'YYYY.MM.MICRO'`, `'YY.0M.MICRO'`, `'YYYY.0M.0D'`, `'YYYY.MM.DD.MICRO'`.  `MICRO` and `PATCH` are interchangeable — both represent a 0-based incrementing counter. The CalVer specification (calver.org) uses `MICRO`; `PATCH` is accepted as a SemVer-familiar alias.
 
+#### ValidateMode
+
+ValidateMode
+
+Controls whether validate runs all checks or a fast subset.
+
 #### ParsedVersion
 
 ParsedVersion
@@ -3722,3 +3894,11 @@ Record<ManifestSourceType, string | null>
 Maps VersionGuard manifest source types to Dependabot package-ecosystem values.
 
 Returns `null` for sources that have no Dependabot equivalent (VERSION files, git tags, custom regex). The `auto` source is resolved at detection time, not mapped directly.
+
+#### REGISTRY_TABLE
+
+Record<string, { registry: string; check: (packageName: string, version: string, config: PublishConfig) => Promise<PublishCheckResult> | PublishCheckResult; }>
+
+Maps manifest source types to their registry check implementations.
+
+Each entry provides the registry name and a check function that returns whether the given version is published. The check function receives the package name, version, and publish config.

@@ -164,6 +164,63 @@ Configures repo-wide scanning for hardcoded version literals.
 | `patterns`  | `string[]`             | Yes      | Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string. |
 | `allowlist` | `ScanAllowlistEntry[]` | Yes      | Files containing intentional version references that should not be flagged.                                       |
 
+## GuardConfig
+
+Configures guard check behavior (hook bypass detection).
+
+| Property  | Type      | Required | Description                                |
+| --------- | --------- | -------- | ------------------------------------------ |
+| `enabled` | `boolean` | Yes      | Enables hook bypass detection in validate. |
+
+## PublishConfig
+
+Configures registry publish status verification.
+
+| Property      | Type                  | Required | Description                                   |
+| ------------- | --------------------- | -------- | --------------------------------------------- |
+| `enabled`     | `boolean`             | Yes      | Enables registry publish status check.        |
+| `timeout`     | `number`              | Yes      | Timeout in ms for registry HTTP/CLI calls.    |
+| `registryUrl` | `string \| undefined` | No       | Override registry URL for private registries. |
+
+## PublishCheckResult
+
+Result of a registry publish status check.
+
+| Property      | Type                  | Required | Description                                               |
+| ------------- | --------------------- | -------- | --------------------------------------------------------- |
+| `published`   | `boolean`             | Yes      | Whether the version exists on the registry.               |
+| `registry`    | `string`              | Yes      | Registry name (npm, crates.io, pypi, etc.).               |
+| `packageName` | `string \| undefined` | No       | Package name as read from the manifest.                   |
+| `error`       | `string \| undefined` | No       | Set when the check could not complete (network, timeout). |
+
+## GuardWarning
+
+Describes a single guard finding.
+
+| Property   | Type                   | Required | Description                                         |
+| ---------- | ---------------------- | -------- | --------------------------------------------------- |
+| `code`     | `string`               | Yes      | Machine-readable code for filtering and automation. |
+| `severity` | `"error" \| "warning"` | Yes      | Severity: errors block releases, warnings inform.   |
+| `message`  | `string`               | Yes      | Human-readable description of the issue.            |
+| `fix`      | `string \| undefined`  | No       | Suggested remediation command when available.       |
+
+## GuardReport
+
+Result of a full guard check pass.
+
+| Property   | Type             | Required | Description                                                 |
+| ---------- | ---------------- | -------- | ----------------------------------------------------------- |
+| `safe`     | `boolean`        | Yes      | True when no errors were found. Warnings alone do not fail. |
+| `warnings` | `GuardWarning[]` | Yes      | All findings from the guard check.                          |
+
+## ValidateMode
+
+Controls whether validate runs all checks or a fast subset.
+
+```typescript
+ValidateMode
+```
+
 ## VersionGuardConfig
 
 Top-level configuration consumed by versionguard.
@@ -177,6 +234,8 @@ Top-level configuration consumed by versionguard.
 | `git`        | `GitConfig`        | Yes      | Git enforcement settings.                              |
 | `github`     | `GitHubConfig`     | Yes      | GitHub integration settings.                           |
 | `scan`       | `ScanConfig`       | Yes      | Repo-wide version literal scanning.                    |
+| `guard`      | `GuardConfig`      | Yes      | Guard check configuration (hook bypass detection).     |
+| `publish`    | `PublishConfig`    | Yes      | Registry publish status verification.                  |
 | `ignore`     | `string[]`         | Yes      | Files or patterns excluded from validation.            |
 
 ## SemVer
@@ -287,14 +346,19 @@ Reports a discovered version mismatch.
 
 Combined result from a full project validation run.
 
-| Property         | Type       | Required | Description                                                  |
-| ---------------- | ---------- | -------- | ------------------------------------------------------------ |
-| `valid`          | `boolean`  | Yes      | Indicates whether all checks passed.                         |
-| `version`        | `string`   | Yes      | Canonical version string used for validation.                |
-| `versionValid`   | `boolean`  | Yes      | Indicates whether the root version string is valid.          |
-| `syncValid`      | `boolean`  | Yes      | Indicates whether synchronized files are in sync.            |
-| `changelogValid` | `boolean`  | Yes      | Indicates whether changelog checks passed.                   |
-| `errors`         | `string[]` | Yes      | Human-readable validation failures collected during the run. |
+| Property         | Type                              | Required | Description                                                          |
+| ---------------- | --------------------------------- | -------- | -------------------------------------------------------------------- |
+| `valid`          | `boolean`                         | Yes      | Indicates whether all checks passed.                                 |
+| `version`        | `string`                          | Yes      | Canonical version string used for validation.                        |
+| `versionValid`   | `boolean`                         | Yes      | Indicates whether the root version string is valid.                  |
+| `syncValid`      | `boolean`                         | Yes      | Indicates whether synchronized files are in sync.                    |
+| `changelogValid` | `boolean`                         | Yes      | Indicates whether changelog checks passed.                           |
+| `scanValid`      | `boolean`                         | Yes      | Indicates whether repo-wide scan passed (no stale version literals). |
+| `guardValid`     | `boolean`                         | Yes      | Indicates whether guard checks passed (no hook bypass detected).     |
+| `publishValid`   | `boolean`                         | Yes      | Indicates whether the publish check passed.                          |
+| `publishCheck`   | `PublishCheckResult \| undefined` | No       | Detailed publish check result when publish checks are enabled.       |
+| `guardReport`    | `GuardReport \| undefined`        | No       | Detailed guard check report when guard checks are enabled.           |
+| `errors`         | `string[]`                        | Yes      | Human-readable validation failures collected during the run.         |
 
 ## DoctorReport
 
@@ -307,6 +371,9 @@ Reports whether a project is ready to pass VersionGuard checks.
 | `versionValid`   | `boolean`  | Yes      | Indicates whether the package version matches the configured scheme.        |
 | `syncValid`      | `boolean`  | Yes      | Indicates whether synced files match the package version.                   |
 | `changelogValid` | `boolean`  | Yes      | Indicates whether changelog validation passed.                              |
+| `scanValid`      | `boolean`  | Yes      | Indicates whether repo-wide scan passed.                                    |
+| `guardValid`     | `boolean`  | Yes      | Indicates whether guard checks passed.                                      |
+| `publishValid`   | `boolean`  | Yes      | Indicates whether the publish check passed.                                 |
 | `gitRepository`  | `boolean`  | Yes      | Indicates whether the current working directory is inside a Git repository. |
 | `hooksInstalled` | `boolean`  | Yes      | Indicates whether VersionGuard-managed Git hooks are installed.             |
 | `worktreeClean`  | `boolean`  | Yes      | Indicates whether `git status --porcelain` reports a clean worktree.        |
@@ -526,26 +593,6 @@ Fix entry point exports for auto-remediation helpers.
 | `fixed`   | `boolean`             | Yes      | Indicates whether the operation changed repository state.    |
 | `message` | `string`              | Yes      | Human-readable description of the fix attempt.               |
 | `file`    | `string \| undefined` | No       | Absolute path to the file that was updated, when applicable. |
-
-## GuardWarning
-
-Describes a single guard finding.
-
-| Property   | Type                   | Required | Description                                         |
-| ---------- | ---------------------- | -------- | --------------------------------------------------- |
-| `code`     | `string`               | Yes      | Machine-readable code for filtering and automation. |
-| `severity` | `"error" \| "warning"` | Yes      | Severity: errors block releases, warnings inform.   |
-| `message`  | `string`               | Yes      | Human-readable description of the issue.            |
-| `fix`      | `string \| undefined`  | No       | Suggested remediation command when available.       |
-
-## GuardReport
-
-Result of a full guard check pass.
-
-| Property   | Type             | Required | Description                                                 |
-| ---------- | ---------------- | -------- | ----------------------------------------------------------- |
-| `safe`     | `boolean`        | Yes      | True when no errors were found. Warnings alone do not fail. |
-| `warnings` | `GuardWarning[]` | Yes      | All findings from the guard check.                          |
 
 ## ProjectRootResult
 

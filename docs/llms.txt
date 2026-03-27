@@ -1,6 +1,6 @@
 # @codluv/versionguard
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
-> Version: 0.8.1
+> Version: 0.9.0
 
 ## Install
 
@@ -16,7 +16,7 @@ npm install -D @codluv/versionguard
 ## Packages
 
 ### main
-93 functions, 56 types
+95 functions, 60 types
 
 - getSemVerConfig() — Resolves the SemVer config from a VersionGuard config.
 - getCalVerConfig() — Extracts the CalVer config from a VersionGuard config, throwing if missing.
@@ -69,6 +69,9 @@ npm install -D @codluv/versionguard
 - fixChangelog() — Ensures the changelog contains an entry for a version.
 - fixAll() — Runs all configured auto-fix operations.
 - suggestNextVersion() — Suggests candidate next versions for a release.
+- generateDependabotConfig() — Generates Dependabot YAML configuration from detected manifests.
+- writeDependabotConfig() — Writes a Dependabot configuration file to `.github/dependabot.yml`.
+- dependabotConfigExists() — Checks whether `.github/dependabot.yml` exists in the project.
 - installHooks() — Installs VersionGuard-managed Git hooks in a repository.
 - uninstallHooks() — Removes VersionGuard-managed Git hooks from a repository.
 - findGitDir() — Finds the nearest `.git` directory by walking up from a starting directory.
@@ -79,9 +82,8 @@ npm install -D @codluv/versionguard
 - checkHookIntegrity() — Verifies that installed hook scripts match the expected content.
 - checkEnforceHooksPolicy() — Checks whether hooks are configured as required but not enforced.
 - runGuardChecks() — Runs all guard checks and returns a consolidated report.
-- generateDependabotConfig() — Generates Dependabot YAML configuration from detected manifests.
-- writeDependabotConfig() — Writes a Dependabot configuration file to `.github/dependabot.yml`.
-- dependabotConfigExists() — Checks whether `.github/dependabot.yml` exists in the project.
+- checkPublishStatus() — Checks whether a package version has been published to its ecosystem registry.
+- readPackageName() — Reads the package name from a manifest file for registry lookups.
 - getDefaultConfig() — Returns a deep-cloned copy of the built-in VersionGuard configuration.
 - findConfig() — Finds the first supported VersionGuard config file in a directory.
 - loadConfig() — Loads a VersionGuard config file from disk.
@@ -129,6 +131,12 @@ npm install -D @codluv/versionguard
 - VersioningConfig — Configures the active versioning mode.
 - ScanAllowlistEntry — An intentional version reference that should be excluded from scan results.
 - ScanConfig — Configures repo-wide scanning for hardcoded version literals.
+- GuardConfig — Configures guard check behavior (hook bypass detection).
+- PublishConfig — Configures registry publish status verification.
+- PublishCheckResult — Result of a registry publish status check.
+- GuardWarning — Describes a single guard finding.
+- GuardReport — Result of a full guard check pass.
+- ValidateMode — Controls whether validate runs all checks or a fast subset.
 - VersionGuardConfig — Top-level configuration consumed by versionguard.
 - SemVer — Parsed semantic version components.
 - CalVer — Parsed calendar version components.
@@ -163,8 +171,6 @@ npm install -D @codluv/versionguard
 - PackageJsonObject — Recursive object type used for arbitrary JSON-compatible package values.
 - PackageJson — Minimal shape of a `package.json` document used by VersionGuard.
 - FixResult — Fix entry point exports for auto-remediation helpers.
-- GuardWarning — Describes a single guard finding.
-- GuardReport — Result of a full guard check pass.
 - ProjectRootResult — Result of project root detection.
 - TagInfo — Tag entry point exports for release-tag management helpers.
 - InitOptions — Options for headless (non-interactive) initialization.

@@ -110,6 +110,24 @@ Configures repo-wide scanning for hardcoded version literals.
 | `patterns`  | `string[]`             | Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string. |
 | `allowlist` | `ScanAllowlistEntry[]` | Files containing intentional version references that should not be flagged.                                       |
 
+### `GuardConfig`
+
+Configures guard check behavior (hook bypass detection).
+
+| Property  | Type      | Description                                |
+| --------- | --------- | ------------------------------------------ |
+| `enabled` | `boolean` | Enables hook bypass detection in validate. |
+
+### `PublishConfig`
+
+Configures registry publish status verification.
+
+| Property      | Type                  | Description                                   |
+| ------------- | --------------------- | --------------------------------------------- |
+| `enabled`     | `boolean`             | Enables registry publish status check.        |
+| `timeout`     | `number`              | Timeout in ms for registry HTTP/CLI calls.    |
+| `registryUrl` | `string \| undefined` | Override registry URL for private registries. |
+
 ### `VersionGuardConfig`
 
 Top-level configuration consumed by versionguard.
@@ -123,6 +141,8 @@ Top-level configuration consumed by versionguard.
 | `git`        | `GitConfig`        | Git enforcement settings.                              |
 | `github`     | `GitHubConfig`     | GitHub integration settings.                           |
 | `scan`       | `ScanConfig`       | Repo-wide version literal scanning.                    |
+| `guard`      | `GuardConfig`      | Guard check configuration (hook bypass detection).     |
+| `publish`    | `PublishConfig`    | Registry publish status verification.                  |
 | `ignore`     | `string[]`         | Files or patterns excluded from validation.            |
 
 ### `ChangelogStructureOptions`

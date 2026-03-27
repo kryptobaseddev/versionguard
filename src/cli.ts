@@ -20,7 +20,6 @@ import type { CkmManifest } from './ckm';
 import { createCkmEngine } from './ckm';
 import * as feedback from './feedback';
 import * as fix from './fix';
-import * as guard from './guard';
 
 const ckmEngine = createCkmEngine(JSON.parse(ckmRaw) as CkmManifest);
 
@@ -235,10 +234,10 @@ export function createProgram(): Command {
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('--hook <name>', 'Running as git hook')
     .option('--json', 'Print machine-readable JSON output')
-    .option('--strict', 'Run guard checks and fail on any policy gap or bypass')
-    .option('--scan', 'Run repo-wide scan for stale version literals')
+    .option('--strict', '(deprecated) Guard checks now run by default')
+    .option('--scan', '(deprecated) Scan now runs by default')
     .action(
-      (options: {
+      async (options: {
         cwd: string;
         hook?: string;
         json?: boolean;
@@ -246,26 +245,35 @@ export function createProgram(): Command {
         scan?: boolean;
       }) => {
         try {
+          // Deprecation warnings for removed flags
+          if (options.strict) {
+            console.error(
+              styles.warning(
+                '⚠ --strict is deprecated: guard checks now run by default. Use guard.enabled: false in config to disable.',
+              ),
+            );
+          }
+          if (options.scan) {
+            console.error(
+              styles.warning(
+                '⚠ --scan is deprecated: scan now runs by default. Use scan.enabled: false in config to disable.',
+              ),
+            );
+          }
+
           options.cwd = requireProject(options.cwd, 'validate');
           const config = versionguard.getConfig(options.cwd);
 
-          // --scan flag enables repo-wide scanning for this run
-          if (options.scan && config.scan) {
-            config.scan.enabled = true;
-          }
+          // Route hook mode: pre-commit = lightweight, pre-push/post-tag = full
+          const mode = options.hook === 'pre-commit' ? 'lightweight' : 'full';
 
           const version = versionguard.getPackageVersion(options.cwd, config.manifest);
-          const result = versionguard.validate(config, options.cwd);
+          const result = await versionguard.validate(config, options.cwd, mode);
 
           let postTagResult: { success: boolean; message: string; actions: string[] } | undefined;
-          let guardReport: guard.GuardReport | undefined;
 
           if (options.hook === 'post-tag') {
             postTagResult = tag.handlePostTag(config, options.cwd);
-          }
-
-          if (options.strict) {
-            guardReport = guard.runGuardChecks(config, options.cwd);
           }
 
           if (options.json) {
@@ -275,18 +283,13 @@ export function createProgram(): Command {
                   ...result,
                   hook: options.hook ?? null,
                   postTag: postTagResult ?? null,
-                  guard: guardReport ?? null,
                 },
                 null,
                 2,
               ),
             );
 
-            if (
-              !result.valid ||
-              (postTagResult && !postTagResult.success) ||
-              (guardReport && !guardReport.safe)
-            ) {
+            if (!result.valid || (postTagResult && !postTagResult.success)) {
               process.exit(1);
             }
 
@@ -347,16 +350,10 @@ export function createProgram(): Command {
             console.log('');
           }
 
-          if (postTagResult) {
-            if (!postTagResult.success) {
-              console.log(styles.error(`✗ ${postTagResult.message}`));
-              process.exit(1);
-            }
-          }
-
-          if (guardReport && guardReport.warnings.length > 0) {
+          // Guard check results (now always in result when guard.enabled)
+          if (result.guardReport && result.guardReport.warnings.length > 0) {
             console.log(styles.bold('Guard Checks:'));
-            for (const warning of guardReport.warnings) {
+            for (const warning of result.guardReport.warnings) {
               const icon = warning.severity === 'error' ? styles.error('✗') : styles.warning('⚠');
               console.log(`  ${icon} [${warning.code}] ${warning.message}`);
               if (warning.fix) {
@@ -366,7 +363,27 @@ export function createProgram(): Command {
             console.log('');
           }
 
-          if (!result.valid || (guardReport && !guardReport.safe)) {
+          // Publish check results
+          if (result.publishCheck) {
+            if (result.publishCheck.published) {
+              console.log(
+                styles.info(
+                  `ℹ Version ${version} is already published on ${result.publishCheck.registry}`,
+                ),
+              );
+            } else if (result.publishCheck.error) {
+              console.log(styles.warning(`⚠ ${result.publishCheck.error}`));
+            }
+          }
+
+          if (postTagResult) {
+            if (!postTagResult.success) {
+              console.log(styles.error(`✗ ${postTagResult.message}`));
+              process.exit(1);
+            }
+          }
+
+          if (!result.valid) {
             console.log(styles.error('✗ Validation failed'));
             process.exit(1);
           }
@@ -384,17 +401,24 @@ export function createProgram(): Command {
     .description('Report repository readiness in one pass')
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('--json', 'Print machine-readable JSON output')
-    .option('--strict', 'Include guard checks for bypass detection')
-    .action((options: { cwd: string; json?: boolean; strict?: boolean }) => {
+    .option('--strict', '(deprecated) Guard checks now run by default')
+    .action(async (options: { cwd: string; json?: boolean; strict?: boolean }) => {
       try {
+        if (options.strict) {
+          console.error(
+            styles.warning(
+              '⚠ --strict is deprecated: guard checks now run by default. Use guard.enabled: false in config to disable.',
+            ),
+          );
+        }
+
         options.cwd = requireProject(options.cwd, 'doctor');
         const config = versionguard.getConfig(options.cwd);
-        const report = versionguard.doctor(config, options.cwd);
-        const guardReport = options.strict ? guard.runGuardChecks(config, options.cwd) : undefined;
+        const report = await versionguard.doctor(config, options.cwd);
 
         if (options.json) {
-          console.log(JSON.stringify({ ...report, guard: guardReport ?? null }, null, 2));
-          if (!report.ready || (guardReport && !guardReport.safe)) {
+          console.log(JSON.stringify(report, null, 2));
+          if (!report.ready) {
             process.exit(1);
           }
           return;
@@ -405,6 +429,9 @@ export function createProgram(): Command {
         console.log(`  Version valid: ${report.versionValid ? 'yes' : 'no'}`);
         console.log(`  Files in sync: ${report.syncValid ? 'yes' : 'no'}`);
         console.log(`  Changelog ready: ${report.changelogValid ? 'yes' : 'no'}`);
+        console.log(`  Scan clean: ${report.scanValid ? 'yes' : 'no'}`);
+        console.log(`  Guard safe: ${report.guardValid ? 'yes' : 'no'}`);
+        console.log(`  Publish ready: ${report.publishValid ? 'yes' : 'no'}`);
         console.log(`  Git repository: ${report.gitRepository ? 'yes' : 'no'}`);
         console.log(
           `  Hooks installed: ${report.gitRepository ? (report.hooksInstalled ? 'yes' : 'no') : 'n/a'}`,
@@ -413,24 +440,11 @@ export function createProgram(): Command {
           `  Worktree clean: ${report.gitRepository ? (report.worktreeClean ? 'yes' : 'no') : 'n/a'}`,
         );
 
-        if (guardReport) {
-          console.log(`  Guard safe: ${guardReport.safe ? 'yes' : 'no'}`);
-        }
-
-        if (!report.ready || (guardReport && !guardReport.safe)) {
+        if (!report.ready) {
           console.log('');
           console.log(styles.error('Issues:'));
           for (const error of report.errors) {
             console.log(styles.error(`  ✗ ${error}`));
-          }
-          if (guardReport) {
-            for (const warning of guardReport.warnings) {
-              const icon = warning.severity === 'error' ? '✗' : '⚠';
-              console.log(styles.error(`  ${icon} [${warning.code}] ${warning.message}`));
-              if (warning.fix) {
-                console.log(styles.dim(`    Fix: ${warning.fix}`));
-              }
-            }
           }
           process.exit(1);
         }

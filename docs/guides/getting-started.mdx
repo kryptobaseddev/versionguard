@@ -261,12 +261,12 @@ import { getDefaultConfig, validateVersion } from 'versionguard';
 const result = validateVersion('1.2.3', getDefaultConfig());
 ```
 
-### validate(config, cwd)
+### validate(config, cwd, mode)
 
 Validates the current project state against the supplied configuration.
 
 ```typescript
-(config: VersionGuardConfig, cwd?: string) => FullValidationResult
+(config: VersionGuardConfig, cwd?: string, mode?: ValidateMode) => Promise<FullValidationResult>
 ```
 
 **Example**
@@ -274,7 +274,7 @@ Validates the current project state against the supplied configuration.
 ```ts
 import { getDefaultConfig, validate } from 'versionguard';
 
-const result = validate(getDefaultConfig(), process.cwd());
+const result = await validate(getDefaultConfig(), process.cwd());
 ```
 
 ### doctor(config, cwd)
@@ -282,7 +282,7 @@ const result = validate(getDefaultConfig(), process.cwd());
 Runs an extended readiness check for a project.
 
 ```typescript
-(config: VersionGuardConfig, cwd?: string) => DoctorReport
+(config: VersionGuardConfig, cwd?: string) => Promise<DoctorReport>
 ```
 
 **Example**

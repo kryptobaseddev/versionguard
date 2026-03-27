@@ -12,6 +12,27 @@ changelog:
   strict: true
   requireEntry: true
 
+scan:
+  enabled: true
+  allowlist:
+    - file: "src/__tests__/**"
+      reason: "Test fixtures use example version strings"
+    - file: "src/config.ts"
+      reason: "Default config patterns contain version regex examples"
+    - file: "src/sources/utils.ts"
+      reason: "Version parsing utility examples"
+    - file: "docs/**"
+      reason: "Documentation contains version examples"
+    - file: "coverage/**"
+      reason: "Generated coverage reports"
+
+guard:
+  enabled: true
+
+publish:
+  enabled: true
+  timeout: 5000
+
 git:
   hooks:
     pre-commit: true

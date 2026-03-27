@@ -663,6 +663,18 @@ const suggestions = suggestNextVersion('1.2.3', config, 'minor');
 console.log(suggestions[0]?.version);
 ```
 
+## `generateDependabotConfig()`
+
+*Generates Dependabot YAML configuration from detected manifests.*
+
+[View in API reference](/packages/./api/functions#generatedependabotconfig)
+
+```ts
+import { generateDependabotConfig } from 'versionguard';
+
+const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+```
+
 ## `installHooks()`
 
 *Installs VersionGuard-managed Git hooks in a repository.*
@@ -788,16 +800,16 @@ const report = runGuardChecks(config, process.cwd());
 if (!report.safe) console.error('Guard check failed:', report.warnings);
 ```
 
-## `generateDependabotConfig()`
+## `checkPublishStatus()`
 
-*Generates Dependabot YAML configuration from detected manifests.*
+*Checks whether a package version has been published to its ecosystem registry.*
 
-[View in API reference](/packages/./api/functions#generatedependabotconfig)
+[View in API reference](/packages/./api/functions#checkpublishstatus)
 
 ```ts
-import { generateDependabotConfig } from 'versionguard';
+import { checkPublishStatus } from './publish';
 
-const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+const result = await checkPublishStatus('package.json', '@codluv/vg', '1.0.0', { enabled: true, timeout: 5000 });
 ```
 
 ## `getDefaultConfig()`
@@ -981,7 +993,7 @@ const result = validateVersion('1.2.3', getDefaultConfig());
 ```ts
 import { getDefaultConfig, validate } from 'versionguard';
 
-const result = validate(getDefaultConfig(), process.cwd());
+const result = await validate(getDefaultConfig(), process.cwd());
 ```
 
 ## `doctor()`

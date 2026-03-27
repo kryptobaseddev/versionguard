@@ -1670,6 +1670,69 @@ const suggestions = suggestNextVersion('1.2.3', config, 'minor');
 console.log(suggestions[0]?.version);
 ```
 
+## generateDependabotConfig(manifests)
+
+Generates Dependabot YAML configuration from detected manifests.
+
+**Signature**
+
+```typescript
+(manifests: ManifestSourceType[]) => string
+```
+
+**Parameters**
+
+| Name        | Type                   | Description                                      |
+| ----------- | ---------------------- | ------------------------------------------------ |
+| `manifests` | `ManifestSourceType[]` | Detected manifest source types from the project. |
+
+**Returns** — The Dependabot configuration as a YAML string.
+
+**Example**
+
+```ts
+import { generateDependabotConfig } from 'versionguard';
+
+const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+```
+
+## writeDependabotConfig(cwd, content)
+
+Writes a Dependabot configuration file to `.github/dependabot.yml`.
+
+**Signature**
+
+```typescript
+(cwd: string, content: string) => string
+```
+
+**Parameters**
+
+| Name      | Type     | Description            |
+| --------- | -------- | ---------------------- |
+| `cwd`     | `string` | Project directory.     |
+| `content` | `string` | YAML content to write. |
+
+**Returns** — The absolute path to the created file.
+
+## dependabotConfigExists(cwd)
+
+Checks whether `.github/dependabot.yml` exists in the project.
+
+**Signature**
+
+```typescript
+(cwd: string) => boolean
+```
+
+**Parameters**
+
+| Name  | Type     | Description        |
+| ----- | -------- | ------------------ |
+| `cwd` | `string` | Project directory. |
+
+**Returns** — `true` when the file exists.
+
 ## installHooks(config, cwd)
 
 Installs VersionGuard-managed Git hooks in a repository.
@@ -1928,68 +1991,53 @@ const report = runGuardChecks(config, process.cwd());
 if (!report.safe) console.error('Guard check failed:', report.warnings);
 ```
 
-## generateDependabotConfig(manifests)
+## checkPublishStatus(manifestSource, packageName, version, config)
 
-Generates Dependabot YAML configuration from detected manifests.
+Checks whether a package version has been published to its ecosystem registry.
 
 **Signature**
 
 ```typescript
-(manifests: ManifestSourceType[]) => string
+(manifestSource: ManifestSourceType, packageName: string, version: string, config: PublishConfig) => Promise<PublishCheckResult>
 ```
 
 **Parameters**
 
-| Name        | Type                   | Description                                      |
-| ----------- | ---------------------- | ------------------------------------------------ |
-| `manifests` | `ManifestSourceType[]` | Detected manifest source types from the project. |
+| Name             | Type                 | Description                                                   |
+| ---------------- | -------------------- | ------------------------------------------------------------- |
+| `manifestSource` | `ManifestSourceType` | The detected manifest source type.                            |
+| `packageName`    | `string`             | Package name as read from the manifest.                       |
+| `version`        | `string`             | Version string to check.                                      |
+| `config`         | `PublishConfig`      | Publish configuration with timeout and optional registry URL. |
 
-**Returns** — The Dependabot configuration as a YAML string.
+**Returns** — The publish check result.
 
 **Example**
 
 ```ts
-import { generateDependabotConfig } from 'versionguard';
+import { checkPublishStatus } from './publish';
 
-const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
+const result = await checkPublishStatus('package.json', '@codluv/vg', '1.0.0', { enabled: true, timeout: 5000 });
 ```
 
-## writeDependabotConfig(cwd, content)
+## readPackageName(manifestSource, cwd)
 
-Writes a Dependabot configuration file to `.github/dependabot.yml`.
+Reads the package name from a manifest file for registry lookups.
 
 **Signature**
 
 ```typescript
-(cwd: string, content: string) => string
+(manifestSource: ManifestSourceType, cwd: string) => string | null
 ```
 
 **Parameters**
 
-| Name      | Type     | Description            |
-| --------- | -------- | ---------------------- |
-| `cwd`     | `string` | Project directory.     |
-| `content` | `string` | YAML content to write. |
+| Name             | Type                 | Description             |
+| ---------------- | -------------------- | ----------------------- |
+| `manifestSource` | `ManifestSourceType` | Detected manifest type. |
+| `cwd`            | `string`             | Project directory.      |
 
-**Returns** — The absolute path to the created file.
-
-## dependabotConfigExists(cwd)
-
-Checks whether `.github/dependabot.yml` exists in the project.
-
-**Signature**
-
-```typescript
-(cwd: string) => boolean
-```
-
-**Parameters**
-
-| Name  | Type     | Description        |
-| ----- | -------- | ------------------ |
-| `cwd` | `string` | Project directory. |
-
-**Returns** — `true` when the file exists.
+**Returns** — The package name, or null if it cannot be determined.
 
 ## getDefaultConfig()
 
@@ -2362,22 +2410,23 @@ import { getDefaultConfig, validateVersion } from 'versionguard';
 const result = validateVersion('1.2.3', getDefaultConfig());
 ```
 
-## validate(config, cwd)
+## validate(config, cwd, mode)
 
 Validates the current project state against the supplied configuration.
 
 **Signature**
 
 ```typescript
-(config: VersionGuardConfig, cwd?: string) => FullValidationResult
+(config: VersionGuardConfig, cwd?: string, mode?: ValidateMode) => Promise<FullValidationResult>
 ```
 
 **Parameters**
 
-| Name     | Type                 | Description                          |
-| -------- | -------------------- | ------------------------------------ |
-| `config` | `VersionGuardConfig` | VersionGuard configuration to apply. |
-| `cwd`    | `: string`           | Project directory to inspect.        |
+| Name     | Type                 | Description                                         |
+| -------- | -------------------- | --------------------------------------------------- |
+| `config` | `VersionGuardConfig` | VersionGuard configuration to apply.                |
+| `cwd`    | `: string`           | Project directory to inspect.                       |
+| `mode`   | `: ValidateMode`     | Validation mode: 'full' (default) or 'lightweight'. |
 
 **Returns** — A full validation report for the project rooted at `cwd`.
 
@@ -2386,7 +2435,7 @@ Validates the current project state against the supplied configuration.
 ```ts
 import { getDefaultConfig, validate } from 'versionguard';
 
-const result = validate(getDefaultConfig(), process.cwd());
+const result = await validate(getDefaultConfig(), process.cwd());
 ```
 
 ## doctor(config, cwd)
@@ -2396,7 +2445,7 @@ Runs an extended readiness check for a project.
 **Signature**
 
 ```typescript
-(config: VersionGuardConfig, cwd?: string) => DoctorReport
+(config: VersionGuardConfig, cwd?: string) => Promise<DoctorReport>
 ```
 
 **Parameters**

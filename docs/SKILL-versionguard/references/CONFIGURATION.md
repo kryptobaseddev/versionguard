@@ -230,6 +230,46 @@ const config: Partial<ScanConfig> = {
 | `patterns` | `string[]` | Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string. |
 | `allowlist` | `ScanAllowlistEntry[]` | Files containing intentional version references that should not be flagged. |
 
+## `GuardConfig`
+
+Configures guard check behavior (hook bypass detection).
+
+```typescript
+import type { GuardConfig } from "@codluv/versionguard";
+
+const config: Partial<GuardConfig> = {
+  // Enables hook bypass detection in validate.
+  enabled: true,
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `enabled` | `boolean` | Enables hook bypass detection in validate. |
+
+## `PublishConfig`
+
+Configures registry publish status verification.
+
+```typescript
+import type { PublishConfig } from "@codluv/versionguard";
+
+const config: Partial<PublishConfig> = {
+  // Enables registry publish status check.
+  enabled: true,
+  // Timeout in ms for registry HTTP/CLI calls.
+  timeout: 0,
+  // Override registry URL for private registries.
+  registryUrl: "...",
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `enabled` | `boolean` | Enables registry publish status check. |
+| `timeout` | `number` | Timeout in ms for registry HTTP/CLI calls. |
+| `registryUrl` | `string | undefined` | Override registry URL for private registries. |
+
 ## `VersionGuardConfig`
 
 Top-level configuration consumed by versionguard.
@@ -252,6 +292,10 @@ const config: Partial<VersionGuardConfig> = {
   github: { /* ... */ },
   // Repo-wide version literal scanning.
   scan: { /* ... */ },
+  // Guard check configuration (hook bypass detection).
+  guard: { /* ... */ },
+  // Registry publish status verification.
+  publish: { /* ... */ },
   // Files or patterns excluded from validation.
   ignore: "...",
 };
@@ -266,6 +310,8 @@ const config: Partial<VersionGuardConfig> = {
 | `git` | `GitConfig` | Git enforcement settings. |
 | `github` | `GitHubConfig` | GitHub integration settings. |
 | `scan` | `ScanConfig` | Repo-wide version literal scanning. |
+| `guard` | `GuardConfig` | Guard check configuration (hook bypass detection). |
+| `publish` | `PublishConfig` | Registry publish status verification. |
 | `ignore` | `string[]` | Files or patterns excluded from validation. |
 
 ## `CkmConfigEntry`

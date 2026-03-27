@@ -85,6 +85,7 @@ The boundary is:
 | Validate changelog structure | No | Yes |
 | Sync version across files | No | Yes |
 | Scan for hardcoded version drift | No | Yes |
+| Verify publish status on registry | No | Yes (fail-open) |
 | Enforce policy via git hooks | No | Yes |
 | Block unsafe tag/release actions | No | Yes |
 | Detect agent bypasses | No | Yes |
@@ -142,6 +143,30 @@ VersionGuard already delivers the core of the product vision.
 - `doctor --json` and `validate --json` support CI and agent workflows
 - actionable feedback and deterministic fix flows are available in both the API and CLI
 
+### Hardcoded version detection
+
+- configured-file scanning detects version drift across sync targets
+- repo-wide scanning detects stale version literals beyond configured sync patterns, with allowlist support and .gitignore respect
+- scanning is enabled by default — config opts out, not in
+
+### Guard checks and agent resistance
+
+- guard checks detect hook bypasses: `HOOKS_PATH_OVERRIDE`, `HUSKY_BYPASS`, `HOOK_MISSING`, `HOOK_REPLACED`, `HOOK_TAMPERED`, `HOOKS_NOT_ENFORCED`
+- guard runs by default on every `vg validate` — no `--strict` flag required
+- pre-commit hooks use lightweight validation (version + sync) for speed; pre-push and CI use full validation
+
+### Publish verification
+
+- registry publish status check verifies whether the current version exists on the detected registry (npm, crates.io, PyPI, Packagist, pub.dev, Maven Central)
+- publish checks fail-open on network errors and timeouts — offline developers are never blocked
+- enabled by default, configurable via `publish.enabled` and `publish.timeout`
+
+### Strict-by-default philosophy
+
+- `vg validate` runs all available checks by default: version, sync, changelog, scan, guard, and publish
+- config is for turning checks OFF, not ON — every check that CAN run SHOULD run by default
+- `--strict` and `--scan` CLI flags are deprecated (still functional, print warnings) — their behavior is now the default
+
 ### Repository/tooling quality
 
 - the project ships as a full ESM package
@@ -154,16 +179,6 @@ VersionGuard already delivers the core of the product vision.
 
 Some parts of the vision are present, but not yet complete at the deepest level.
 
-### Agent resistance
-
-- VersionGuard now blocks many unsafe release paths
-- however, it does not yet make bypasses impossible in every workflow or environment
-
-### Hardcoded version detection
-
-- configured-file scanning works well
-- broader repo-wide accidental version literal detection beyond configured sync patterns is still limited
-
 ### Changelog enforcement
 
 - changelog validation and repair helpers exist
@@ -173,7 +188,7 @@ Some parts of the vision are present, but not yet complete at the deepest level.
 ### Release workflow strictness
 
 - release guardrails are strong
-- there is still room for more opinionated commit policy (e.g. detecting `--no-verify` bypasses, requiring clean version-bump commits before tagging)
+- there is still room for more opinionated commit policy (e.g. requiring clean version-bump commits before tagging)
 
 ## Future Direction
 
@@ -182,11 +197,10 @@ It is to deepen confidence in the enforcement lane.
 
 That means:
 
-- stronger anti-bypass protections for agent-heavy workflows (detect `--no-verify`, warn about skipped hooks, strict mode)
-- broader repo scanning for accidental version hardcoding beyond configured sync files
 - more precise policy controls while keeping the config small
 - safer release commit policies (require clean version-bump commits, detect amended history)
 - tighter CI integration for teams that need central enforcement
+- deeper CKM help with actionable workflows and enum resolution
 
 It does not mean:
 

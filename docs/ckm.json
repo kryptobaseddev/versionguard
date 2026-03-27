@@ -2,7 +2,7 @@
   "$schema": "https://forge-ts.dev/schemas/ckm/v1.json",
   "version": "1.0.0",
   "project": "@codluv/versionguard",
-  "generated": "2026-03-26T22:14:21.976Z",
+  "generated": "2026-03-26T23:24:59.598Z",
   "concepts": [
     {
       "id": "concept-ManifestConfig",
@@ -242,6 +242,67 @@
       ]
     },
     {
+      "id": "concept-GuardConfig",
+      "name": "GuardConfig",
+      "what": "Configures guard check behavior (hook bypass detection).",
+      "properties": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enables hook bypass detection in validate."
+        }
+      ]
+    },
+    {
+      "id": "concept-PublishConfig",
+      "name": "PublishConfig",
+      "what": "Configures registry publish status verification.",
+      "properties": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enables registry publish status check."
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Timeout in ms for registry HTTP/CLI calls."
+        },
+        {
+          "name": "registryUrl",
+          "type": "string | undefined",
+          "description": "Override registry URL for private registries."
+        }
+      ]
+    },
+    {
+      "id": "concept-PublishCheckResult",
+      "name": "PublishCheckResult",
+      "what": "Result of a registry publish status check.",
+      "properties": [
+        {
+          "name": "published",
+          "type": "boolean",
+          "description": "Whether the version exists on the registry."
+        },
+        {
+          "name": "registry",
+          "type": "string",
+          "description": "Registry name (npm, crates.io, pypi, etc.)."
+        },
+        {
+          "name": "packageName",
+          "type": "string | undefined",
+          "description": "Package name as read from the manifest."
+        },
+        {
+          "name": "error",
+          "type": "string | undefined",
+          "description": "Set when the check could not complete (network, timeout)."
+        }
+      ]
+    },
+    {
       "id": "concept-VersionGuardConfig",
       "name": "VersionGuardConfig",
       "what": "Top-level configuration consumed by versionguard.",
@@ -280,6 +341,16 @@
           "name": "scan",
           "type": "ScanConfig",
           "description": "Repo-wide version literal scanning."
+        },
+        {
+          "name": "guard",
+          "type": "GuardConfig",
+          "description": "Guard check configuration (hook bypass detection)."
+        },
+        {
+          "name": "publish",
+          "type": "PublishConfig",
+          "description": "Registry publish status verification."
         },
         {
           "name": "ignore",
@@ -361,6 +432,31 @@
           "name": "changelogValid",
           "type": "boolean",
           "description": "Indicates whether changelog checks passed."
+        },
+        {
+          "name": "scanValid",
+          "type": "boolean",
+          "description": "Indicates whether repo-wide scan passed (no stale version literals)."
+        },
+        {
+          "name": "guardValid",
+          "type": "boolean",
+          "description": "Indicates whether guard checks passed (no hook bypass detected)."
+        },
+        {
+          "name": "publishValid",
+          "type": "boolean",
+          "description": "Indicates whether the publish check passed."
+        },
+        {
+          "name": "publishCheck",
+          "type": "PublishCheckResult | undefined",
+          "description": "Detailed publish check result when publish checks are enabled."
+        },
+        {
+          "name": "guardReport",
+          "type": "GuardReport | undefined",
+          "description": "Detailed guard check report when guard checks are enabled."
         },
         {
           "name": "errors",
@@ -737,6 +833,22 @@
       }
     },
     {
+      "id": "op-generateDependabotConfig",
+      "name": "generateDependabotConfig",
+      "what": "Generates Dependabot YAML configuration from detected manifests.",
+      "inputs": [
+        {
+          "name": "manifests",
+          "type": "unknown",
+          "required": true,
+          "description": "Detected manifest source types from the project."
+        }
+      ],
+      "outputs": {
+        "text": "The Dependabot configuration as a YAML string."
+      }
+    },
+    {
       "id": "op-generateHookScript",
       "name": "generateHookScript",
       "what": "Generates the shell script content for a Git hook.",
@@ -838,19 +950,37 @@
       }
     },
     {
-      "id": "op-generateDependabotConfig",
-      "name": "generateDependabotConfig",
-      "what": "Generates Dependabot YAML configuration from detected manifests.",
+      "id": "op-checkPublishStatus",
+      "name": "checkPublishStatus",
+      "what": "Checks whether a package version has been published to its ecosystem registry.",
       "inputs": [
         {
-          "name": "manifests",
+          "name": "manifestSource",
           "type": "unknown",
           "required": true,
-          "description": "Detected manifest source types from the project."
+          "description": "The detected manifest source type."
+        },
+        {
+          "name": "packageName",
+          "type": "unknown",
+          "required": true,
+          "description": "Package name as read from the manifest."
+        },
+        {
+          "name": "version",
+          "type": "unknown",
+          "required": true,
+          "description": "Version string to check."
+        },
+        {
+          "name": "config",
+          "type": "unknown",
+          "required": true,
+          "description": "Publish configuration with timeout and optional registry URL."
         }
       ],
       "outputs": {
-        "text": "The Dependabot configuration as a YAML string."
+        "text": "The publish check result."
       }
     },
     {
@@ -1217,6 +1347,30 @@
       "default": "[]"
     },
     {
+      "key": "GuardConfig.enabled",
+      "type": "boolean",
+      "description": "Enables hook bypass detection in validate.",
+      "default": "true"
+    },
+    {
+      "key": "PublishConfig.enabled",
+      "type": "boolean",
+      "description": "Enables registry publish status check.",
+      "default": "true"
+    },
+    {
+      "key": "PublishConfig.timeout",
+      "type": "number",
+      "description": "Timeout in ms for registry HTTP/CLI calls.",
+      "default": "5000"
+    },
+    {
+      "key": "PublishConfig.registryUrl",
+      "type": "string | undefined",
+      "description": "Override registry URL for private registries.",
+      "default": "undefined"
+    },
+    {
       "key": "VersionGuardConfig.versioning",
       "type": "VersioningConfig",
       "description": "Active versioning settings."
@@ -1252,7 +1406,19 @@
       "key": "VersionGuardConfig.scan",
       "type": "ScanConfig",
       "description": "Repo-wide version literal scanning.",
-      "default": "`{ enabled: false, patterns: [...], allowlist: [] }`"
+      "default": "`{ enabled: true, patterns: [...], allowlist: [] }`"
+    },
+    {
+      "key": "VersionGuardConfig.guard",
+      "type": "GuardConfig",
+      "description": "Guard check configuration (hook bypass detection).",
+      "default": "`{ enabled: true }`"
+    },
+    {
+      "key": "VersionGuardConfig.publish",
+      "type": "PublishConfig",
+      "description": "Registry publish status verification.",
+      "default": "`{ enabled: true, timeout: 5000 }`"
     },
     {
       "key": "VersionGuardConfig.ignore",

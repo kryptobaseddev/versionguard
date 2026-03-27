@@ -20,7 +20,8 @@ VersionGuard turns those into enforceable checks with repair-oriented feedback.
 
 - validates SemVer and CalVer formats with configurable rules
 - keeps configured files synced from your manifest (package.json, Cargo.toml, pyproject.toml, etc.)
-- scans the entire repo for stale version literals (`vg validate --scan`)
+- scans the entire repo for stale version literals (enabled by default)
+- verifies publish status against your package registry (npm, crates.io, PyPI, etc.)
 - validates Keep a Changelog structure with section enforcement
 - installs cooperative git hooks for `pre-commit`, `pre-push`, and `post-tag`
 - provides CLI commands for validation, sync, bumps, and tagging
@@ -67,16 +68,10 @@ Run a basic version check:
 vg check
 ```
 
-Run full repository validation:
+Run full repository validation (includes scan, guard, and publish checks by default):
 
 ```bash
 vg validate
-```
-
-Scan entire repo for stale version literals:
-
-```bash
-vg validate --scan
 ```
 
 For CI or agent workflows:
@@ -164,8 +159,16 @@ changelog:
     - Fixed
     - Security
 
+# All checks below are enabled by default — opt OUT via config
+guard:
+  enabled: true          # hook bypass detection
+
+publish:
+  enabled: true          # registry publish status verification
+  timeout: 5000          # ms, fail-open on timeout
+
 scan:
-  enabled: false
+  enabled: true          # repo-wide stale version detection
   allowlist: []
 
 git:
@@ -223,9 +226,7 @@ Set `manifest.source: auto` for automatic detection.
 | --- | --- |
 | `vg init` | Create `.versionguard.yml` (interactive wizard or headless) |
 | `vg check` | Validate the current version with actionable feedback |
-| `vg validate` | Run version, sync, changelog, and optional scan validation |
-| `vg validate --scan` | Include repo-wide stale version detection |
-| `vg validate --strict` | Include guard checks for hook bypass detection |
+| `vg validate` | Run all checks: version, sync, changelog, scan, guard, publish |
 | `vg doctor` | Report repository readiness in one pass |
 | `vg fix` | Apply deterministic fixes for common drift |
 | `vg fix-changelog` | Fix Changesets-mangled changelogs to Keep a Changelog format |
@@ -286,6 +287,11 @@ The JSON payload includes:
 - `versionValid`
 - `syncValid`
 - `changelogValid`
+- `scanValid`
+- `guardValid`
+- `publishValid`
+- `publishCheck`
+- `guardReport`
 - `errors`
 - `hook`
 - `postTag`
@@ -303,6 +309,21 @@ It can refuse to proceed when:
 - synced files are out of date
 
 That keeps release tags from becoming a bypass around normal validation.
+
+## Stability Policy
+
+1.x maintains backward compatibility for all CLI commands and configuration formats. Breaking changes only occur in 2.0+.
+
+Deprecated flags (`--strict`, `--scan`) continue to work in 1.x and print a warning. Their behavior is now the default. To opt out of specific checks, use config:
+
+```yaml
+guard:
+  enabled: false
+scan:
+  enabled: false
+publish:
+  enabled: false
+```
 
 ## Typical workflows
 
@@ -343,6 +364,7 @@ VersionGuard and [Changesets](https://github.com/changesets/changesets) are comp
 | Sync version across files | No | Yes (regex-based sync) |
 | Validate changelog structure | No | Yes (Keep a Changelog + section enforcement) |
 | Scan repo for stale versions | No | Yes |
+| Verify publish status on registry | No | Yes (fail-open) |
 | Git hooks enforcement | No | Yes |
 | Publish to npm | Yes | No |
 

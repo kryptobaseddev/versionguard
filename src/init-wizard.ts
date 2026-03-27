@@ -401,6 +401,19 @@ function buildConfig(input: ConfigInput): Partial<VersionGuardConfig> {
     dependabot: input.github,
   };
 
+  config.scan = {
+    enabled: true,
+  };
+
+  config.guard = {
+    enabled: true,
+  };
+
+  config.publish = {
+    enabled: true,
+    timeout: 5000,
+  };
+
   config.git = {
     hooks: {
       'pre-commit': input.hooks,
