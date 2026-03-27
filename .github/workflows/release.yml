@@ -79,6 +79,7 @@ jobs:
         run: |
           node dist/cli.js hooks install
           node dist/cli.js validate
+          node dist/cli.js hooks uninstall
 
       - name: Check for pending changesets
         id: has_changesets
