@@ -60,3 +60,4 @@ yarn-error.log*
 .cleo/rcasd/
 .cleo/memory-bridge.md
 clawmsgr-agent.json
+clawmsgr-*.json
