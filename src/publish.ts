@@ -286,9 +286,22 @@ function checkHttpRegistry(
 /**
  * Reads the package name from a manifest file for registry lookups.
  *
+ * @remarks
+ * Extracts the package name from the detected manifest type (package.json,
+ * Cargo.toml, pyproject.toml, etc.) so that publish status can be checked
+ * against the correct registry. Returns null for manifest types where a
+ * package name cannot be determined.
+ *
  * @param manifestSource - Detected manifest type.
  * @param cwd - Project directory.
  * @returns The package name, or null if it cannot be determined.
+ *
+ * @example
+ * ```ts
+ * import { readPackageName } from 'versionguard';
+ *
+ * const name = readPackageName('package.json', process.cwd());
+ * ```
  *
  * @public
  * @since 1.0.0

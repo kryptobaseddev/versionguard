@@ -100,9 +100,20 @@ export function generateDependabotConfig(manifests: ManifestSourceType[]): strin
 /**
  * Writes a Dependabot configuration file to `.github/dependabot.yml`.
  *
+ * @remarks
+ * Creates the `.github` directory if it does not exist. Overwrites any
+ * existing `dependabot.yml` with the supplied content.
+ *
  * @param cwd - Project directory.
  * @param content - YAML content to write.
  * @returns The absolute path to the created file.
+ *
+ * @example
+ * ```ts
+ * import { writeDependabotConfig } from 'versionguard';
+ *
+ * const filePath = writeDependabotConfig(process.cwd(), 'version: 2\nupdates: []\n');
+ * ```
  *
  * @public
  * @since 0.9.0
@@ -118,8 +129,20 @@ export function writeDependabotConfig(cwd: string, content: string): string {
 /**
  * Checks whether `.github/dependabot.yml` exists in the project.
  *
+ * @remarks
+ * Used during init to avoid overwriting a user-managed Dependabot config.
+ *
  * @param cwd - Project directory.
  * @returns `true` when the file exists.
+ *
+ * @example
+ * ```ts
+ * import { dependabotConfigExists } from 'versionguard';
+ *
+ * if (!dependabotConfigExists(process.cwd())) {
+ *   console.log('No Dependabot config found');
+ * }
+ * ```
  *
  * @public
  * @since 0.9.0

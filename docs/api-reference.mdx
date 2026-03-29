@@ -1530,7 +1530,7 @@ const config = generateDependabotConfig(['package.json', 'Cargo.toml']);
 
 ### `writeDependabotConfig()`
 
-*Defined in `src/github/dependabot.ts:110`*
+*Defined in `src/github/dependabot.ts:121`*
 
 ```typescript
 (cwd: string, content: string) => string
@@ -1545,9 +1545,17 @@ Writes a Dependabot configuration file to `.github/dependabot.yml`.
 
 **Returns**: The absolute path to the created file.
 
+**Examples**
+
+```ts
+import { writeDependabotConfig } from 'versionguard';
+
+const filePath = writeDependabotConfig(process.cwd(), 'version: 2\nupdates: []\n');
+```
+
 ### `dependabotConfigExists()`
 
-*Defined in `src/github/dependabot.ts:127`*
+*Defined in `src/github/dependabot.ts:150`*
 
 ```typescript
 (cwd: string) => boolean
@@ -1560,6 +1568,16 @@ Checks whether `.github/dependabot.yml` exists in the project.
 - `cwd` — Project directory.
 
 **Returns**: `true` when the file exists.
+
+**Examples**
+
+```ts
+import { dependabotConfigExists } from 'versionguard';
+
+if (!dependabotConfigExists(process.cwd())) {
+  console.log('No Dependabot config found');
+}
+```
 
 ### `installHooks()`
 
@@ -1830,7 +1848,7 @@ const result = await checkPublishStatus('package.json', '@codluv/vg', '1.0.0', {
 
 ### `readPackageName()`
 
-*Defined in `src/publish.ts:296`*
+*Defined in `src/publish.ts:309`*
 
 ```typescript
 (manifestSource: ManifestSourceType, cwd: string) => string | null
@@ -1844,6 +1862,14 @@ Reads the package name from a manifest file for registry lookups.
 - `cwd` — Project directory.
 
 **Returns**: The package name, or null if it cannot be determined.
+
+**Examples**
+
+```ts
+import { readPackageName } from 'versionguard';
+
+const name = readPackageName('package.json', process.cwd());
+```
 
 ### `getDefaultConfig()`
 

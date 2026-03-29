@@ -1163,6 +1163,12 @@ Writes a Dependabot configuration file to `.github/dependabot.yml`.
 
 **Returns:** The absolute path to the created file.
 
+```ts
+import { writeDependabotConfig } from 'versionguard';
+
+const filePath = writeDependabotConfig(process.cwd(), 'version: 2\nupdates: []\n');
+```
+
 ### `dependabotConfigExists`
 
 Checks whether `.github/dependabot.yml` exists in the project.
@@ -1176,6 +1182,14 @@ Checks whether `.github/dependabot.yml` exists in the project.
 - `cwd` — Project directory.
 
 **Returns:** `true` when the file exists.
+
+```ts
+import { dependabotConfigExists } from 'versionguard';
+
+if (!dependabotConfigExists(process.cwd())) {
+  console.log('No Dependabot config found');
+}
+```
 
 ### `installHooks`
 
@@ -1414,6 +1428,12 @@ Reads the package name from a manifest file for registry lookups.
 - `cwd` — Project directory.
 
 **Returns:** The package name, or null if it cannot be determined.
+
+```ts
+import { readPackageName } from 'versionguard';
+
+const name = readPackageName('package.json', process.cwd());
+```
 
 ### `getDefaultConfig`
 
