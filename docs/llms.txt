@@ -16,7 +16,7 @@ npm install -D @codluv/versionguard
 ## Packages
 
 ### main
-95 functions, 60 types
+95 functions, 60 types, 6 classes, 2 variables
 
 - getSemVerConfig() — Resolves the SemVer config from a VersionGuard config.
 - getCalVerConfig() — Extracts the CalVer config from a VersionGuard config, throwing if missing.
@@ -114,6 +114,13 @@ npm install -D @codluv/versionguard
 - addGitRemote() — Adds a local bare repository as the `origin` remote for a fixture repo.
 - commitAll() — Stages all changes and creates a commit in a fixture repository.
 
+- GitTagSource — Reads version from the latest Git tag. Writing creates a new annotated tag.
+- JsonVersionSource — Reads and writes version strings from JSON manifest files.
+- RegexVersionSource — Reads and writes version strings using regex extraction from source files.
+- TomlVersionSource — Reads and writes version strings from TOML manifest files.
+- VersionFileSource — Reads and writes version strings from a plain text VERSION file.
+- YamlVersionSource — Reads and writes version strings from YAML manifest files.
+
 - VersioningType — Supported versioning strategies.
 - ManifestSourceType — Supported manifest source types for version extraction.
 - ManifestConfig — Configures the version source manifest.
@@ -174,3 +181,6 @@ npm install -D @codluv/versionguard
 - ProjectRootResult — Result of project root detection.
 - TagInfo — Tag entry point exports for release-tag management helpers.
 - InitOptions — Options for headless (non-interactive) initialization.
+
+- MANIFEST_TO_ECOSYSTEM — Maps VersionGuard manifest source types to Dependabot package-ecosystem values.
+- REGISTRY_TABLE — Maps manifest source types to their registry check implementations.

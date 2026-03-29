@@ -137,17 +137,11 @@ VersionGuard is an enforcement layer. It validates and guards. It does not own v
 - [ ] Detect amended or rebased commits in release range
 - [ ] Configurable via `git.releasePolicy` in config
 
-### T006: CKM Standalone Package
+### T006: CKM Standalone Package — SUPERSEDED
 
-**Priority**: LOW
-**Problem**: The `src/ckm/` module is reusable but lives inside VersionGuard. Other CLI tools can't consume it without copying files.
+**Status**: Superseded by standalone CKM SDK project at `/mnt/projects/codebase-knowledge-manifest`
 
-**Deliverables**:
-- [ ] Extract `src/ckm/` into `@codluv/ckm-cli` standalone package
-- [ ] Commander integration helper (drop-in command registration)
-- [ ] Citty integration helper
-- [ ] Documentation and examples for third-party adoption
-- [ ] Publish to npm under `@codluv` scope
+The scope expanded from a simple extraction to a full multi-language SDK (`ckm` on npm/PyPI/crates.io/Go). Architecture spec, PLAN.md with 8 epics and 40+ tasks, and reference implementation are in the new project. After Phase 1 ships, VG replaces `src/ckm/` with `import { createCkmEngine } from 'ckm'`.
 
 ## Removed from Roadmap
 
