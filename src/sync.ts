@@ -34,6 +34,77 @@ function stringifyCapture(value: unknown): string {
 }
 
 /**
+ * Syncs a JSON file by targeting only the top-level "version" field,
+ * avoiding nested keys like scripts.version.
+ */
+function syncJsonFile(filePath: string, version: string): SyncResult {
+  const original = fs.readFileSync(filePath, 'utf-8');
+
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = JSON.parse(original) as Record<string, unknown>;
+  } catch {
+    // Not valid JSON — fall through to regex-based sync
+    return { file: filePath, updated: false, changes: [] };
+  }
+
+  if (typeof parsed.version !== 'string' || parsed.version === version) {
+    return { file: filePath, updated: false, changes: [] };
+  }
+
+  const oldVersion = parsed.version;
+  // Match only a top-level "version" key (0-4 spaces indent = top-level in standard JSON)
+  const updated = original.replace(/^(\s{0,4}"version"\s*:\s*")([^"]+)(")/m, `$1${version}$3`);
+
+  if (updated === original) {
+    return { file: filePath, updated: false, changes: [] };
+  }
+
+  fs.writeFileSync(filePath, updated, 'utf-8');
+  return {
+    file: filePath,
+    updated: true,
+    changes: [
+      {
+        line: getLineNumber(original, original.indexOf(`"${oldVersion}"`)),
+        oldValue: oldVersion,
+        newValue: version,
+      },
+    ],
+  };
+}
+
+/**
+ * Checks a JSON file for a top-level version mismatch, ignoring nested keys.
+ */
+function checkJsonVersionMismatch(
+  filePath: string,
+  expectedVersion: string,
+  cwd: string,
+): VersionMismatch[] {
+  const content = fs.readFileSync(filePath, 'utf-8');
+
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = JSON.parse(content) as Record<string, unknown>;
+  } catch {
+    return [];
+  }
+
+  if (typeof parsed.version !== 'string') {
+    return [];
+  }
+
+  if (parsed.version !== expectedVersion && parsed.version !== 'Unreleased') {
+    const match = content.match(/^(\s{0,4}"version"\s*:\s*")([^"]+)(")/m);
+    const line = match ? getLineNumber(content, content.indexOf(match[0])) : 1;
+    return [{ file: path.relative(cwd, filePath), line, found: parsed.version }];
+  }
+
+  return [];
+}
+
+/**
  * Synchronizes configured files to a single version string.
  *
  * @public
@@ -84,6 +155,10 @@ export function syncVersion(
  * ```
  */
 export function syncFile(filePath: string, version: string, patterns: SyncPattern[]): SyncResult {
+  if (filePath.endsWith('.json')) {
+    return syncJsonFile(filePath, version);
+  }
+
   const original = fs.readFileSync(filePath, 'utf-8');
   let updatedContent = original;
   const changes: SyncResult['changes'] = [];
@@ -162,6 +237,11 @@ export function checkHardcodedVersions(
   const files = resolveFiles(config.files, cwd, ignorePatterns);
 
   for (const filePath of files) {
+    if (filePath.endsWith('.json')) {
+      mismatches.push(...checkJsonVersionMismatch(filePath, expectedVersion, cwd));
+      continue;
+    }
+
     const content = fs.readFileSync(filePath, 'utf-8');
 
     for (const pattern of config.patterns) {

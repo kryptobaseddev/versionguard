@@ -95,4 +95,71 @@ describe('sync', () => {
 
     expect(mismatches).toEqual([{ file: 'README.md', line: 2, found: '0.0.1' }]);
   });
+
+  it('syncs only the top-level version in JSON files, not nested keys', () => {
+    const cwd = createTempProject();
+    const jsonContent = JSON.stringify(
+      {
+        name: 'test-pkg',
+        version: '0.0.1',
+        scripts: {
+          version: 'node scripts/version.js',
+          build: 'tsc',
+        },
+      },
+      null,
+      2,
+    );
+    const filePath = writeTextFile(cwd, 'other.json', jsonContent);
+
+    const result = syncFile(filePath, '2.0.0', getDefaultConfig().sync.patterns);
+
+    expect(result.updated).toBe(true);
+    expect(result.changes).toEqual([{ line: 3, oldValue: '0.0.1', newValue: '2.0.0' }]);
+    const updated = fs.readFileSync(filePath, 'utf-8');
+    expect(updated).toContain('"version": "2.0.0"');
+    expect(updated).toContain('"version": "node scripts/version.js"');
+  });
+
+  it('leaves JSON files without a version field unchanged', () => {
+    const cwd = createTempProject();
+    const jsonContent = JSON.stringify({ name: 'no-version', scripts: {} }, null, 2);
+    const filePath = writeTextFile(cwd, 'config.json', jsonContent);
+
+    const result = syncFile(filePath, '2.0.0', getDefaultConfig().sync.patterns);
+
+    expect(result.updated).toBe(false);
+    expect(result.changes).toEqual([]);
+  });
+
+  it('does not match dotted version keys in non-JSON files', () => {
+    const cwd = createTempProject();
+    const filePath = writeTextFile(cwd, 'config.yml', 'app.version = "0.0.1"\nversion = "0.0.1"\n');
+
+    const result = syncFile(filePath, '2.0.0', getDefaultConfig().sync.patterns);
+
+    expect(result.updated).toBe(true);
+    const updated = fs.readFileSync(filePath, 'utf-8');
+    expect(updated).toContain('app.version = "0.0.1"');
+    expect(updated).toContain('version = "2.0.0"');
+  });
+
+  it('reports only top-level version mismatches in JSON files', () => {
+    const cwd = createTempProject();
+    writeTextFile(
+      cwd,
+      'pkg.json',
+      JSON.stringify({ version: '0.0.1', scripts: { version: 'echo hello' } }, null, 2),
+    );
+
+    const mismatches = checkHardcodedVersions(
+      '1.2.3',
+      { files: ['pkg.json'], patterns: getDefaultConfig().sync.patterns },
+      [],
+      cwd,
+    );
+
+    expect(mismatches).toHaveLength(1);
+    expect(mismatches[0]?.found).toBe('0.0.1');
+  });
 });

@@ -38,7 +38,7 @@ const DEFAULT_CONFIG: VersionGuardConfig = {
     files: ['README.md', 'CHANGELOG.md'],
     patterns: [
       {
-        regex: '(version\\s*[=:]\\s*["\'])(.+?)(["\'])',
+        regex: '(?<![.\\w])(version\\s*[=:]\\s*["\'])(.+?)(["\'])',
         template: '$1{{version}}$3',
       },
       {
@@ -248,7 +248,7 @@ sync:
     - "README.md"
     - "CHANGELOG.md"
   patterns:
-    - regex: '(version\\s*[=:]\\s*["''])(.+?)(["''])'
+    - regex: '(?<![.\\w])(version\\s*[=:]\\s*["''])(.+?)(["''])'
       template: '$1{{version}}$3'
     - regex: '(##\\s*\\[)(.+?)(\\])'
       template: '$1{{version}}$3'

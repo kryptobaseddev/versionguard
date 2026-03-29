@@ -168,19 +168,21 @@ describe('cli', () => {
     expect(logSpy.mock.calls.flat().join('\n')).toContain("Remove the 'v' prefix");
   });
 
-  it('applies a suggested bump through the bump command', async () => {
+  it('lists version suggestions through the bump command without modifying files', async () => {
     const cwd = createTempProject();
-    writeTextFile(
-      cwd,
-      'CHANGELOG.md',
-      '# Changelog\n\n## [Unreleased]\n\n## [1.2.3] - 2026-03-21\n\n### Added\n\n- Initial release\n\n[Unreleased]: https://example.com\n',
-    );
     const program = createProgram();
-    vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-    await program.parseAsync(['node', 'versionguard', 'bump', '--cwd', cwd, '--apply']);
+    await program.parseAsync(['node', 'versionguard', 'bump', '--cwd', cwd]);
 
-    expect(fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')).toContain('1.2.4');
+    const output = logSpy.mock.calls.flat().join('\n');
+    expect(output).toContain('Current version: 1.2.3');
+    expect(output).toContain('1.2.4');
+    expect(output).toContain('Changesets');
+    // Verify no files were modified
+    expect(fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')).toContain(
+      '"version": "1.2.3"',
+    );
   });
 
   it('runs validate and sync commands on a configured project', async () => {
@@ -710,20 +712,6 @@ describe('cli', () => {
     await program.parseAsync(['node', 'versionguard', 'tag', '--cwd', cwd]);
 
     expect(execSync('git tag --list', { cwd, encoding: 'utf-8' })).toContain('v1.2.3');
-  });
-
-  it('fails bump apply when no suggestions are available', async () => {
-    const cwd = createTempProject();
-    vi.spyOn(fixModule, 'suggestNextVersion').mockReturnValue([]);
-    const program = createProgram();
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    failOnExit();
-
-    await expect(
-      program.parseAsync(['node', 'versionguard', 'bump', '--cwd', cwd, '--apply']),
-    ).rejects.toThrow('process.exit:1');
-
-    expect(errorSpy.mock.calls.flat().join('\n')).toContain('No version suggestion available');
   });
 
   it('fails tag creation without auto-fix when versions differ', async () => {

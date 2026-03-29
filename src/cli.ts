@@ -25,7 +25,6 @@ const ckmEngine = createCkmEngine(JSON.parse(ckmRaw) as CkmManifest);
 
 import * as versionguard from './index';
 import { runHeadless, runWizard } from './init-wizard';
-import * as project from './project';
 import { findProjectRoot, formatNotProjectError } from './project-root';
 import * as tag from './tag';
 
@@ -234,184 +233,149 @@ export function createProgram(): Command {
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('--hook <name>', 'Running as git hook')
     .option('--json', 'Print machine-readable JSON output')
-    .option('--strict', '(deprecated) Guard checks now run by default')
-    .option('--scan', '(deprecated) Scan now runs by default')
-    .action(
-      async (options: {
-        cwd: string;
-        hook?: string;
-        json?: boolean;
-        strict?: boolean;
-        scan?: boolean;
-      }) => {
-        try {
-          // Deprecation warnings for removed flags
-          if (options.strict) {
-            console.error(
-              styles.warning(
-                '⚠ --strict is deprecated: guard checks now run by default. Use guard.enabled: false in config to disable.',
-              ),
-            );
-          }
-          if (options.scan) {
-            console.error(
-              styles.warning(
-                '⚠ --scan is deprecated: scan now runs by default. Use scan.enabled: false in config to disable.',
-              ),
-            );
-          }
+    .action(async (options: { cwd: string; hook?: string; json?: boolean }) => {
+      try {
+        options.cwd = requireProject(options.cwd, 'validate');
+        const config = versionguard.getConfig(options.cwd);
 
-          options.cwd = requireProject(options.cwd, 'validate');
-          const config = versionguard.getConfig(options.cwd);
+        // Route hook mode: pre-commit = lightweight, pre-push/post-tag = full
+        const mode = options.hook === 'pre-commit' ? 'lightweight' : 'full';
 
-          // Route hook mode: pre-commit = lightweight, pre-push/post-tag = full
-          const mode = options.hook === 'pre-commit' ? 'lightweight' : 'full';
+        const version = versionguard.getPackageVersion(options.cwd, config.manifest);
+        const result = await versionguard.validate(config, options.cwd, mode);
 
-          const version = versionguard.getPackageVersion(options.cwd, config.manifest);
-          const result = await versionguard.validate(config, options.cwd, mode);
+        let postTagResult: { success: boolean; message: string; actions: string[] } | undefined;
 
-          let postTagResult: { success: boolean; message: string; actions: string[] } | undefined;
+        if (options.hook === 'post-tag') {
+          postTagResult = tag.handlePostTag(config, options.cwd);
+        }
 
-          if (options.hook === 'post-tag') {
-            postTagResult = tag.handlePostTag(config, options.cwd);
-          }
+        if (options.json) {
+          console.log(
+            JSON.stringify(
+              {
+                ...result,
+                hook: options.hook ?? null,
+                postTag: postTagResult ?? null,
+              },
+              null,
+              2,
+            ),
+          );
 
-          if (options.json) {
-            console.log(
-              JSON.stringify(
-                {
-                  ...result,
-                  hook: options.hook ?? null,
-                  postTag: postTagResult ?? null,
-                },
-                null,
-                2,
-              ),
-            );
-
-            if (!result.valid || (postTagResult && !postTagResult.success)) {
-              process.exit(1);
-            }
-
-            return;
-          }
-
-          console.log(styles.bold(`Validating version ${version}...`));
-          console.log('');
-
-          if (!result.syncValid) {
-            console.log(styles.error('Sync Issues:'));
-            for (const error of result.errors.filter((item) => item.includes('mismatch'))) {
-              const parts = error.match(
-                /Version mismatch in (.+):(\d+) - found "(.+?)" but expected "(.+?)"/,
-              );
-              if (!parts) {
-                continue;
-              }
-              const suggestions = feedback.getSyncFeedback(parts[1], parts[3], parts[4]);
-              console.log(styles.error(`  ✗ ${parts[1]} has wrong version`));
-              console.log(styles.dim(`    Found: "${parts[3]}" Expected: "${parts[4]}"`));
-              if (suggestions[0]?.fix) {
-                console.log(styles.info(`    Fix: ${suggestions[0].fix}`));
-              }
-            }
-            console.log('');
-          }
-
-          // Show scan findings (stale version literals)
-          const scanErrors = result.errors.filter((item) => item.startsWith('Stale version'));
-          if (scanErrors.length > 0) {
-            console.log(styles.error('Scan Findings:'));
-            for (const error of scanErrors) {
-              const parts = error.match(
-                /Stale version in (.+):(\d+) - found "(.+?)" but expected "(.+?)"/,
-              );
-              if (parts) {
-                console.log(styles.error(`  ✗ ${parts[1]}:${parts[2]} has "${parts[3]}"`));
-              }
-            }
-            console.log(
-              styles.dim('  Hint: add entries to scan.allowlist to exclude intentional references'),
-            );
-            console.log('');
-          }
-
-          if (config.changelog.enabled && !result.changelogValid) {
-            console.log(styles.error('Changelog Issues:'));
-            for (const error of result.errors.filter((item) =>
-              item.toLowerCase().includes('changelog'),
-            )) {
-              console.log(styles.error(`  ✗ ${error}`));
-            }
-            const suggestions = feedback.getChangelogFeedback(false, version);
-            if (suggestions[0]?.fix) {
-              console.log(styles.info(`Fix: ${suggestions[0].fix}`));
-            }
-            console.log('');
-          }
-
-          // Guard check results (now always in result when guard.enabled)
-          if (result.guardReport && result.guardReport.warnings.length > 0) {
-            console.log(styles.bold('Guard Checks:'));
-            for (const warning of result.guardReport.warnings) {
-              const icon = warning.severity === 'error' ? styles.error('✗') : styles.warning('⚠');
-              console.log(`  ${icon} [${warning.code}] ${warning.message}`);
-              if (warning.fix) {
-                console.log(styles.dim(`    Fix: ${warning.fix}`));
-              }
-            }
-            console.log('');
-          }
-
-          // Publish check results
-          if (result.publishCheck) {
-            if (result.publishCheck.published) {
-              console.log(
-                styles.info(
-                  `ℹ Version ${version} is already published on ${result.publishCheck.registry}`,
-                ),
-              );
-            } else if (result.publishCheck.error) {
-              console.log(styles.warning(`⚠ ${result.publishCheck.error}`));
-            }
-          }
-
-          if (postTagResult) {
-            if (!postTagResult.success) {
-              console.log(styles.error(`✗ ${postTagResult.message}`));
-              process.exit(1);
-            }
-          }
-
-          if (!result.valid) {
-            console.log(styles.error('✗ Validation failed'));
+          if (!result.valid || (postTagResult && !postTagResult.success)) {
             process.exit(1);
           }
 
-          console.log(styles.success('✓ All validations passed'));
-        } catch (error) {
-          console.error(styles.error(`✗ ${(error as Error).message}`));
+          return;
+        }
+
+        console.log(styles.bold(`Validating version ${version}...`));
+        console.log('');
+
+        if (!result.syncValid) {
+          console.log(styles.error('Sync Issues:'));
+          for (const error of result.errors.filter((item) => item.includes('mismatch'))) {
+            const parts = error.match(
+              /Version mismatch in (.+):(\d+) - found "(.+?)" but expected "(.+?)"/,
+            );
+            if (!parts) {
+              continue;
+            }
+            const suggestions = feedback.getSyncFeedback(parts[1], parts[3], parts[4]);
+            console.log(styles.error(`  ✗ ${parts[1]} has wrong version`));
+            console.log(styles.dim(`    Found: "${parts[3]}" Expected: "${parts[4]}"`));
+            if (suggestions[0]?.fix) {
+              console.log(styles.info(`    Fix: ${suggestions[0].fix}`));
+            }
+          }
+          console.log('');
+        }
+
+        // Show scan findings (stale version literals)
+        const scanErrors = result.errors.filter((item) => item.startsWith('Stale version'));
+        if (scanErrors.length > 0) {
+          console.log(styles.error('Scan Findings:'));
+          for (const error of scanErrors) {
+            const parts = error.match(
+              /Stale version in (.+):(\d+) - found "(.+?)" but expected "(.+?)"/,
+            );
+            if (parts) {
+              console.log(styles.error(`  ✗ ${parts[1]}:${parts[2]} has "${parts[3]}"`));
+            }
+          }
+          console.log(
+            styles.dim('  Hint: add entries to scan.allowlist to exclude intentional references'),
+          );
+          console.log('');
+        }
+
+        if (config.changelog.enabled && !result.changelogValid) {
+          console.log(styles.error('Changelog Issues:'));
+          for (const error of result.errors.filter((item) =>
+            item.toLowerCase().includes('changelog'),
+          )) {
+            console.log(styles.error(`  ✗ ${error}`));
+          }
+          const suggestions = feedback.getChangelogFeedback(false, version);
+          if (suggestions[0]?.fix) {
+            console.log(styles.info(`Fix: ${suggestions[0].fix}`));
+          }
+          console.log('');
+        }
+
+        // Guard check results (now always in result when guard.enabled)
+        if (result.guardReport && result.guardReport.warnings.length > 0) {
+          console.log(styles.bold('Guard Checks:'));
+          for (const warning of result.guardReport.warnings) {
+            const icon = warning.severity === 'error' ? styles.error('✗') : styles.warning('⚠');
+            console.log(`  ${icon} [${warning.code}] ${warning.message}`);
+            if (warning.fix) {
+              console.log(styles.dim(`    Fix: ${warning.fix}`));
+            }
+          }
+          console.log('');
+        }
+
+        // Publish check results
+        if (result.publishCheck) {
+          if (result.publishCheck.published) {
+            console.log(
+              styles.info(
+                `ℹ Version ${version} is already published on ${result.publishCheck.registry}`,
+              ),
+            );
+          } else if (result.publishCheck.error) {
+            console.log(styles.warning(`⚠ ${result.publishCheck.error}`));
+          }
+        }
+
+        if (postTagResult) {
+          if (!postTagResult.success) {
+            console.log(styles.error(`✗ ${postTagResult.message}`));
+            process.exit(1);
+          }
+        }
+
+        if (!result.valid) {
+          console.log(styles.error('✗ Validation failed'));
           process.exit(1);
         }
-      },
-    );
+
+        console.log(styles.success('✓ All validations passed'));
+      } catch (error) {
+        console.error(styles.error(`✗ ${(error as Error).message}`));
+        process.exit(1);
+      }
+    });
 
   program
     .command('doctor')
     .description('Report repository readiness in one pass')
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('--json', 'Print machine-readable JSON output')
-    .option('--strict', '(deprecated) Guard checks now run by default')
-    .action(async (options: { cwd: string; json?: boolean; strict?: boolean }) => {
+    .action(async (options: { cwd: string; json?: boolean }) => {
       try {
-        if (options.strict) {
-          console.error(
-            styles.warning(
-              '⚠ --strict is deprecated: guard checks now run by default. Use guard.enabled: false in config to disable.',
-            ),
-          );
-        }
-
         options.cwd = requireProject(options.cwd, 'doctor');
         const config = versionguard.getConfig(options.cwd);
         const report = await versionguard.doctor(config, options.cwd);
@@ -534,40 +498,30 @@ export function createProgram(): Command {
 
   program
     .command('bump')
-    .description('Suggest and optionally apply the next version')
+    .description('Suggest the next version based on current version and scheme')
     .option('-c, --cwd <path>', 'Working directory', process.cwd())
     .option('-t, --type <type>', 'Bump type (major, minor, patch, auto)')
-    .option('--apply', 'Apply the first suggested version')
-    .action(
-      (options: { cwd: string; type?: 'major' | 'minor' | 'patch' | 'auto'; apply?: boolean }) => {
-        try {
-          options.cwd = requireProject(options.cwd, 'bump');
-          const config = versionguard.getConfig(options.cwd);
-          const currentVersion = versionguard.getPackageVersion(options.cwd, config.manifest);
-          const suggestions = fix.suggestNextVersion(currentVersion, config, options.type);
+    .action((options: { cwd: string; type?: 'major' | 'minor' | 'patch' | 'auto' }) => {
+      try {
+        options.cwd = requireProject(options.cwd, 'bump');
+        const config = versionguard.getConfig(options.cwd);
+        const currentVersion = versionguard.getPackageVersion(options.cwd, config.manifest);
+        const suggestions = fix.suggestNextVersion(currentVersion, config, options.type);
 
-          console.log(styles.bold(`Current version: ${currentVersion}`));
-          console.log('');
-          for (const [index, suggestion] of suggestions.entries()) {
-            console.log(`  ${index + 1}. ${styles.bold(suggestion.version)}`);
-            console.log(`     ${styles.dim(suggestion.reason)}`);
-          }
-
-          if (options.apply) {
-            const nextVersion = suggestions[0]?.version;
-            if (!nextVersion) {
-              throw new Error('No version suggestion available');
-            }
-            project.setPackageVersion(nextVersion, options.cwd, config.manifest);
-            fix.fixAll(config, nextVersion, options.cwd);
-            console.log(styles.success(`✓ Updated to ${nextVersion}`));
-          }
-        } catch (error) {
-          console.error(styles.error(`✗ ${(error as Error).message}`));
-          process.exit(1);
+        console.log(styles.bold(`Current version: ${currentVersion}`));
+        console.log('');
+        for (const [index, suggestion] of suggestions.entries()) {
+          console.log(`  ${index + 1}. ${styles.bold(suggestion.version)}`);
+          console.log(`     ${styles.dim(suggestion.reason)}`);
         }
-      },
-    );
+
+        console.log('');
+        console.log(styles.dim('Use Changesets or your release tool to apply a version bump.'));
+      } catch (error) {
+        console.error(styles.error(`✗ ${(error as Error).message}`));
+        process.exit(1);
+      }
+    });
 
   program
     .command('tag')
