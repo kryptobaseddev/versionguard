@@ -1266,7 +1266,7 @@ const version = source.getVersion(process.cwd());
 
 ### `syncVersion()`
 
-*Defined in `src/sync.ts:56`*
+*Defined in `src/sync.ts:127`*
 
 ```typescript
 (version: string, config: SyncConfig, cwd?: string) => SyncResult[]
@@ -1292,7 +1292,7 @@ const results = syncVersion('1.2.3', getDefaultConfig().sync, process.cwd());
 
 ### `syncFile()`
 
-*Defined in `src/sync.ts:86`*
+*Defined in `src/sync.ts:157`*
 
 ```typescript
 (filePath: string, version: string, patterns: SyncPattern[]) => SyncResult
@@ -1318,7 +1318,7 @@ const result = syncFile('README.md', '1.2.3', getDefaultConfig().sync.patterns);
 
 ### `checkHardcodedVersions()`
 
-*Defined in `src/sync.ts:155`*
+*Defined in `src/sync.ts:230`*
 
 ```typescript
 (expectedVersion: string, config: SyncConfig, ignorePatterns: string[], cwd?: string) => VersionMismatch[]
@@ -1350,7 +1350,7 @@ const mismatches = checkHardcodedVersions(
 
 ### `scanRepoForVersions()`
 
-*Defined in `src/sync.ts:243`*
+*Defined in `src/sync.ts:323`*
 
 ```typescript
 (expectedVersion: string, scanConfig: ScanConfig, ignorePatterns: string[], cwd?: string) => VersionMismatch[]
@@ -1803,7 +1803,7 @@ if (!report.safe) console.error('Guard check failed:', report.warnings);
 
 ### `checkPublishStatus()`
 
-*Defined in `src/publish.ts:129`*
+*Defined in `src/publish.ts:132`*
 
 ```typescript
 (manifestSource: ManifestSourceType, packageName: string, version: string, config: PublishConfig) => Promise<PublishCheckResult>
@@ -1830,7 +1830,7 @@ const result = await checkPublishStatus('package.json', '@codluv/vg', '1.0.0', {
 
 ### `readPackageName()`
 
-*Defined in `src/publish.ts:283`*
+*Defined in `src/publish.ts:296`*
 
 ```typescript
 (manifestSource: ManifestSourceType, cwd: string) => string | null
@@ -2336,7 +2336,7 @@ const configPath = runHeadless({ cwd: process.cwd(), type: 'calver', format: 'YY
 
 ### `createProgram()`
 
-*Defined in `src/cli.ts:71`*
+*Defined in `src/cli.ts:70`*
 
 ```typescript
 () => Command
@@ -2355,7 +2355,7 @@ console.log(program.name());
 
 ### `runCli()`
 
-*Defined in `src/cli.ts:714`*
+*Defined in `src/cli.ts:668`*
 
 ```typescript
 (argv?: string[]) => Promise<void>
@@ -2376,7 +2376,7 @@ await runCli(argv);
 
 ### `shouldRunCli()`
 
-*Defined in `src/cli.ts:737`*
+*Defined in `src/cli.ts:691`*
 
 ```typescript
 (argv?: string[], metaUrl?: string) => boolean

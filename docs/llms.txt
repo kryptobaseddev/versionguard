@@ -1,6 +1,6 @@
 # @codluv/versionguard
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
-> Version: 0.9.0
+> Version: 1.0.0
 
 ## Install
 
