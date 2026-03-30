@@ -25,7 +25,6 @@ description: . package overview
 | [`addVersionEntry()`](/packages/./api/index#addversionentry)                   | function | Inserts a new version entry beneath the `[Unreleased]` section.                  |
 | [`isChangesetMangled()`](/packages/./api/index#ischangesetmangled)             | function | Detects whether a changelog has been mangled by Changesets.                      |
 | [`fixChangesetMangling()`](/packages/./api/index#fixchangesetmangling)         | function | Fixes a Changesets-mangled changelog into proper Keep a Changelog format.        |
-| [`createCkmEngine()`](/packages/./api/index#createckmengine)                   | function | Creates a CKM engine from a parsed manifest.                                     |
 | [`parse()`](/packages/./api/index#parse)                                       | function | Parses a semantic version string.                                                |
 | [`validate()`](/packages/./api/index#validate)                                 | function | Validates that a string is a supported semantic version.                         |
 | [`compare()`](/packages/./api/index#compare)                                   | function | Compares two semantic version strings.                                           |
@@ -152,16 +151,6 @@ description: . package overview
 | [`ParsedCalVerFormat`](/packages/./api/index#parsedcalverformat)               | interface | Parsed token layout for a supported CalVer format string.                        |
 | [`ChangelogValidationResult`](/packages/./api/index#changelogvalidationresult) | interface | Describes the outcome of validating a changelog file.                            |
 | [`ChangelogStructureOptions`](/packages/./api/index#changelogstructureoptions) | interface | Options for changelog structure enforcement.                                     |
-| [`CkmConcept`](/packages/./api/index#ckmconcept)                               | interface | A domain concept extracted from an exported interface or type.                   |
-| [`CkmProperty`](/packages/./api/index#ckmproperty)                             | interface | A property within a concept.                                                     |
-| [`CkmOperation`](/packages/./api/index#ckmoperation)                           | interface | A user-facing operation extracted from an exported function.                     |
-| [`CkmInput`](/packages/./api/index#ckminput)                                   | interface | A function parameter within an operation.                                        |
-| [`CkmConstraint`](/packages/./api/index#ckmconstraint)                         | interface | A constraint enforced by the tool.                                               |
-| [`CkmWorkflow`](/packages/./api/index#ckmworkflow)                             | interface | A multi-step workflow for a common goal.                                         |
-| [`CkmConfigEntry`](/packages/./api/index#ckmconfigentry)                       | interface | A config schema entry with type, description, and default.                       |
-| [`CkmManifest`](/packages/./api/index#ckmmanifest)                             | interface | The complete Codebase Knowledge Manifest.                                        |
-| [`CkmTopic`](/packages/./api/index#ckmtopic)                                   | interface | An auto-generated topic derived from CKM data.                                   |
-| [`CkmEngine`](/packages/./api/index#ckmengine)                                 | interface | The CKM engine — provides topic derivation, filtering, and output formatting.    |
 | [`Suggestion`](/packages/./api/index#suggestion)                               | interface | Feedback entry point exports for suggestion and guidance helpers.                |
 | [`FeedbackResult`](/packages/./api/index#feedbackresult)                       | interface | Aggregates validation errors with suggested next steps.                          |
 | [`VersionSourceProvider`](/packages/./api/index#versionsourceprovider)         | interface | Abstraction for reading and writing a version string from any manifest format.   |
@@ -182,9 +171,6 @@ description: . package overview
 | [`scheme-rules.ts`](/packages/./api/index#scheme-rulests)            | file     | Shared scheme-rule validation helpers used by both SemVer and CalVer.            |
 | [`calver.ts`](/packages/./api/index#calverts)                        | file     | Calendar version parsing, formatting, and comparison helpers.                    |
 | [`changelog.ts`](/packages/./api/index#changelogts)                  | file     |                                                                                  |
-| [`types.ts`](/packages/./api/index#typests)                          | file     |                                                                                  |
-| [`engine.ts`](/packages/./api/index#enginets)                        | file     | CKM engine — auto-generates topic index from a ckm.json manifest.                |
-| [`index.ts`](/packages/./api/index#indexts)                          | file     | CKM (Codebase Knowledge Manifest) module.                                        |
 | [`semver.ts`](/packages/./api/index#semverts)                        | file     | Semantic version parsing, validation, comparison, and increment helpers.         |
 | [`index.ts`](/packages/./api/index#indexts)                          | file     |                                                                                  |
 | [`provider.ts`](/packages/./api/index#providerts)                    | file     |                                                                                  |

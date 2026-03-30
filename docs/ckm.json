@@ -1,8 +1,14 @@
 {
-  "$schema": "https://forge-ts.dev/schemas/ckm/v1.json",
-  "version": "1.0.0",
+  "$schema": "https://ckm.dev/schemas/v2.json",
+  "version": "2.0.0",
+  "meta": {
+    "project": "@codluv/versionguard",
+    "language": "typescript",
+    "generator": "forge-ts@1.1.0",
+    "generated": "2026-03-29T22:55:15.350Z"
+  },
   "project": "@codluv/versionguard",
-  "generated": "2026-03-29T21:39:46.515Z",
+  "generated": "2026-03-29T22:55:15.350Z",
   "concepts": [
     {
       "id": "concept-ManifestConfig",
@@ -11,19 +17,38 @@
       "properties": [
         {
           "name": "source",
-          "type": "ManifestSourceType",
-          "description": "Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename."
+          "type": {
+            "canonical": "object",
+            "original": "ManifestSourceType"
+          },
+          "description": "Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename.",
+          "required": true,
+          "default": null
         },
         {
           "name": "path",
-          "type": "string | undefined",
-          "description": "Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml.",
+          "required": true,
+          "default": null
         },
         {
           "name": "regex",
-          "type": "string | undefined",
-          "description": "Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "manifest",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -33,19 +58,35 @@
       "properties": [
         {
           "name": "allowVPrefix",
-          "type": "boolean",
-          "description": "Tolerates a leading `v` prefix (e.g. `v1.2.3`).  When enabled the prefix is stripped before parsing."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Tolerates a leading `v` prefix (e.g. `v1.2.3`).  When enabled the prefix is stripped before parsing.",
+          "required": true,
+          "default": null
         },
         {
           "name": "allowBuildMetadata",
-          "type": "boolean",
-          "description": "Permits `+build` metadata on version strings."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Permits `+build` metadata on version strings.",
+          "required": true,
+          "default": null
         },
         {
           "name": "requirePrerelease",
-          "type": "boolean",
-          "description": "Requires every version to carry a prerelease label."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Requires every version to carry a prerelease label.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "semver",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -55,19 +96,37 @@
       "properties": [
         {
           "name": "format",
-          "type": "CalVerFormat",
-          "description": "Calendar format used when parsing and validating versions."
+          "type": {
+            "canonical": "object",
+            "original": "CalVerFormat"
+          },
+          "description": "Calendar format used when parsing and validating versions.",
+          "required": true,
+          "default": null
         },
         {
           "name": "preventFutureDates",
-          "type": "boolean",
-          "description": "Rejects versions that point to a future date."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Rejects versions that point to a future date.",
+          "required": true,
+          "default": null
         },
         {
           "name": "strictMutualExclusion",
-          "type": "boolean | undefined",
-          "description": "Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "calver",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -77,14 +136,28 @@
       "properties": [
         {
           "name": "files",
-          "type": "string[]",
-          "description": "File globs or paths that should be scanned for version updates."
+          "type": {
+            "canonical": "array",
+            "original": "string[]"
+          },
+          "description": "File globs or paths that should be scanned for version updates.",
+          "required": true,
+          "default": null
         },
         {
           "name": "patterns",
-          "type": "SyncPattern[]",
-          "description": "Replacement patterns applied to matching files."
+          "type": {
+            "canonical": "array",
+            "original": "SyncPattern[]"
+          },
+          "description": "Replacement patterns applied to matching files.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "sync",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -94,34 +167,64 @@
       "properties": [
         {
           "name": "enabled",
-          "type": "boolean",
-          "description": "Enables changelog validation."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Enables changelog validation.",
+          "required": true,
+          "default": null
         },
         {
           "name": "file",
-          "type": "string",
-          "description": "Path to the changelog file to inspect."
+          "type": {
+            "canonical": "string"
+          },
+          "description": "Path to the changelog file to inspect.",
+          "required": true,
+          "default": null
         },
         {
           "name": "strict",
-          "type": "boolean",
-          "description": "Treats changelog problems as hard failures."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Treats changelog problems as hard failures.",
+          "required": true,
+          "default": null
         },
         {
           "name": "requireEntry",
-          "type": "boolean",
-          "description": "Requires an entry for the current version."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Requires an entry for the current version.",
+          "required": true,
+          "default": null
         },
         {
           "name": "enforceStructure",
-          "type": "boolean | undefined",
-          "description": "Validates that changelog section headers use only allowed names.  When enabled, any `### SectionName` header not present in `sections` is reported as an error."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Validates that changelog section headers use only allowed names.  When enabled, any `### SectionName` header not present in `sections` is reported as an error.",
+          "required": true,
+          "default": null
         },
         {
           "name": "sections",
-          "type": "string[] | undefined",
-          "description": "Allowed Keep a Changelog section names.  Only applied when `enforceStructure` is `true`."
+          "type": {
+            "canonical": "array",
+            "original": "string[] | undefined"
+          },
+          "description": "Allowed Keep a Changelog section names.  Only applied when `enforceStructure` is `true`.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "changelog",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -131,19 +234,35 @@
       "properties": [
         {
           "name": "'pre-commit'",
-          "type": "boolean",
-          "description": "Enables validation during the `pre-commit` hook."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Enables validation during the `pre-commit` hook.",
+          "required": true,
+          "default": null
         },
         {
           "name": "'pre-push'",
-          "type": "boolean",
-          "description": "Enables validation during the `pre-push` hook."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Enables validation during the `pre-push` hook.",
+          "required": true,
+          "default": null
         },
         {
           "name": "'post-tag'",
-          "type": "boolean",
-          "description": "Enables follow-up tasks after a tag is created."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Enables follow-up tasks after a tag is created.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "githooks",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -153,14 +272,27 @@
       "properties": [
         {
           "name": "hooks",
-          "type": "GitHooksConfig",
-          "description": "Hook toggles used by the CLI and validation workflow."
+          "type": {
+            "canonical": "object",
+            "original": "GitHooksConfig"
+          },
+          "description": "Hook toggles used by the CLI and validation workflow.",
+          "required": true,
+          "default": null
         },
         {
           "name": "enforceHooks",
-          "type": "boolean",
-          "description": "Fails validation when required hooks are missing."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Fails validation when required hooks are missing.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "git",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -170,9 +302,17 @@
       "properties": [
         {
           "name": "dependabot",
-          "type": "boolean",
-          "description": "Generates `.github/dependabot.yml` from detected manifests during init."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Generates `.github/dependabot.yml` from detected manifests during init.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "github",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -182,24 +322,48 @@
       "properties": [
         {
           "name": "type",
-          "type": "VersioningType",
-          "description": "Versioning strategy used for the project."
+          "type": {
+            "canonical": "object",
+            "original": "VersioningType"
+          },
+          "description": "Versioning strategy used for the project.",
+          "required": true,
+          "default": null
         },
         {
           "name": "schemeRules",
-          "type": "SchemeRules | undefined",
-          "description": "Scheme-level validation rules applied regardless of versioning type."
+          "type": {
+            "canonical": "string",
+            "original": "SchemeRules | undefined"
+          },
+          "description": "Scheme-level validation rules applied regardless of versioning type.",
+          "required": true,
+          "default": null
         },
         {
           "name": "semver",
-          "type": "SemVerConfig | undefined",
-          "description": "SemVer-specific settings when `type` is `'semver'`."
+          "type": {
+            "canonical": "string",
+            "original": "SemVerConfig | undefined"
+          },
+          "description": "SemVer-specific settings when `type` is `'semver'`.",
+          "required": true,
+          "default": null
         },
         {
           "name": "calver",
-          "type": "CalVerConfig | undefined",
-          "description": "CalVer-specific settings when `type` is `'calver'`."
+          "type": {
+            "canonical": "string",
+            "original": "CalVerConfig | undefined"
+          },
+          "description": "CalVer-specific settings when `type` is `'calver'`.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "versioning",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -209,15 +373,26 @@
       "properties": [
         {
           "name": "file",
-          "type": "string",
-          "description": "Glob pattern matching the file(s) where this reference is intentional."
+          "type": {
+            "canonical": "string"
+          },
+          "description": "Glob pattern matching the file(s) where this reference is intentional.",
+          "required": true,
+          "default": null
         },
         {
           "name": "reason",
-          "type": "string | undefined",
-          "description": "Reason this reference is allowed (for documentation / review)."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "Reason this reference is allowed (for documentation / review).",
+          "required": true,
+          "default": null
         }
-      ]
+      ],
+      "slug": "scanallowlistentry",
+      "tags": []
     },
     {
       "id": "concept-ScanConfig",
@@ -226,19 +401,37 @@
       "properties": [
         {
           "name": "enabled",
-          "type": "boolean",
-          "description": "Enables repo-wide scanning for stale version literals."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Enables repo-wide scanning for stale version literals.",
+          "required": true,
+          "default": null
         },
         {
           "name": "patterns",
-          "type": "string[]",
-          "description": "Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string."
+          "type": {
+            "canonical": "array",
+            "original": "string[]"
+          },
+          "description": "Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string.",
+          "required": true,
+          "default": null
         },
         {
           "name": "allowlist",
-          "type": "ScanAllowlistEntry[]",
-          "description": "Files containing intentional version references that should not be flagged."
+          "type": {
+            "canonical": "array",
+            "original": "ScanAllowlistEntry[]"
+          },
+          "description": "Files containing intentional version references that should not be flagged.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "scan",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -248,9 +441,17 @@
       "properties": [
         {
           "name": "enabled",
-          "type": "boolean",
-          "description": "Enables hook bypass detection in validate."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Enables hook bypass detection in validate.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "guard",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -260,19 +461,36 @@
       "properties": [
         {
           "name": "enabled",
-          "type": "boolean",
-          "description": "Enables registry publish status check."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Enables registry publish status check.",
+          "required": true,
+          "default": null
         },
         {
           "name": "timeout",
-          "type": "number",
-          "description": "Timeout in ms for registry HTTP/CLI calls."
+          "type": {
+            "canonical": "number"
+          },
+          "description": "Timeout in ms for registry HTTP/CLI calls.",
+          "required": true,
+          "default": null
         },
         {
           "name": "registryUrl",
-          "type": "string | undefined",
-          "description": "Override registry URL for private registries."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "Override registry URL for private registries.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "publish",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -282,24 +500,46 @@
       "properties": [
         {
           "name": "published",
-          "type": "boolean",
-          "description": "Whether the version exists on the registry."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Whether the version exists on the registry.",
+          "required": true,
+          "default": null
         },
         {
           "name": "registry",
-          "type": "string",
-          "description": "Registry name (npm, crates.io, pypi, etc.)."
+          "type": {
+            "canonical": "string"
+          },
+          "description": "Registry name (npm, crates.io, pypi, etc.).",
+          "required": true,
+          "default": null
         },
         {
           "name": "packageName",
-          "type": "string | undefined",
-          "description": "Package name as read from the manifest."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "Package name as read from the manifest.",
+          "required": true,
+          "default": null
         },
         {
           "name": "error",
-          "type": "string | undefined",
-          "description": "Set when the check could not complete (network, timeout)."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "Set when the check could not complete (network, timeout).",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "publishcheck",
+      "tags": [
+        "result"
       ]
     },
     {
@@ -309,54 +549,108 @@
       "properties": [
         {
           "name": "versioning",
-          "type": "VersioningConfig",
-          "description": "Active versioning settings."
+          "type": {
+            "canonical": "object",
+            "original": "VersioningConfig"
+          },
+          "description": "Active versioning settings.",
+          "required": true,
+          "default": null
         },
         {
           "name": "manifest",
-          "type": "ManifestConfig",
-          "description": "Version source manifest settings."
+          "type": {
+            "canonical": "object",
+            "original": "ManifestConfig"
+          },
+          "description": "Version source manifest settings.",
+          "required": true,
+          "default": null
         },
         {
           "name": "sync",
-          "type": "SyncConfig",
-          "description": "Synchronization settings for mirrored version strings."
+          "type": {
+            "canonical": "object",
+            "original": "SyncConfig"
+          },
+          "description": "Synchronization settings for mirrored version strings.",
+          "required": true,
+          "default": null
         },
         {
           "name": "changelog",
-          "type": "ChangelogConfig",
-          "description": "Changelog validation settings."
+          "type": {
+            "canonical": "object",
+            "original": "ChangelogConfig"
+          },
+          "description": "Changelog validation settings.",
+          "required": true,
+          "default": null
         },
         {
           "name": "git",
-          "type": "GitConfig",
-          "description": "Git enforcement settings."
+          "type": {
+            "canonical": "object",
+            "original": "GitConfig"
+          },
+          "description": "Git enforcement settings.",
+          "required": true,
+          "default": null
         },
         {
           "name": "github",
-          "type": "GitHubConfig",
-          "description": "GitHub integration settings."
+          "type": {
+            "canonical": "object",
+            "original": "GitHubConfig"
+          },
+          "description": "GitHub integration settings.",
+          "required": true,
+          "default": null
         },
         {
           "name": "scan",
-          "type": "ScanConfig",
-          "description": "Repo-wide version literal scanning."
+          "type": {
+            "canonical": "object",
+            "original": "ScanConfig"
+          },
+          "description": "Repo-wide version literal scanning.",
+          "required": true,
+          "default": null
         },
         {
           "name": "guard",
-          "type": "GuardConfig",
-          "description": "Guard check configuration (hook bypass detection)."
+          "type": {
+            "canonical": "object",
+            "original": "GuardConfig"
+          },
+          "description": "Guard check configuration (hook bypass detection).",
+          "required": true,
+          "default": null
         },
         {
           "name": "publish",
-          "type": "PublishConfig",
-          "description": "Registry publish status verification."
+          "type": {
+            "canonical": "object",
+            "original": "PublishConfig"
+          },
+          "description": "Registry publish status verification.",
+          "required": true,
+          "default": null
         },
         {
           "name": "ignore",
-          "type": "string[]",
-          "description": "Files or patterns excluded from validation."
+          "type": {
+            "canonical": "array",
+            "original": "string[]"
+          },
+          "description": "Files or patterns excluded from validation.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "versionguard",
+      "tags": [
+        "config"
       ]
     },
     {
@@ -366,19 +660,37 @@
       "properties": [
         {
           "name": "valid",
-          "type": "boolean",
-          "description": "Indicates whether validation completed without errors."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether validation completed without errors.",
+          "required": true,
+          "default": null
         },
         {
           "name": "errors",
-          "type": "ValidationError[]",
-          "description": "Collected validation issues."
+          "type": {
+            "canonical": "array",
+            "original": "ValidationError[]"
+          },
+          "description": "Collected validation issues.",
+          "required": true,
+          "default": null
         },
         {
           "name": "version",
-          "type": "ParsedVersion | undefined",
-          "description": "Parsed version details when validation succeeds."
+          "type": {
+            "canonical": "string",
+            "original": "ParsedVersion | undefined"
+          },
+          "description": "Parsed version details when validation succeeds.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "validation",
+      "tags": [
+        "result"
       ]
     },
     {
@@ -388,19 +700,36 @@
       "properties": [
         {
           "name": "file",
-          "type": "string",
-          "description": "File that was inspected or updated."
+          "type": {
+            "canonical": "string"
+          },
+          "description": "File that was inspected or updated.",
+          "required": true,
+          "default": null
         },
         {
           "name": "updated",
-          "type": "boolean",
-          "description": "Indicates whether the file content changed."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether the file content changed.",
+          "required": true,
+          "default": null
         },
         {
           "name": "changes",
-          "type": "SyncChange[]",
-          "description": "Detailed replacements applied within the file."
+          "type": {
+            "canonical": "array",
+            "original": "SyncChange[]"
+          },
+          "description": "Detailed replacements applied within the file.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "sync",
+      "tags": [
+        "result"
       ]
     },
     {
@@ -410,59 +739,110 @@
       "properties": [
         {
           "name": "valid",
-          "type": "boolean",
-          "description": "Indicates whether all checks passed."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether all checks passed.",
+          "required": true,
+          "default": null
         },
         {
           "name": "version",
-          "type": "string",
-          "description": "Canonical version string used for validation."
+          "type": {
+            "canonical": "string"
+          },
+          "description": "Canonical version string used for validation.",
+          "required": true,
+          "default": null
         },
         {
           "name": "versionValid",
-          "type": "boolean",
-          "description": "Indicates whether the root version string is valid."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether the root version string is valid.",
+          "required": true,
+          "default": null
         },
         {
           "name": "syncValid",
-          "type": "boolean",
-          "description": "Indicates whether synchronized files are in sync."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether synchronized files are in sync.",
+          "required": true,
+          "default": null
         },
         {
           "name": "changelogValid",
-          "type": "boolean",
-          "description": "Indicates whether changelog checks passed."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether changelog checks passed.",
+          "required": true,
+          "default": null
         },
         {
           "name": "scanValid",
-          "type": "boolean",
-          "description": "Indicates whether repo-wide scan passed (no stale version literals)."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether repo-wide scan passed (no stale version literals).",
+          "required": true,
+          "default": null
         },
         {
           "name": "guardValid",
-          "type": "boolean",
-          "description": "Indicates whether guard checks passed (no hook bypass detected)."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether guard checks passed (no hook bypass detected).",
+          "required": true,
+          "default": null
         },
         {
           "name": "publishValid",
-          "type": "boolean",
-          "description": "Indicates whether the publish check passed."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether the publish check passed.",
+          "required": true,
+          "default": null
         },
         {
           "name": "publishCheck",
-          "type": "PublishCheckResult | undefined",
-          "description": "Detailed publish check result when publish checks are enabled."
+          "type": {
+            "canonical": "string",
+            "original": "PublishCheckResult | undefined"
+          },
+          "description": "Detailed publish check result when publish checks are enabled.",
+          "required": true,
+          "default": null
         },
         {
           "name": "guardReport",
-          "type": "GuardReport | undefined",
-          "description": "Detailed guard check report when guard checks are enabled."
+          "type": {
+            "canonical": "string",
+            "original": "GuardReport | undefined"
+          },
+          "description": "Detailed guard check report when guard checks are enabled.",
+          "required": true,
+          "default": null
         },
         {
           "name": "errors",
-          "type": "string[]",
-          "description": "Human-readable validation failures collected during the run."
+          "type": {
+            "canonical": "array",
+            "original": "string[]"
+          },
+          "description": "Human-readable validation failures collected during the run.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "fullvalidation",
+      "tags": [
+        "result"
       ]
     },
     {
@@ -472,19 +852,36 @@
       "properties": [
         {
           "name": "valid",
-          "type": "boolean",
-          "description": "Indicates whether the changelog satisfies all requested checks."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether the changelog satisfies all requested checks.",
+          "required": true,
+          "default": null
         },
         {
           "name": "errors",
-          "type": "string[]",
-          "description": "Human-readable validation errors."
+          "type": {
+            "canonical": "array",
+            "original": "string[]"
+          },
+          "description": "Human-readable validation errors.",
+          "required": true,
+          "default": null
         },
         {
           "name": "hasEntryForVersion",
-          "type": "boolean",
-          "description": "Indicates whether the changelog contains an entry for the requested version."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether the changelog contains an entry for the requested version.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "changelogvalidation",
+      "tags": [
+        "result"
       ]
     },
     {
@@ -494,41 +891,28 @@
       "properties": [
         {
           "name": "enforceStructure",
-          "type": "boolean | undefined",
-          "description": "Validate section headers against an allowed list."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Validate section headers against an allowed list.",
+          "required": true,
+          "default": null
         },
         {
           "name": "sections",
-          "type": "string[] | undefined",
-          "description": "Allowed section names. Defaults to Keep a Changelog standard sections."
+          "type": {
+            "canonical": "array",
+            "original": "string[] | undefined"
+          },
+          "description": "Allowed section names. Defaults to Keep a Changelog standard sections.",
+          "required": true,
+          "default": null
         }
-      ]
-    },
-    {
-      "id": "concept-CkmConfigEntry",
-      "name": "CkmConfigEntry",
-      "what": "A config schema entry with type, description, and default.",
-      "properties": [
-        {
-          "name": "key",
-          "type": "string",
-          "description": "Dotted key path (e.g., `'CalVerConfig.format'`)."
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "description": "TypeScript type."
-        },
-        {
-          "name": "description",
-          "type": "string",
-          "description": "Description from TSDoc."
-        },
-        {
-          "name": "default",
-          "type": "string | undefined",
-          "description": "Default value if specified via `@defaultValue`."
-        }
+      ],
+      "slug": "changelogstructure",
+      "tags": [
+        "options"
       ]
     },
     {
@@ -538,24 +922,46 @@
       "properties": [
         {
           "name": "valid",
-          "type": "boolean",
-          "description": "Indicates whether the inspected version state is valid."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether the inspected version state is valid.",
+          "required": true,
+          "default": null
         },
         {
           "name": "errors",
-          "type": "ValidationError[]",
-          "description": "Validation errors collected during the check."
+          "type": {
+            "canonical": "array",
+            "original": "ValidationError[]"
+          },
+          "description": "Validation errors collected during the check.",
+          "required": true,
+          "default": null
         },
         {
           "name": "suggestions",
-          "type": "Suggestion[]",
-          "description": "Suggested next steps for resolving the reported issues."
+          "type": {
+            "canonical": "array",
+            "original": "Suggestion[]"
+          },
+          "description": "Suggested next steps for resolving the reported issues.",
+          "required": true,
+          "default": null
         },
         {
           "name": "canAutoFix",
-          "type": "boolean",
-          "description": "Indicates whether at least one suggestion can be auto-applied."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether at least one suggestion can be auto-applied.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "feedback",
+      "tags": [
+        "result"
       ]
     },
     {
@@ -565,19 +971,36 @@
       "properties": [
         {
           "name": "fixed",
-          "type": "boolean",
-          "description": "Indicates whether the operation changed repository state."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Indicates whether the operation changed repository state.",
+          "required": true,
+          "default": null
         },
         {
           "name": "message",
-          "type": "string",
-          "description": "Human-readable description of the fix attempt."
+          "type": {
+            "canonical": "string"
+          },
+          "description": "Human-readable description of the fix attempt.",
+          "required": true,
+          "default": null
         },
         {
           "name": "file",
-          "type": "string | undefined",
-          "description": "Absolute path to the file that was updated, when applicable."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "Absolute path to the file that was updated, when applicable.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "fix",
+      "tags": [
+        "result"
       ]
     },
     {
@@ -587,34 +1010,63 @@
       "properties": [
         {
           "name": "found",
-          "type": "boolean",
-          "description": "Whether a project root was found."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Whether a project root was found.",
+          "required": true,
+          "default": null
         },
         {
           "name": "root",
-          "type": "string",
-          "description": "The resolved project root directory, or the original cwd if not found."
+          "type": {
+            "canonical": "string"
+          },
+          "description": "The resolved project root directory, or the original cwd if not found.",
+          "required": true,
+          "default": null
         },
         {
           "name": "marker",
-          "type": "string | undefined",
-          "description": "Which marker file was found."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "Which marker file was found.",
+          "required": true,
+          "default": null
         },
         {
           "name": "hasConfig",
-          "type": "boolean",
-          "description": "Whether the directory has a VersionGuard config."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Whether the directory has a VersionGuard config.",
+          "required": true,
+          "default": null
         },
         {
           "name": "hasGit",
-          "type": "boolean",
-          "description": "Whether the directory is inside a git repository."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Whether the directory is inside a git repository.",
+          "required": true,
+          "default": null
         },
         {
           "name": "hasManifest",
-          "type": "boolean",
-          "description": "Whether a version manifest file exists."
+          "type": {
+            "canonical": "boolean"
+          },
+          "description": "Whether a version manifest file exists.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "projectroot",
+      "tags": [
+        "result"
       ]
     },
     {
@@ -624,64 +1076,127 @@
       "properties": [
         {
           "name": "cwd",
-          "type": "string",
-          "description": "Working directory path."
+          "type": {
+            "canonical": "string"
+          },
+          "description": "Working directory path.",
+          "required": true,
+          "default": null
         },
         {
           "name": "type",
-          "type": "\"semver\" | \"calver\" | undefined",
-          "description": "Versioning type (semver or calver)."
+          "type": {
+            "canonical": "string",
+            "original": "\"semver\" | \"calver\" | undefined"
+          },
+          "description": "Versioning type (semver or calver).",
+          "required": true,
+          "default": null
         },
         {
           "name": "format",
-          "type": "string | undefined",
-          "description": "CalVer format string."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "CalVer format string.",
+          "required": true,
+          "default": null
         },
         {
           "name": "allowVPrefix",
-          "type": "boolean | undefined",
-          "description": "Allow v-prefix on SemVer versions."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Allow v-prefix on SemVer versions.",
+          "required": true,
+          "default": null
         },
         {
           "name": "allowBuildMetadata",
-          "type": "boolean | undefined",
-          "description": "Allow build metadata on SemVer versions."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Allow build metadata on SemVer versions.",
+          "required": true,
+          "default": null
         },
         {
           "name": "requirePrerelease",
-          "type": "boolean | undefined",
-          "description": "Require prerelease labels on SemVer versions."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Require prerelease labels on SemVer versions.",
+          "required": true,
+          "default": null
         },
         {
           "name": "manifest",
-          "type": "string | undefined",
-          "description": "Manifest source type."
+          "type": {
+            "canonical": "string",
+            "original": "string | undefined"
+          },
+          "description": "Manifest source type.",
+          "required": true,
+          "default": null
         },
         {
           "name": "github",
-          "type": "boolean | undefined",
-          "description": "Whether to generate GitHub integration files (dependabot.yml)."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Whether to generate GitHub integration files (dependabot.yml).",
+          "required": true,
+          "default": null
         },
         {
           "name": "hooks",
-          "type": "boolean | undefined",
-          "description": "Whether to install git hooks."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Whether to install git hooks.",
+          "required": true,
+          "default": null
         },
         {
           "name": "changelog",
-          "type": "boolean | undefined",
-          "description": "Whether to enable changelog validation."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Whether to enable changelog validation.",
+          "required": true,
+          "default": null
         },
         {
           "name": "yes",
-          "type": "boolean | undefined",
-          "description": "Accept defaults without prompting."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Accept defaults without prompting.",
+          "required": true,
+          "default": null
         },
         {
           "name": "force",
-          "type": "boolean | undefined",
-          "description": "Overwrite existing config."
+          "type": {
+            "canonical": "string",
+            "original": "boolean | undefined"
+          },
+          "description": "Overwrite existing config.",
+          "required": true,
+          "default": null
         }
+      ],
+      "slug": "init",
+      "tags": [
+        "options"
       ]
     }
   ],
@@ -693,20 +1208,31 @@
       "inputs": [
         {
           "name": "modifier",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Raw modifier string (e.g. `\"alpha.1\"`, `\"rc2\"`, `\"dev\"`)."
         },
         {
           "name": "schemeRules",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Scheme rules containing the allowed modifiers list."
         }
       ],
       "outputs": {
-        "text": "A validation error when the modifier is disallowed, otherwise `null`."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "A validation error when the modifier is disallowed, otherwise `null`."
+        },
+        "description": "A validation error when the modifier is disallowed, otherwise `null`."
+      },
+      "tags": []
     },
     {
       "id": "op-validate",
@@ -715,32 +1241,51 @@
       "inputs": [
         {
           "name": "version",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Version string to validate."
         },
         {
           "name": "calverFormat",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Format expected for the version string."
         },
         {
           "name": "preventFutureDates",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Whether future dates should be reported as errors."
         },
         {
           "name": "schemeRules",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Optional scheme rules for modifier validation and segment count warnings."
         }
       ],
       "outputs": {
-        "text": "A validation result containing any discovered errors and the parsed version on success."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "A validation result containing any discovered errors and the parsed version on success."
+        },
+        "description": "A validation result containing any discovered errors and the parsed version on success."
+      },
+      "tags": [
+        "calver"
+      ]
     },
     {
       "id": "op-validateChangelog",
@@ -749,54 +1294,60 @@
       "inputs": [
         {
           "name": "changelogPath",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Path to the changelog file."
         },
         {
           "name": "version",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Version that must be present in the changelog."
         },
         {
           "name": "strict",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Whether to require compare links and dated release headings."
         },
         {
           "name": "requireEntry",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Whether the requested version must already have an entry."
         },
         {
           "name": "structure",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Optional structure enforcement options."
         }
       ],
       "outputs": {
-        "text": "The result of validating the changelog file."
-      }
-    },
-    {
-      "id": "op-createCkmEngine",
-      "name": "createCkmEngine",
-      "what": "Creates a CKM engine from a parsed manifest.",
-      "inputs": [
-        {
-          "name": "manifest",
-          "type": "unknown",
-          "required": true,
-          "description": "Parsed CKM manifest (from forge-ts `ckm.json`)."
-        }
-      ],
-      "outputs": {
-        "text": "A configured CKM engine."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The result of validating the changelog file."
+        },
+        "description": "The result of validating the changelog file."
+      },
+      "tags": [
+        "changelog"
+      ]
     },
     {
       "id": "op-checkHardcodedVersions",
@@ -805,32 +1356,49 @@
       "inputs": [
         {
           "name": "expectedVersion",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Version all matching entries should use."
         },
         {
           "name": "config",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Sync configuration describing files and replacement patterns."
         },
         {
           "name": "ignorePatterns",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Glob patterns to exclude while scanning."
         },
         {
           "name": "cwd",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Project directory used to resolve file globs."
         }
       ],
       "outputs": {
-        "text": "A list of detected version mismatches."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "A list of detected version mismatches."
+        },
+        "description": "A list of detected version mismatches."
+      },
+      "tags": []
     },
     {
       "id": "op-generateDependabotConfig",
@@ -839,14 +1407,24 @@
       "inputs": [
         {
           "name": "manifests",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Detected manifest source types from the project."
         }
       ],
       "outputs": {
-        "text": "The Dependabot configuration as a YAML string."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The Dependabot configuration as a YAML string."
+        },
+        "description": "The Dependabot configuration as a YAML string."
+      },
+      "tags": [
+        "manifest"
+      ]
     },
     {
       "id": "op-generateHookScript",
@@ -855,14 +1433,24 @@
       "inputs": [
         {
           "name": "hookName",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Name of the Git hook to generate."
         }
       ],
       "outputs": {
-        "text": "Executable shell script contents for the hook."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "Executable shell script contents for the hook."
+        },
+        "description": "Executable shell script contents for the hook."
+      },
+      "tags": [
+        "git"
+      ]
     },
     {
       "id": "op-checkHooksPathOverride",
@@ -871,14 +1459,24 @@
       "inputs": [
         {
           "name": "cwd",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Repository directory to inspect."
         }
       ],
       "outputs": {
-        "text": "A guard warning when a hooksPath override is detected."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "A guard warning when a hooksPath override is detected."
+        },
+        "description": "A guard warning when a hooksPath override is detected."
+      },
+      "tags": [
+        "git"
+      ]
     },
     {
       "id": "op-checkHuskyBypass",
@@ -886,8 +1484,13 @@
       "what": "Checks whether the HUSKY environment variable is disabling hooks.",
       "inputs": [],
       "outputs": {
-        "text": "A guard warning when the HUSKY bypass is detected."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "A guard warning when the HUSKY bypass is detected."
+        },
+        "description": "A guard warning when the HUSKY bypass is detected."
+      },
+      "tags": []
     },
     {
       "id": "op-checkHookIntegrity",
@@ -896,20 +1499,31 @@
       "inputs": [
         {
           "name": "config",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "VersionGuard configuration that defines which hooks should exist."
         },
         {
           "name": "cwd",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Repository directory to inspect."
         }
       ],
       "outputs": {
-        "text": "Guard warnings for each hook that has been tampered with."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "Guard warnings for each hook that has been tampered with."
+        },
+        "description": "Guard warnings for each hook that has been tampered with."
+      },
+      "tags": []
     },
     {
       "id": "op-checkEnforceHooksPolicy",
@@ -918,14 +1532,22 @@
       "inputs": [
         {
           "name": "config",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "VersionGuard configuration to inspect."
         }
       ],
       "outputs": {
-        "text": "A guard warning when hooks are enabled but not enforced."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "A guard warning when hooks are enabled but not enforced."
+        },
+        "description": "A guard warning when hooks are enabled but not enforced."
+      },
+      "tags": []
     },
     {
       "id": "op-runGuardChecks",
@@ -934,20 +1556,33 @@
       "inputs": [
         {
           "name": "config",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "VersionGuard configuration."
         },
         {
           "name": "cwd",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Repository directory to inspect."
         }
       ],
       "outputs": {
-        "text": "A guard report with all findings."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "A guard report with all findings."
+        },
+        "description": "A guard report with all findings."
+      },
+      "tags": [
+        "guard"
+      ]
     },
     {
       "id": "op-checkPublishStatus",
@@ -956,32 +1591,51 @@
       "inputs": [
         {
           "name": "manifestSource",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "The detected manifest source type."
         },
         {
           "name": "packageName",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Package name as read from the manifest."
         },
         {
           "name": "version",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Version string to check."
         },
         {
           "name": "config",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Publish configuration with timeout and optional registry URL."
         }
       ],
       "outputs": {
-        "text": "The publish check result."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The publish check result."
+        },
+        "description": "The publish check result."
+      },
+      "tags": [
+        "publish"
+      ]
     },
     {
       "id": "op-initConfig",
@@ -990,14 +1644,26 @@
       "inputs": [
         {
           "name": "cwd",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Project directory where the config should be created."
         }
       ],
       "outputs": {
-        "text": "The path to the created config file."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The path to the created config file."
+        },
+        "description": "The path to the created config file."
+      },
+      "tags": [
+        "guard",
+        "versionguard",
+        "init"
+      ]
     },
     {
       "id": "op-createTag",
@@ -1006,38 +1672,60 @@
       "inputs": [
         {
           "name": "version",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Version to embed in the new tag name."
         },
         {
           "name": "message",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Custom annotated tag message."
         },
         {
           "name": "autoFix",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Whether to auto-fix version mismatches before tagging."
         },
         {
           "name": "config",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Loaded VersionGuard configuration used for validation and fixes."
         },
         {
           "name": "cwd",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Repository directory where git commands should run."
         }
       ],
       "outputs": {
-        "text": "The tagging outcome and any actions performed along the way."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The tagging outcome and any actions performed along the way."
+        },
+        "description": "The tagging outcome and any actions performed along the way."
+      },
+      "tags": [
+        "fix"
+      ]
     },
     {
       "id": "op-validateTagForPush",
@@ -1046,20 +1734,31 @@
       "inputs": [
         {
           "name": "tagName",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Name of the tag to validate."
         },
         {
           "name": "cwd",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Repository directory where git commands should run."
         }
       ],
       "outputs": {
-        "text": "A validation result with an optional suggested fix command."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "A validation result with an optional suggested fix command."
+        },
+        "description": "A validation result with an optional suggested fix command."
+      },
+      "tags": []
     },
     {
       "id": "op-validateVersion",
@@ -1068,20 +1767,33 @@
       "inputs": [
         {
           "name": "version",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Version string to validate."
         },
         {
           "name": "config",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "VersionGuard configuration that selects the validation rules."
         }
       ],
       "outputs": {
-        "text": "The validation result for the provided version."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The validation result for the provided version."
+        },
+        "description": "The validation result for the provided version."
+      },
+      "tags": [
+        "versioning"
+      ]
     },
     {
       "id": "op-runWizard",
@@ -1090,14 +1802,22 @@
       "inputs": [
         {
           "name": "cwd",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Project directory to initialize."
         }
       ],
       "outputs": {
-        "text": "The path to the created config file, or `null` if cancelled."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The path to the created config file, or `null` if cancelled."
+        },
+        "description": "The path to the created config file, or `null` if cancelled."
+      },
+      "tags": []
     },
     {
       "id": "op-runHeadless",
@@ -1106,14 +1826,26 @@
       "inputs": [
         {
           "name": "options",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Headless initialization options."
         }
       ],
       "outputs": {
-        "text": "The path to the created config file."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The path to the created config file."
+        },
+        "description": "The path to the created config file."
+      },
+      "tags": [
+        "guard",
+        "versionguard",
+        "init"
+      ]
     },
     {
       "id": "op-createProgram",
@@ -1121,8 +1853,17 @@
       "what": "Creates the VersionGuard CLI program definition.",
       "inputs": [],
       "outputs": {
-        "text": "A configured Commander program for the VersionGuard CLI."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "A configured Commander program for the VersionGuard CLI."
+        },
+        "description": "A configured Commander program for the VersionGuard CLI."
+      },
+      "tags": [
+        "guard",
+        "versionguard",
+        "init"
+      ]
     },
     {
       "id": "op-runCli",
@@ -1131,11 +1872,15 @@
       "inputs": [
         {
           "name": "argv",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Full argument vector to parse."
         }
-      ]
+      ],
+      "tags": []
     },
     {
       "id": "op-createTempProject",
@@ -1143,8 +1888,15 @@
       "what": "Creates a temporary project directory with a minimal `package.json` fixture.",
       "inputs": [],
       "outputs": {
-        "text": "The absolute path to the temporary project directory."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The absolute path to the temporary project directory."
+        },
+        "description": "The absolute path to the temporary project directory."
+      },
+      "tags": [
+        "fix"
+      ]
     },
     {
       "id": "op-initGitRepo",
@@ -1153,10 +1905,18 @@
       "inputs": [
         {
           "name": "cwd",
-          "type": "unknown",
+          "type": {
+            "canonical": "any",
+            "original": "unknown"
+          },
           "required": true,
           "description": "Absolute path to the fixture repository."
         }
+      ],
+      "tags": [
+        "git",
+        "fix",
+        "init"
       ]
     },
     {
@@ -1165,355 +1925,581 @@
       "what": "Creates a bare git repository to use as a remote in integration tests.",
       "inputs": [],
       "outputs": {
-        "text": "The absolute path to the new bare repository."
-      }
+        "type": {
+          "canonical": "object",
+          "original": "The absolute path to the new bare repository."
+        },
+        "description": "The absolute path to the new bare repository."
+      },
+      "tags": [
+        "git"
+      ]
     }
   ],
   "constraints": [],
   "workflows": [],
   "configSchema": [
     {
-      "key": "ManifestConfig.source",
-      "type": "ManifestSourceType",
+      "key": "manifest.source",
+      "type": {
+        "canonical": "object",
+        "original": "ManifestSourceType"
+      },
       "description": "Manifest file to read the version from.  Use `'auto'` for file-existence detection or a specific filename.",
-      "default": "'auto'"
+      "default": "'auto'",
+      "required": true
     },
     {
-      "key": "ManifestConfig.path",
-      "type": "string | undefined",
+      "key": "manifest.path",
+      "type": {
+        "canonical": "string",
+        "original": "string | undefined"
+      },
       "description": "Dotted key path to the version field within the manifest.  For example `'version'` for package.json, `'package.version'` for Cargo.toml, or `'project.version'` for pyproject.toml.",
-      "default": "undefined (uses the provider's built-in default)"
+      "default": "undefined (uses the provider's built-in default)",
+      "required": true
     },
     {
-      "key": "ManifestConfig.regex",
-      "type": "string | undefined",
+      "key": "manifest.regex",
+      "type": {
+        "canonical": "string",
+        "original": "string | undefined"
+      },
       "description": "Regex pattern to extract the version from source-code manifests.  Capture group 1 must contain the version string.",
-      "default": "undefined"
+      "default": "undefined",
+      "required": true
     },
     {
-      "key": "SemVerConfig.allowVPrefix",
-      "type": "boolean",
+      "key": "semver.allowVPrefix",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Tolerates a leading `v` prefix (e.g. `v1.2.3`).  When enabled the prefix is stripped before parsing.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "SemVerConfig.allowBuildMetadata",
-      "type": "boolean",
+      "key": "semver.allowBuildMetadata",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Permits `+build` metadata on version strings.",
-      "default": "true"
+      "default": "true",
+      "required": true
     },
     {
-      "key": "SemVerConfig.requirePrerelease",
-      "type": "boolean",
+      "key": "semver.requirePrerelease",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Requires every version to carry a prerelease label.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "CalVerConfig.format",
-      "type": "CalVerFormat",
-      "description": "Calendar format used when parsing and validating versions."
+      "key": "calver.format",
+      "type": {
+        "canonical": "object",
+        "original": "CalVerFormat"
+      },
+      "description": "Calendar format used when parsing and validating versions.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "CalVerConfig.preventFutureDates",
-      "type": "boolean",
+      "key": "calver.preventFutureDates",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Rejects versions that point to a future date.",
-      "default": "true"
+      "default": "true",
+      "required": true
     },
     {
-      "key": "CalVerConfig.strictMutualExclusion",
-      "type": "boolean | undefined",
+      "key": "calver.strictMutualExclusion",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
       "description": "Enforces that week tokens (WW/0W) cannot be mixed with month/day tokens.",
-      "default": "true"
+      "default": "true",
+      "required": true
     },
     {
-      "key": "SyncConfig.files",
-      "type": "string[]",
-      "description": "File globs or paths that should be scanned for version updates."
+      "key": "sync.files",
+      "type": {
+        "canonical": "array",
+        "original": "string[]"
+      },
+      "description": "File globs or paths that should be scanned for version updates.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "SyncConfig.patterns",
-      "type": "SyncPattern[]",
-      "description": "Replacement patterns applied to matching files."
+      "key": "sync.patterns",
+      "type": {
+        "canonical": "array",
+        "original": "SyncPattern[]"
+      },
+      "description": "Replacement patterns applied to matching files.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "ChangelogConfig.enabled",
-      "type": "boolean",
+      "key": "changelog.enabled",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Enables changelog validation.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "ChangelogConfig.file",
-      "type": "string",
-      "description": "Path to the changelog file to inspect."
+      "key": "changelog.file",
+      "type": {
+        "canonical": "string"
+      },
+      "description": "Path to the changelog file to inspect.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "ChangelogConfig.strict",
-      "type": "boolean",
+      "key": "changelog.strict",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Treats changelog problems as hard failures.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "ChangelogConfig.requireEntry",
-      "type": "boolean",
+      "key": "changelog.requireEntry",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Requires an entry for the current version.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "ChangelogConfig.enforceStructure",
-      "type": "boolean | undefined",
+      "key": "changelog.enforceStructure",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
       "description": "Validates that changelog section headers use only allowed names.  When enabled, any `### SectionName` header not present in `sections` is reported as an error.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "ChangelogConfig.sections",
-      "type": "string[] | undefined",
+      "key": "changelog.sections",
+      "type": {
+        "canonical": "array",
+        "original": "string[] | undefined"
+      },
       "description": "Allowed Keep a Changelog section names.  Only applied when `enforceStructure` is `true`.",
-      "default": "['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security']"
+      "default": "['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security']",
+      "required": true
     },
     {
-      "key": "GitHooksConfig.'pre-commit'",
-      "type": "boolean",
+      "key": "githooks.'pre-commit'",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Enables validation during the `pre-commit` hook.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "GitHooksConfig.'pre-push'",
-      "type": "boolean",
+      "key": "githooks.'pre-push'",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Enables validation during the `pre-push` hook.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "GitHooksConfig.'post-tag'",
-      "type": "boolean",
+      "key": "githooks.'post-tag'",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Enables follow-up tasks after a tag is created.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "GitConfig.hooks",
-      "type": "GitHooksConfig",
-      "description": "Hook toggles used by the CLI and validation workflow."
+      "key": "git.hooks",
+      "type": {
+        "canonical": "object",
+        "original": "GitHooksConfig"
+      },
+      "description": "Hook toggles used by the CLI and validation workflow.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "GitConfig.enforceHooks",
-      "type": "boolean",
+      "key": "git.enforceHooks",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Fails validation when required hooks are missing.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "GitHubConfig.dependabot",
-      "type": "boolean",
+      "key": "github.dependabot",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Generates `.github/dependabot.yml` from detected manifests during init.",
-      "default": "true"
+      "default": "true",
+      "required": true
     },
     {
-      "key": "VersioningConfig.type",
-      "type": "VersioningType",
-      "description": "Versioning strategy used for the project."
+      "key": "versioning.type",
+      "type": {
+        "canonical": "object",
+        "original": "VersioningType"
+      },
+      "description": "Versioning strategy used for the project.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "VersioningConfig.schemeRules",
-      "type": "SchemeRules | undefined",
+      "key": "versioning.schemeRules",
+      "type": {
+        "canonical": "string",
+        "original": "SchemeRules | undefined"
+      },
       "description": "Scheme-level validation rules applied regardless of versioning type.",
-      "default": "`{ maxNumericSegments: 3, allowedModifiers: ['dev', 'alpha', 'beta', 'rc'] }`"
+      "default": "`{ maxNumericSegments: 3, allowedModifiers: ['dev', 'alpha', 'beta', 'rc'] }`",
+      "required": true
     },
     {
-      "key": "VersioningConfig.semver",
-      "type": "SemVerConfig | undefined",
+      "key": "versioning.semver",
+      "type": {
+        "canonical": "string",
+        "original": "SemVerConfig | undefined"
+      },
       "description": "SemVer-specific settings when `type` is `'semver'`.",
-      "default": "`{ allowVPrefix: false, allowBuildMetadata: true, requirePrerelease: false }`"
+      "default": "`{ allowVPrefix: false, allowBuildMetadata: true, requirePrerelease: false }`",
+      "required": true
     },
     {
-      "key": "VersioningConfig.calver",
-      "type": "CalVerConfig | undefined",
+      "key": "versioning.calver",
+      "type": {
+        "canonical": "string",
+        "original": "CalVerConfig | undefined"
+      },
       "description": "CalVer-specific settings when `type` is `'calver'`.",
-      "default": "undefined"
+      "default": "undefined",
+      "required": true
     },
     {
-      "key": "ScanConfig.enabled",
-      "type": "boolean",
+      "key": "scan.enabled",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Enables repo-wide scanning for stale version literals.",
-      "default": "false"
+      "default": "false",
+      "required": true
     },
     {
-      "key": "ScanConfig.patterns",
-      "type": "string[]",
+      "key": "scan.patterns",
+      "type": {
+        "canonical": "array",
+        "original": "string[]"
+      },
       "description": "Regex patterns that match version-like strings in source files.  Capture group 1 must contain the version string.",
-      "default": "Patterns matching common version formats in code, CI, and Docker files."
+      "default": "Patterns matching common version formats in code, CI, and Docker files.",
+      "required": true
     },
     {
-      "key": "ScanConfig.allowlist",
-      "type": "ScanAllowlistEntry[]",
+      "key": "scan.allowlist",
+      "type": {
+        "canonical": "array",
+        "original": "ScanAllowlistEntry[]"
+      },
       "description": "Files containing intentional version references that should not be flagged.",
-      "default": "[]"
+      "default": "[]",
+      "required": true
     },
     {
-      "key": "GuardConfig.enabled",
-      "type": "boolean",
+      "key": "guard.enabled",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Enables hook bypass detection in validate.",
-      "default": "true"
+      "default": "true",
+      "required": true
     },
     {
-      "key": "PublishConfig.enabled",
-      "type": "boolean",
+      "key": "publish.enabled",
+      "type": {
+        "canonical": "boolean"
+      },
       "description": "Enables registry publish status check.",
-      "default": "true"
+      "default": "true",
+      "required": true
     },
     {
-      "key": "PublishConfig.timeout",
-      "type": "number",
+      "key": "publish.timeout",
+      "type": {
+        "canonical": "number"
+      },
       "description": "Timeout in ms for registry HTTP/CLI calls.",
-      "default": "5000"
+      "default": "5000",
+      "required": true
     },
     {
-      "key": "PublishConfig.registryUrl",
-      "type": "string | undefined",
+      "key": "publish.registryUrl",
+      "type": {
+        "canonical": "string",
+        "original": "string | undefined"
+      },
       "description": "Override registry URL for private registries.",
-      "default": "undefined"
+      "default": "undefined",
+      "required": true
     },
     {
-      "key": "VersionGuardConfig.versioning",
-      "type": "VersioningConfig",
-      "description": "Active versioning settings."
+      "key": "versionguard.versioning",
+      "type": {
+        "canonical": "object",
+        "original": "VersioningConfig"
+      },
+      "description": "Active versioning settings.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "VersionGuardConfig.manifest",
-      "type": "ManifestConfig",
+      "key": "versionguard.manifest",
+      "type": {
+        "canonical": "object",
+        "original": "ManifestConfig"
+      },
       "description": "Version source manifest settings.",
-      "default": "`{ source: 'auto' }`"
+      "default": "`{ source: 'auto' }`",
+      "required": true
     },
     {
-      "key": "VersionGuardConfig.sync",
-      "type": "SyncConfig",
-      "description": "Synchronization settings for mirrored version strings."
+      "key": "versionguard.sync",
+      "type": {
+        "canonical": "object",
+        "original": "SyncConfig"
+      },
+      "description": "Synchronization settings for mirrored version strings.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "VersionGuardConfig.changelog",
-      "type": "ChangelogConfig",
-      "description": "Changelog validation settings."
+      "key": "versionguard.changelog",
+      "type": {
+        "canonical": "object",
+        "original": "ChangelogConfig"
+      },
+      "description": "Changelog validation settings.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "VersionGuardConfig.git",
-      "type": "GitConfig",
-      "description": "Git enforcement settings."
+      "key": "versionguard.git",
+      "type": {
+        "canonical": "object",
+        "original": "GitConfig"
+      },
+      "description": "Git enforcement settings.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "VersionGuardConfig.github",
-      "type": "GitHubConfig",
+      "key": "versionguard.github",
+      "type": {
+        "canonical": "object",
+        "original": "GitHubConfig"
+      },
       "description": "GitHub integration settings.",
-      "default": "`{ dependabot: true }`"
+      "default": "`{ dependabot: true }`",
+      "required": true
     },
     {
-      "key": "VersionGuardConfig.scan",
-      "type": "ScanConfig",
+      "key": "versionguard.scan",
+      "type": {
+        "canonical": "object",
+        "original": "ScanConfig"
+      },
       "description": "Repo-wide version literal scanning.",
-      "default": "`{ enabled: true, patterns: [...], allowlist: [] }`"
+      "default": "`{ enabled: true, patterns: [...], allowlist: [] }`",
+      "required": true
     },
     {
-      "key": "VersionGuardConfig.guard",
-      "type": "GuardConfig",
+      "key": "versionguard.guard",
+      "type": {
+        "canonical": "object",
+        "original": "GuardConfig"
+      },
       "description": "Guard check configuration (hook bypass detection).",
-      "default": "`{ enabled: true }`"
+      "default": "`{ enabled: true }`",
+      "required": true
     },
     {
-      "key": "VersionGuardConfig.publish",
-      "type": "PublishConfig",
+      "key": "versionguard.publish",
+      "type": {
+        "canonical": "object",
+        "original": "PublishConfig"
+      },
       "description": "Registry publish status verification.",
-      "default": "`{ enabled: true, timeout: 5000 }`"
+      "default": "`{ enabled: true, timeout: 5000 }`",
+      "required": true
     },
     {
-      "key": "VersionGuardConfig.ignore",
-      "type": "string[]",
-      "description": "Files or patterns excluded from validation."
+      "key": "versionguard.ignore",
+      "type": {
+        "canonical": "array",
+        "original": "string[]"
+      },
+      "description": "Files or patterns excluded from validation.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "ChangelogStructureOptions.enforceStructure",
-      "type": "boolean | undefined",
-      "description": "Validate section headers against an allowed list."
+      "key": "changelogstructure.enforceStructure",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
+      "description": "Validate section headers against an allowed list.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "ChangelogStructureOptions.sections",
-      "type": "string[] | undefined",
-      "description": "Allowed section names. Defaults to Keep a Changelog standard sections."
+      "key": "changelogstructure.sections",
+      "type": {
+        "canonical": "array",
+        "original": "string[] | undefined"
+      },
+      "description": "Allowed section names. Defaults to Keep a Changelog standard sections.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "CkmConfigEntry.key",
-      "type": "string",
-      "description": "Dotted key path (e.g., `'CalVerConfig.format'`)."
+      "key": "init.cwd",
+      "type": {
+        "canonical": "string"
+      },
+      "description": "Working directory path.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "CkmConfigEntry.type",
-      "type": "string",
-      "description": "TypeScript type."
+      "key": "init.type",
+      "type": {
+        "canonical": "string",
+        "original": "\"semver\" | \"calver\" | undefined"
+      },
+      "description": "Versioning type (semver or calver).",
+      "required": true,
+      "default": null
     },
     {
-      "key": "CkmConfigEntry.description",
-      "type": "string",
-      "description": "Description from TSDoc."
+      "key": "init.format",
+      "type": {
+        "canonical": "string",
+        "original": "string | undefined"
+      },
+      "description": "CalVer format string.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "CkmConfigEntry.default",
-      "type": "string | undefined",
-      "description": "Default value if specified via `@defaultValue`."
+      "key": "init.allowVPrefix",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
+      "description": "Allow v-prefix on SemVer versions.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "InitOptions.cwd",
-      "type": "string",
-      "description": "Working directory path."
+      "key": "init.allowBuildMetadata",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
+      "description": "Allow build metadata on SemVer versions.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "InitOptions.type",
-      "type": "\"semver\" | \"calver\" | undefined",
-      "description": "Versioning type (semver or calver)."
+      "key": "init.requirePrerelease",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
+      "description": "Require prerelease labels on SemVer versions.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "InitOptions.format",
-      "type": "string | undefined",
-      "description": "CalVer format string."
+      "key": "init.manifest",
+      "type": {
+        "canonical": "string",
+        "original": "string | undefined"
+      },
+      "description": "Manifest source type.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "InitOptions.allowVPrefix",
-      "type": "boolean | undefined",
-      "description": "Allow v-prefix on SemVer versions."
+      "key": "init.github",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
+      "description": "Whether to generate GitHub integration files (dependabot.yml).",
+      "required": true,
+      "default": null
     },
     {
-      "key": "InitOptions.allowBuildMetadata",
-      "type": "boolean | undefined",
-      "description": "Allow build metadata on SemVer versions."
+      "key": "init.hooks",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
+      "description": "Whether to install git hooks.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "InitOptions.requirePrerelease",
-      "type": "boolean | undefined",
-      "description": "Require prerelease labels on SemVer versions."
+      "key": "init.changelog",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
+      "description": "Whether to enable changelog validation.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "InitOptions.manifest",
-      "type": "string | undefined",
-      "description": "Manifest source type."
+      "key": "init.yes",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
+      "description": "Accept defaults without prompting.",
+      "required": true,
+      "default": null
     },
     {
-      "key": "InitOptions.github",
-      "type": "boolean | undefined",
-      "description": "Whether to generate GitHub integration files (dependabot.yml)."
-    },
-    {
-      "key": "InitOptions.hooks",
-      "type": "boolean | undefined",
-      "description": "Whether to install git hooks."
-    },
-    {
-      "key": "InitOptions.changelog",
-      "type": "boolean | undefined",
-      "description": "Whether to enable changelog validation."
-    },
-    {
-      "key": "InitOptions.yes",
-      "type": "boolean | undefined",
-      "description": "Accept defaults without prompting."
-    },
-    {
-      "key": "InitOptions.force",
-      "type": "boolean | undefined",
-      "description": "Overwrite existing config."
+      "key": "init.force",
+      "type": {
+        "canonical": "string",
+        "original": "boolean | undefined"
+      },
+      "description": "Overwrite existing config.",
+      "required": true,
+      "default": null
     }
   ]
 }

@@ -508,33 +508,6 @@ import { fixChangesetMangling } from 'versionguard';
 const fixed = fixChangesetMangling('CHANGELOG.md');
 ```
 
-## createCkmEngine(manifest)
-
-Creates a CKM engine from a parsed manifest.
-
-**Signature**
-
-```typescript
-(manifest: CkmManifest) => CkmEngine
-```
-
-**Parameters**
-
-| Name       | Type          | Description                                     |
-| ---------- | ------------- | ----------------------------------------------- |
-| `manifest` | `CkmManifest` | Parsed CKM manifest (from forge-ts `ckm.json`). |
-
-**Returns** — A configured CKM engine.
-
-**Example**
-
-```ts
-import { createCkmEngine } from './ckm/engine';
-
-const engine = createCkmEngine(manifest);
-console.log(engine.getTopicIndex('mytool'));
-```
-
 ## parse(version)
 
 Parses a semantic version string.

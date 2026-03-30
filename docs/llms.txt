@@ -1,6 +1,6 @@
 # @codluv/versionguard
 > Strict versioning enforcement for SemVer and CalVer — language-agnostic manifest support, git hooks, changelog validation, and file sync
-> Version: 1.0.0
+> Version: 1.1.0
 
 ## Install
 
@@ -16,7 +16,7 @@ npm install -D @codluv/versionguard
 ## Packages
 
 ### main
-95 functions, 60 types, 6 classes, 2 variables
+94 functions, 50 types, 6 classes, 2 variables
 
 - getSemVerConfig() — Resolves the SemVer config from a VersionGuard config.
 - getCalVerConfig() — Extracts the CalVer config from a VersionGuard config, throwing if missing.
@@ -36,7 +36,6 @@ npm install -D @codluv/versionguard
 - addVersionEntry() — Inserts a new version entry beneath the `[Unreleased]` section.
 - isChangesetMangled() — Detects whether a changelog has been mangled by Changesets.
 - fixChangesetMangling() — Fixes a Changesets-mangled changelog into proper Keep a Changelog format.
-- createCkmEngine() — Creates a CKM engine from a parsed manifest.
 - parse() — Parses a semantic version string.
 - validate() — Validates that a string is a supported semantic version.
 - compare() — Compares two semantic version strings.
@@ -160,16 +159,6 @@ npm install -D @codluv/versionguard
 - ParsedCalVerFormat — Parsed token layout for a supported CalVer format string.
 - ChangelogValidationResult — Describes the outcome of validating a changelog file.
 - ChangelogStructureOptions — Options for changelog structure enforcement.
-- CkmConcept — A domain concept extracted from an exported interface or type.
-- CkmProperty — A property within a concept.
-- CkmOperation — A user-facing operation extracted from an exported function.
-- CkmInput — A function parameter within an operation.
-- CkmConstraint — A constraint enforced by the tool.
-- CkmWorkflow — A multi-step workflow for a common goal.
-- CkmConfigEntry — A config schema entry with type, description, and default.
-- CkmManifest — The complete Codebase Knowledge Manifest.
-- CkmTopic — An auto-generated topic derived from CKM data.
-- CkmEngine — The CKM engine — provides topic derivation, filtering, and output formatting.
 - Suggestion — Feedback entry point exports for suggestion and guidance helpers.
 - FeedbackResult — Aggregates validation errors with suggested next steps.
 - VersionSourceProvider — Abstraction for reading and writing a version string from any manifest format.

@@ -313,29 +313,3 @@ const config: Partial<VersionGuardConfig> = {
 | `guard` | `GuardConfig` | Guard check configuration (hook bypass detection). |
 | `publish` | `PublishConfig` | Registry publish status verification. |
 | `ignore` | `string[]` | Files or patterns excluded from validation. |
-
-## `CkmConfigEntry`
-
-A config schema entry with type, description, and default.
-
-```typescript
-import type { CkmConfigEntry } from "@codluv/versionguard";
-
-const config: Partial<CkmConfigEntry> = {
-  // Dotted key path (e.g., `'CalVerConfig.format'`).
-  key: "...",
-  // TypeScript type.
-  type: "...",
-  // Description from TSDoc.
-  description: "...",
-  // Default value if specified via `@defaultValue`.
-  default: "...",
-};
-```
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `key` | `string` | Dotted key path (e.g., `'CalVerConfig.format'`). |
-| `type` | `string` | TypeScript type. |
-| `description` | `string` | Description from TSDoc. |
-| `default` | `string | undefined` | Default value if specified via `@defaultValue`. |

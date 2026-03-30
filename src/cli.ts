@@ -16,12 +16,11 @@ const CLI_VERSION: string = (
 // Embedded at build time — no external files needed at runtime
 import ckmRaw from '../docs/ckm.json?raw';
 import llmsRaw from '../docs/llms.txt?raw';
-import type { CkmManifest } from './ckm';
-import { createCkmEngine } from './ckm';
+import { createCkmEngine } from 'ckm-sdk';
 import * as feedback from './feedback';
 import * as fix from './fix';
 
-const ckmEngine = createCkmEngine(JSON.parse(ckmRaw) as CkmManifest);
+const ckmEngine = createCkmEngine(JSON.parse(ckmRaw));
 
 import * as versionguard from './index';
 import { runHeadless, runWizard } from './init-wizard';
