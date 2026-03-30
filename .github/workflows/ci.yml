@@ -72,6 +72,7 @@ jobs:
 
       - name: Validate with versionguard (dogfood)
         run: |
+          node dist/cli.js fix-changelog
           node dist/cli.js hooks install
           node dist/cli.js validate
           node dist/cli.js hooks uninstall

@@ -1,10 +1,17 @@
 # Changelog
 
-## 1.2.0
+All notable changes to this project will be documented in this file.
 
-### Minor Changes
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- 0a3ef7b: feat: replace local CKM module with ckm-sdk package
+## [Unreleased]
+
+## [1.2.0] - 2026-03-30
+
+### Added
+
+- replace local CKM module with ckm-sdk package
 
   Removes the handrolled `src/ckm/` module (engine, types, index) and replaces
   it with the published `ckm-sdk@2026.3.1` package. The CKM engine is now backed
@@ -14,12 +21,6 @@
   The `vg ckm` CLI command works identically. The `CkmEngine` type is no longer
   exported from the public API (the SDK engine is opaque).
 
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
 
 ## [1.1.0] - 2026-03-29
 
@@ -279,7 +280,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI with init, check, validate, sync, bump commands
 - Configurable via .versionguard.yml
 
-[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/kryptobaseddev/versionguard/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/kryptobaseddev/versionguard/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/kryptobaseddev/versionguard/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.9.0...v1.0.0
 [0.9.0]: https://github.com/kryptobaseddev/versionguard/compare/v0.8.1...v0.9.0
