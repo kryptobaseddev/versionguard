@@ -66,7 +66,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.1.0",
-    "@forge-ts/core": "file:../forge-ts/packages/core",
+    "@forge-ts/core": "^0.22.1",
     "chalk": "^5.6.2",
     "ckm-sdk": "^2026.3.1",
     "commander": "^14.0.3",
@@ -79,7 +79,7 @@
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
     "@eslint/js": "^10.0.1",
-    "@forge-ts/cli": "file:../forge-ts/packages/cli",
+    "@forge-ts/cli": "^0.22.1",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.5.0",
     "@vitest/coverage-v8": "^4.1.2",
