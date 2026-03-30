@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import chalk from 'chalk';
-import { createCkmEngine } from 'ckm-sdk';
+import { type CkmManifest, createCkmEngine } from 'ckm-sdk';
 import { Command } from 'commander';
 
 // Embedded at build time — no external files needed at runtime
@@ -24,8 +24,7 @@ const CLI_VERSION: string = (
   }
 ).version;
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- JSON.parse returns any, ckm-sdk accepts unknown
-const ckmEngine = createCkmEngine(JSON.parse(ckmRaw));
+const ckmEngine = createCkmEngine(JSON.parse(ckmRaw) as CkmManifest);
 
 const styles = {
   error: chalk.red,
