@@ -4,7 +4,18 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import chalk from 'chalk';
+import { createCkmEngine } from 'ckm-sdk';
 import { Command } from 'commander';
+
+// Embedded at build time — no external files needed at runtime
+import ckmRaw from '../docs/ckm.json?raw';
+import llmsRaw from '../docs/llms.txt?raw';
+import * as feedback from './feedback';
+import * as fix from './fix';
+import * as versionguard from './index';
+import { runHeadless, runWizard } from './init-wizard';
+import { findProjectRoot, formatNotProjectError } from './project-root';
+import * as tag from './tag';
 
 const CLI_DIR = path.dirname(fileURLToPath(import.meta.url));
 const CLI_VERSION: string = (
@@ -13,19 +24,8 @@ const CLI_VERSION: string = (
   }
 ).version;
 
-// Embedded at build time — no external files needed at runtime
-import ckmRaw from '../docs/ckm.json?raw';
-import llmsRaw from '../docs/llms.txt?raw';
-import { createCkmEngine } from 'ckm-sdk';
-import * as feedback from './feedback';
-import * as fix from './fix';
-
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- JSON.parse returns any, ckm-sdk accepts unknown
 const ckmEngine = createCkmEngine(JSON.parse(ckmRaw));
-
-import * as versionguard from './index';
-import { runHeadless, runWizard } from './init-wizard';
-import { findProjectRoot, formatNotProjectError } from './project-root';
-import * as tag from './tag';
 
 const styles = {
   error: chalk.red,

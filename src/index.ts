@@ -30,6 +30,7 @@ import {
   type VersionGuardConfig,
 } from './types';
 
+export { createCkmEngine } from 'ckm-sdk';
 export * as calver from './calver';
 export {
   type ChangelogStructureOptions,
@@ -37,7 +38,6 @@ export {
   isChangesetMangled,
   validateChangelog,
 } from './changelog';
-export { createCkmEngine } from 'ckm-sdk';
 export { getConfig, initConfig } from './config';
 export * from './feedback';
 export * from './fix';
